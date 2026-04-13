@@ -658,4 +658,318 @@ backend/src/
 
 ---
 
-*最后更新: 2026-04-13*
+## 2026-04-13 前端样式优化 ✅
+
+### 完成内容
+
+**墨韵书香风格统一**:
+- ✅ NovelList 品牌标题优化（印章装饰 + "都市言情小说生成器"）
+- ✅ 输入框统一使用 input-ink 类
+- ✅ 小说卡片使用 paper-hover 效果
+- ✅ ValidationReport 规则分类修正（5条基础规则）
+
+### Git 提交
+
+- commit: `a87b446`
+
+---
+
+## 2026-04-13 测试代码修复 ✅
+
+### 问题背景
+
+都市言情转型后，测试代码未同步更新，导致 15 个测试失败。
+
+### Agent Team 调度
+
+使用 3 个 Agent 并行修复：
+| Agent | 任务 | 状态 |
+|-------|------|------|
+| Agent-1 | validation_service 测试 | ✅ |
+| Agent-2 | 集成测试 | ✅ |
+| Agent-3 | E2E 测试 | ✅ |
+
+### 修复内容
+
+| 文件 | 修复内容 |
+|------|----------|
+| test_validation_service.py | 规则数量 36→5，分类 7→3，移除状态追踪检查 |
+| test_e2e_api.py | 移除状态追踪测试，更新校验规则端点 |
+| test_generation_flow.py | 修复 UnboundLocalError |
+
+### 测试结果
+
+- **92 passed, 4 skipped** ✅
+
+### Git 提交
+
+- commit: `eb52852`
+
+---
+
+## 2026-04-13 前端崩溃修复 ✅
+
+### 问题背景
+
+都市言情转型后，前端代码访问旧字段导致多处崩溃：
+- `background.era_name` / `background.geography.world_name` 不存在
+- `power_system` / `core_conflict` 结构变更
+- 数组方法 `.slice()` 未处理 undefined/null
+
+### 修复内容
+
+| 提交 | 文件 | 问题 |
+|------|------|------|
+| `388563e` | WorldBuilder.tsx | 世界观结构适配（city/workplace） |
+| `388563e` | OutlineEditor.tsx | 世界观提示适配 |
+| `388563e` | novel.ts | 类型定义兼容新旧结构 |
+| `a3770c6` | NovelDetail.tsx | personality.slice 崩溃修复 |
+| `a3770c6` | ChapterWriter.tsx | characters.slice 崩溃修复 |
+
+### 全面功能检查
+
+Agent Team 执行前端按钮功能全面检查：
+
+| 页面 | 检查按钮数 | 状态 |
+|------|-----------|------|
+| WorldBuilder.tsx | 5 | ✅ 安全 |
+| OutlineEditor.tsx | 4 | ✅ 安全 |
+| ChapterWriter.tsx | 4 | ✅ 修复完成 |
+| NovelDetail.tsx | 3 | ✅ 修复完成 |
+| ValidationReport.tsx | 2 | ✅ 安全 |
+
+### 验收结果
+
+- TypeScript 检查: ✅ 通过
+- Vite 构建: ✅ 成功 (330KB)
+
+---
+
+## 2026-04-13 大纲页面崩溃修复 ✅
+
+### 问题背景
+
+都市言情转型后，OutlineEditor.tsx 多处访问已移除的 `volumes` 字段导致崩溃。
+
+### 修复内容
+
+| 提交 | 文件 | 问题 |
+|------|------|------|
+| `8f0f14d` | novel.ts | Outline 类型适配（volumes 可选 + 新字段） |
+| `8f0f14d` | OutlineEditor.tsx | 多处 volumes.forEach 崩溃修复 |
+
+### 修复详情
+
+| 行号 | 原代码 | 修复 |
+|------|--------|------|
+| 124-126 | `volumes.forEach` | 条件判断 `if (volumes)` |
+| 155 | `parsed.volumes &&` | 只检查 `parsed.chapters` |
+| 233-238 | `volumes.forEach` | 条件判断 |
+| 700-717 | 按卷分组展示 | `hasVolumes` 检测适配两种结构 |
+
+### 新增展示（都市言情）
+
+| 区域 | 字段 | 主题色 |
+|------|------|--------|
+| 感情节奏表 | `emotion_arc` | 粉色 |
+| 爽点计划 | `sweet_points` | 金色 |
+| 核心矛盾 | `main_conflict` | 朱红 |
+
+### 验收结果
+
+- TypeScript 检查: ✅ 通过
+- Vite 构建: ✅ 成功 (334KB)
+
+---
+
+## 2026-04-13 OutlineEditor 崩溃修复 ✅
+
+### 问题背景
+
+点击"下一步"按钮从 WorldBuilder 导航到 OutlineEditor 后，页面崩溃。
+
+### 崩溃原因
+
+OutlineEditor.tsx 中多处 `outline.chapters` 和 `outline.volumes` 直接访问，都市言情版本后这些字段可能不存在或为 null：
+
+| 行号 | 原代码 | 问题 |
+|------|--------|------|
+| 129 | `outlineRes.data.chapters.slice(0, 10)` | 未处理 null |
+| 241 | `pendingOutline.chapters.slice(0, 10)` | 未处理 null |
+| 329 | `outline.chapters.forEach` | 未处理 null |
+| 720 | `outline.chapters.forEach` | 在 hasVolumes 条件后但仍可能崩溃 |
+| 746 | `outline.chapters.length` | 未处理 null |
+| 930 | `outline.chapters.map` | 未处理 null |
+| 829-887 | `outline.volumes!.map` | 强制断言 |
+
+### 修复内容
+
+| 位置 | 修复方法 |
+|------|----------|
+| `chapters.slice` | `(chapters ?? []).slice` |
+| `chapters.forEach` | `if (chapters) { chapters.forEach }` |
+| `chapters.map` | `(chapters ?? []).map` |
+| `chapters.length` | `(chapters ?? []).length` |
+| `volumes!.map` | `(volumes ?? []).map` |
+
+### Git 提交
+
+- commit: `4efcb77`
+
+### 验收结果
+
+- TypeScript 检查: ✅ 通过
+- Vite 构建: ✅ 成功 (334KB)
+
+---
+
+## 2026-04-13 章节生成 SSE API 路径修复 ✅
+
+### 问题背景
+
+点击"AI续写"按钮报错：HTTP 404: Not Found
+
+### 问题原因
+
+前端与后端 API 路径不匹配：
+
+| 前端调用 | 后端路由 |
+|----------|----------|
+| `/api/generation/chapter/stream/${novelId}/${chapterNum}` | `/generation/chapter/stream` |
+
+前端使用路径参数，后端使用 POST body 参数。
+
+### 修复内容
+
+修改 ChapterWriter.tsx handleGenerate 函数：
+
+```typescript
+// 修复前
+client.connect(
+  `/api/generation/chapter/stream/${novelId}/${currentChapterNum}`,
+  { body: JSON.stringify({ outline_context }) }
+)
+
+// 修复后
+client.connect(
+  `/api/generation/chapter/stream`,
+  { body: JSON.stringify({ novel_id, chapter_num, user_special_request }) }
+)
+```
+
+### Git 提交
+
+- commit: `43247d5`
+
+### 验收结果
+
+- TypeScript 检查: ✅ 通过
+- Vite 构建: ✅ 成功 (334KB)
+
+---
+
+## 2026-04-13 章节编写左侧大纲列表显示 ✅
+
+### 问题背景
+
+章节编写页面左侧只显示当前章节的大纲事件，没有显示完整大纲列表。
+
+### 修改内容
+
+| 功能 | 说明 |
+|------|------|
+| 章节列表 | 显示所有章节大纲（最多30章预览） |
+| 当前章节高亮 | 朱砂色边框标记当前所在章节 |
+| 感情阶段 | 显示 emotion_stage（粉色标签） |
+| 爽点标记 | 显示 sweet_point（金色标签） |
+| 点击跳转 | 点击章节卡片可跳转到对应章节 |
+| 本章事件 | 列表下方显示当前章节 key_events |
+| 滚动支持 | 固定高度 + overflow-y-auto |
+
+### 代码变更
+
+- `ChapterWriter.tsx`: +70 行（左侧面板重构）
+
+### Git 提交
+
+- commit: `8b9f014`
+
+### 验收结果
+
+- TypeScript 检查: ✅ 通过
+- Vite 构建: ✅ 成功 (336KB)
+
+---
+
+## 2026-04-13 FEAT-13 章节写作功能补全 ✅
+
+### 问题背景
+
+用户反馈"开始写作的整体内容还是有很多bug，功能也不完善"。
+
+### 完成内容
+
+| 功能 | 优先级 | 说明 |
+|------|--------|------|
+| 章节生成后自动保存 | P0 | handleUseGenerated 改为异步保存 |
+| 大纲上下文注入 | P1 | handleGenerate 添加 outline_context |
+| 左侧感情线进度展示 | P1 | emotion_arc 显示 + 当前阶段高亮 |
+| 章节导航进度指示 | P2 | "第 X / Y 章" + 进度条 |
+
+### 代码变更
+
+- `ChapterWriter.tsx`: +30 行（大纲上下文 + 感情线 + 进度）
+- `docs/products/chapter-writing-completion-brief.md`: 新增 PRD
+- `docs/products/backlog.md`: 新增 FEAT-13
+
+### Git 提交
+
+- commit: `5ffa391`
+
+### 验收结果
+
+- TypeScript 检查: ✅ 通过
+- Vite 构建: ✅ 成功 (338KB)
+
+---
+
+## 2026-04-14 E2E 测试 Mock 移除 ✅
+
+### 问题背景
+
+用户要求"去掉mock的数据"，改用真实 API 测试。
+
+### 完成内容
+
+**test_e2e_api.py 重构**:
+- ✅ 删除 MockAIProviderForE2E 类（约 50 行）
+- ✅ 移除所有 patch 装饰器
+- ✅ 添加 `has_api_key()` 检查函数
+- ✅ 添加 `requires_real_api` pytest 标记
+- ✅ 非 AI 依赖测试正常运行（22 个）
+- ✅ SSE 流测试保持跳过（TestClient 不支持 stream）
+
+### 测试结果
+
+- **22 passed, 3 skipped** ✅
+- test_full_workflow 使用真实 DashScope API（API Key 已配置）
+
+### 设计决策
+
+| 测试类型 | Mock 状态 | 原因 |
+|---------|----------|------|
+| E2E 集成测试 | **移除** | 验证完整流程，需要真实 API |
+| 单元测试 | **保留** | 验证服务层逻辑（JSON 解析），不需要真实 API |
+
+单元测试（test_generation_service.py, test_validation_service.py）保留 MockAIProvider，因为：
+- 测试的是服务层逻辑，不是 API 连通性
+- 运行真实 API 调用成本高、耗时
+- Mock 返回结构化 JSON 用于验证解析正确性
+
+### Git 提交
+
+- commit: `f8eef53`
+
+---
+
+*最后更新: 2026-04-14*
