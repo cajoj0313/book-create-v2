@@ -277,11 +277,19 @@ export async function getChapterList(novelId: string): Promise<ApiResponse<Chapt
 }
 
 /**
- * 获取单个章节
+ * 获取单个章节（404 时返回空数据而不抛异常）
  */
 export async function getChapter(novelId: string, chapterNum: number): Promise<ApiResponse<Chapter>> {
-  const response = await apiClient.get(`/novels/${novelId}/chapters/${chapterNum}`)
-  return response.data
+  try {
+    const response = await apiClient.get(`/novels/${novelId}/chapters/${chapterNum}`)
+    return response.data
+  } catch (error) {
+    // 404 表示章节不存在，返回空数据
+    if ((error as { response?: { status?: number } }).response?.status === 404) {
+      return { success: false, error: 'Chapter not found' }
+    }
+    throw error
+  }
 }
 
 /**
