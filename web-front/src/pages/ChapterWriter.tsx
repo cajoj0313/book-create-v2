@@ -137,7 +137,7 @@ export default function ChapterWriter() {
     }
   }
 
-  // 开始SSE流式生成
+  // 开始SSE流式生成（注入大纲上下文）
   const handleGenerate = useCallback(() => {
     if (!novelId) return
 
@@ -149,6 +149,15 @@ export default function ChapterWriter() {
     const client = new SSEClient()
     sseClientRef.current = client
 
+    // 构建大纲上下文（从fullOutline获取当前章节大纲）
+    const chapterOutline = fullOutline?.chapters?.find(ch => ch.chapter_num === currentChapterNum)
+    const outlineContext = chapterOutline ? {
+      title: chapterOutline.title,
+      key_events: chapterOutline.key_events,
+      emotion_stage: chapterOutline.emotion_stage,
+      emotion_progress: chapterOutline.emotion_progress,
+    } : null
+
     client.connect(
       `/api/generation/chapter/stream`,
       {
@@ -157,6 +166,7 @@ export default function ChapterWriter() {
           novel_id: novelId,
           chapter_num: currentChapterNum,
           user_special_request: null,
+          outline_context: outlineContext,
         }),
       },
       {
@@ -182,7 +192,7 @@ export default function ChapterWriter() {
         },
       }
     )
-  }, [novelId, currentChapterNum])
+  }, [novelId, currentChapterNum, fullOutline])
 
   // 停止生成
   const handleStopGenerate = useCallback(() => {
@@ -220,13 +230,29 @@ export default function ChapterWriter() {
     }
   }
 
-  // 使用生成内容
-  const handleUseGenerated = useCallback(() => {
-    setEditedContent(generatedContent)
-    setShowReviewModal(false)
-    setReviewStatus('approved')
-    setToast({ type: 'success', message: '内容已应用，请保存' })
-  }, [generatedContent])
+  // 使用生成内容（自动保存）
+  const handleUseGenerated = useCallback(async () => {
+    if (!novelId || !generatedContent) return
+
+    try {
+      const response = await updateChapter(novelId, currentChapterNum, generatedContent)
+      if (response.success && response.data) {
+        setEditedContent(generatedContent)
+        setChapter(response.data)
+        setShowReviewModal(false)
+        setReviewStatus('approved')
+        setToast({ type: 'success', message: '内容已自动保存' })
+      } else {
+        setToast({ type: 'error', message: '保存失败，请手动保存' })
+        setEditedContent(generatedContent)
+        setShowReviewModal(false)
+      }
+    } catch {
+      setToast({ type: 'error', message: '保存失败，请手动保存' })
+      setEditedContent(generatedContent)
+      setShowReviewModal(false)
+    }
+  }, [novelId, currentChapterNum, generatedContent])
 
   // 拒绝生成内容
   const handleRejectGenerated = useCallback(() => {
@@ -318,8 +344,23 @@ export default function ChapterWriter() {
             <div className="flex items-center gap-3">
               <div className="seal-lg">{currentChapterNum}</div>
               <div>
-                <h1 className="text-title-xl font-bold text-ink-800">第 {currentChapterNum} 章</h1>
+                <h1 className="text-title-xl font-bold text-ink-800">
+                  第 {currentChapterNum} 章
+                  {allChapterOutlines.length > 0 && (
+                    <span className="text-ink-400 text-title-sm ml-2">/ {allChapterOutlines.length}</span>
+                  )}
+                </h1>
                 {chapter && <p className="text-title-sm text-ink-600">{chapter.title}</p>}
+                {allChapterOutlines.length > 0 && (
+                  <div className="mt-1">
+                    <div className="progress-bar w-32">
+                      <div
+                        className="progress-bar-fill bg-vermilion-gradient"
+                        style={{ width: `${Math.min(100, (currentChapterNum / allChapterOutlines.length) * 100)}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -458,6 +499,40 @@ export default function ChapterWriter() {
                   <span className="font-prose text-sm text-ink-700 ml-2">{tp.event}</span>
                 </div>
               ))}
+            </div>
+          )}
+
+          {/* 感情线进度 */}
+          {fullOutline?.emotion_arc && fullOutline.emotion_arc.length > 0 && (
+            <div className="mt-4 pt-4 border-t border-ink-200">
+              <h3 className="font-title-base text-ink-700 mb-3 flex items-center gap-2">
+                <span className="text-pink-500">♡</span>
+                感情节奏
+              </h3>
+              <div className="space-y-2">
+                {fullOutline.emotion_arc.map((arc, idx) => {
+                  // 判断当前章节是否在此阶段范围内
+                  const rangeMatch = arc.range.match(/(\d+)-(\d+)/)
+                  const isCurrentStage = rangeMatch && currentChapterNum >= parseInt(rangeMatch[1]) && currentChapterNum <= parseInt(rangeMatch[2])
+                  return (
+                    <div
+                      key={idx}
+                      className={`paper-flat p-2 transition-all ${isCurrentStage ? 'bg-pink-50 border-pink-200' : ''}`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className={`seal w-5 h-5 text-title-xs ${isCurrentStage ? 'bg-pink-500' : ''}`}>{idx + 1}</span>
+                        <div className="flex-1 min-w-0">
+                          <div className="font-title-xs text-ink-700 truncate">{arc.stage}</div>
+                          <div className="text-title-xs text-ink-400">{arc.range}章</div>
+                        </div>
+                        {isCurrentStage && (
+                          <span className="badge bg-pink-200 text-pink-800 text-title-xs">当前</span>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
             </div>
           )}
 
