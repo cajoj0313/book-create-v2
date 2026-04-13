@@ -18,7 +18,7 @@ class GenerationService:
             raise ValueError("DASHSCOPE_API_KEY environment variable is required")
         self.ai_provider = AIProviderFactory.create("dashscope", {
             "api_key": api_key,
-            "model": "qwen3.5"
+            "model": "qwen-plus"
         })
 
     async def generate_world_setting(

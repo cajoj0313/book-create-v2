@@ -17,7 +17,7 @@ except ImportError:
 class QwenProvider:
     """通义千问 API Provider"""
 
-    def __init__(self, api_key: str, model: str = "qwen3.5"):
+    def __init__(self, api_key: str, model: str = "qwen-plus"):
         if not DASHSCOPE_AVAILABLE:
             raise ImportError("dashscope is not installed. Run: pip install dashscope")
         self.api_key = api_key
@@ -138,7 +138,7 @@ class AIProviderFactory:
         if provider_type == "dashscope":
             return QwenProvider(
                 api_key=config.get("api_key", ""),
-                model=config.get("model", "qwen3.5")
+                model=config.get("model", "qwen-plus")
             )
         else:
             raise ValueError(f"Unsupported provider type: {provider_type}")

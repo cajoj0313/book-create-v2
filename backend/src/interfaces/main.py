@@ -1,5 +1,12 @@
 """FastAPI Main Application"""
 from contextlib import asynccontextmanager
+from dotenv import load_dotenv
+import os
+
+# 加载环境变量（优先加载 .env.local，然后 .env）
+load_dotenv(".env.local")
+load_dotenv(".env")
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
