@@ -457,4 +457,89 @@ backend/src/
 
 ---
 
+## 2026-04-13 世界观随机生成前端实现 ✅
+
+### 完成内容
+
+**前端 WorldBuilder.tsx 修改**:
+- ✅ 新增 `handleRandomGenerate()` 函数
+- ✅ 新增"AI 随机生成"按钮（indigo 色系）
+- ✅ SSE 请求参数 `random_generate=true`, `genre="都市职场"`
+- ✅ 复用现有 SSE 客户端、JSON 解析、确认对话框
+
+### 代码变更
+
+| 文件 | 变更 | 行数 |
+|------|------|------|
+| `web-front/src/pages/WorldBuilder.tsx` | 新增函数 + 修改按钮布局 | +73 行 |
+
+### 按钮布局
+
+```
+[开始生成] (vermilion)  [AI 随机生成] (indigo)
+```
+
+- streaming 状态：显示"停止生成"按钮
+- connecting 状态：显示加载动画
+- idle 状态：两个按钮都可点击
+
+### Git 提交
+
+- commit: `05aca24`
+
+### 验收状态
+
+- [x] "AI 随机生成"按钮已添加
+- [x] 按钮样式与"开始生成"区分
+- [x] 点击按钮可触发 SSE 请求（带 random_generate=true）
+- [x] 按钮状态管理正确
+- [x] npm run type-check 无错误
+- [x] 代码已 git commit
+
+---
+
+## 2026-04-13 世界观随机生成后端实现 ✅
+
+### 完成内容
+
+**后端 generation_service.py 修改**:
+- ✅ 新增 `_build_random_world_setting_prompt(genre)` 方法
+- ✅ 构建"都市职场"题材随机生成 Prompt
+- ✅ 包含主题选择（职场晋升/商业博弈/创业奋斗/职场爱情）
+- ✅ 复用现有写作风格指南（信息密度/句子结构/过渡衔接）
+- ✅ 修改 `stream_generate_world_setting()` 支持随机生成参数
+- ✅ 新增 `random_generate` 和 `genre` 参数
+
+**后端 api_generation.py 修改**:
+- ✅ 修改 `GenerateWorldSettingRequest` 模型添加随机生成参数
+- ✅ 新增 `random_generate: bool = False`
+- ✅ 新增 `genre: str = "都市职场"`
+- ✅ 修改 `/world-setting/stream` API 接口处理新参数
+- ✅ `user_description` 改为可选（随机生成时可忽略）
+
+### 代码变更
+
+| 文件 | 变更 | 行数 |
+|------|------|------|
+| `backend/src/application/generation_service.py` | 新增 Prompt 方法 + 修改流式方法 | +106 行 |
+| `backend/src/interfaces/api_generation.py` | 新增请求参数 + 修改接口处理 | +11 行 |
+
+### 测试结果
+
+- 后端单元测试：62 passed, 1 skipped ✅
+
+### Git 提交
+
+- commit: `5260922`
+
+### 验收状态
+
+- [x] `_build_random_world_setting_prompt()` 方法已实现
+- [x] `stream_generate_world_setting()` 支持随机生成参数
+- [x] API 接口支持 `random_generate` 参数
+- [x] pytest 测试通过
+- [x] 代码已 git commit
+
+---
+
 *最后更新: 2026-04-13*
