@@ -121,9 +121,11 @@ export default function OutlineEditor() {
         // 初始化展开状态
         const volumesExpand: Record<string, boolean> = {}
         const chaptersExpand: Record<number, boolean> = {}
-        outlineRes.data.volumes.forEach(v => {
-          volumesExpand[v.volume_id] = true
-        })
+        if (outlineRes.data.volumes) {
+          outlineRes.data.volumes.forEach(v => {
+            volumesExpand[v.volume_id] = true
+          })
+        }
         outlineRes.data.chapters.slice(0, 10).forEach(ch => {
           chaptersExpand[ch.chapter_num] = true
         })
@@ -152,7 +154,8 @@ export default function OutlineEditor() {
         jsonContent = jsonMatch[1]
       }
       const parsed = JSON.parse(jsonContent)
-      if (parsed.novel_id && parsed.volumes && parsed.chapters) {
+      // 只检查 chapters 是否存在（兼容武侠和都市言情）
+      if (parsed.chapters && Array.isArray(parsed.chapters)) {
         return parsed
       }
       return null
@@ -230,9 +233,11 @@ export default function OutlineEditor() {
       // 初始化展开状态
       const volumesExpand: Record<string, boolean> = {}
       const chaptersExpand: Record<number, boolean> = {}
-      pendingOutline.volumes.forEach(v => {
-        volumesExpand[v.volume_id] = true
-      })
+      if (pendingOutline.volumes) {
+        pendingOutline.volumes.forEach(v => {
+          volumesExpand[v.volume_id] = true
+        })
+      }
       pendingOutline.chapters.slice(0, 10).forEach(ch => {
         chaptersExpand[ch.chapter_num] = true
       })
@@ -316,9 +321,11 @@ export default function OutlineEditor() {
     const volumesExpand: Record<string, boolean> = {}
     const chaptersExpand: Record<number, boolean> = {}
 
-    outline.volumes.forEach(v => {
-      volumesExpand[v.volume_id] = expand
-    })
+    if (outline.volumes) {
+      outline.volumes.forEach(v => {
+        volumesExpand[v.volume_id] = expand
+      })
+    }
     outline.chapters.forEach(ch => {
       chaptersExpand[ch.chapter_num] = expand
     })
@@ -566,9 +573,19 @@ export default function OutlineEditor() {
 
             <div className="bg-paper-aged rounded-paper-md p-4 mb-6 max-h-48 overflow-y-auto scrollbar-ink">
               <div className="font-prose text-sm text-ink-700">
-                <p className="mb-2"><strong>卷数:</strong> {pendingOutline.volumes.length}</p>
                 <p className="mb-2"><strong>章节数:</strong> {pendingOutline.chapters.length}</p>
-                <p className="mb-2"><strong>第一卷:</strong> {pendingOutline.volumes[0]?.name}</p>
+                {pendingOutline.volumes && pendingOutline.volumes.length > 0 && (
+                  <>
+                    <p className="mb-2"><strong>卷数:</strong> {pendingOutline.volumes.length}</p>
+                    <p className="mb-2"><strong>第一卷:</strong> {pendingOutline.volumes[0]?.name}</p>
+                  </>
+                )}
+                {pendingOutline.emotion_arc && (
+                  <p className="mb-2"><strong>感情节奏:</strong> {pendingOutline.emotion_arc.length} 个阶段</p>
+                )}
+                {pendingOutline.sweet_points && (
+                  <p className="mb-2"><strong>爽点计划:</strong> {pendingOutline.sweet_points.length} 个</p>
+                )}
                 {pendingOutline.foreshadowing_plan && (
                   <p><strong>伏笔计划:</strong> {pendingOutline.foreshadowing_plan.length} 条</p>
                 )}
@@ -696,14 +713,19 @@ function OutlineViewer({
     }
   }
 
-  // 按卷分组章节
+  // 按卷分组章节（武侠修仙版本）
   const chaptersByVolume: Record<string, ChapterOutline[]> = {}
-  outline.chapters.forEach(ch => {
-    if (!chaptersByVolume[ch.volume_id]) {
-      chaptersByVolume[ch.volume_id] = []
-    }
-    chaptersByVolume[ch.volume_id].push(ch)
-  })
+  const hasVolumes = outline.volumes && outline.volumes.length > 0
+
+  if (hasVolumes) {
+    outline.chapters.forEach(ch => {
+      const volId = ch.volume_id || 'default'
+      if (!chaptersByVolume[volId]) {
+        chaptersByVolume[volId] = []
+      }
+      chaptersByVolume[volId].push(ch)
+    })
+  }
 
   return (
     <div className="space-y-8">
@@ -721,15 +743,90 @@ function OutlineViewer({
 
         <div className="flex items-center gap-4 text-ink-600">
           <span className="font-title-sm">共 {outline.chapters.length} 章</span>
-          <span className="font-title-sm">{outline.volumes.length} 卷</span>
+          {hasVolumes && (
+            <span className="font-title-sm">{outline.volumes!.length} 卷</span>
+          )}
           {outline.foreshadowing_plan && (
             <span className="font-title-sm">{outline.foreshadowing_plan.length} 伏笔</span>
           )}
         </div>
       </div>
 
-      {/* 卷划分展示 */}
-      {outline.volumes.map((volume) => (
+      {/* 都市言情版本 - 感情节奏表 */}
+      {outline.emotion_arc && outline.emotion_arc.length > 0 && (
+        <section className="paper p-8">
+          <h2 className="font-title-lg text-ink-800 mb-6 flex items-center gap-3">
+            <div className="w-2 h-8 bg-pink-500 rounded-full" />
+            <span>感情节奏表</span>
+            <span className="badge bg-pink-100 text-pink-800">{outline.emotion_arc.length} 个阶段</span>
+          </h2>
+
+          <div className="space-y-3">
+            {outline.emotion_arc.map((arc, idx) => (
+              <div key={idx} className="paper-flat p-4 flex items-center gap-4">
+                <span className="seal w-8 h-8 bg-pink-500">{idx + 1}</span>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="badge-vermilion">{arc.range}</span>
+                    <span className="font-title-sm text-ink-800">{arc.stage}</span>
+                  </div>
+                  <div className="font-prose text-sm text-ink-600">
+                    <span className="text-pink-600">{arc.emotion}</span> · {arc.description}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* 都市言情版本 - 爽点计划 */}
+      {outline.sweet_points && outline.sweet_points.length > 0 && (
+        <section className="paper p-8">
+          <h2 className="font-title-lg text-ink-800 mb-6 flex items-center gap-3">
+            <div className="w-2 h-8 bg-gold-500 rounded-full" />
+            <span>爽点计划</span>
+            <span className="badge-gold">{outline.sweet_points.length} 个</span>
+          </h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {outline.sweet_points.map((sp, idx) => (
+              <div key={idx} className="paper-flat p-4 float-paper">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="badge-gold">第 {sp.chapter} 章</span>
+                  <span className="text-title-xs text-gold-600">情感值: {sp.emotion_level}/10</span>
+                </div>
+                <div className="font-prose text-sm text-ink-700 mb-1">
+                  <strong>{sp.type}</strong>: {sp.detail}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* 都市言情版本 - 核心矛盾 */}
+      {outline.main_conflict && (
+        <section className="paper p-8">
+          <h2 className="font-title-lg text-ink-800 mb-6 flex items-center gap-3">
+            <div className="w-2 h-8 bg-vermilion-500 rounded-full" />
+            <span>核心矛盾</span>
+          </h2>
+
+          <div className="paper-flat p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="badge-vermilion">{outline.main_conflict.type}</span>
+              {outline.main_conflict.resolve_chapter && (
+                <span className="text-title-xs text-ink-500">解决于第 {outline.main_conflict.resolve_chapter} 章</span>
+              )}
+            </div>
+            <div className="font-prose text-ink-700">{outline.main_conflict.description}</div>
+          </div>
+        </section>
+      )}
+
+      {/* 武侠修仙版本 - 卷划分展示 */}
+      {hasVolumes && outline.volumes!.map((volume) => (
         <section key={volume.volume_id} className="paper p-8">
           {/* 卷标题 */}
           <div className="flex items-center justify-between mb-6">
@@ -740,7 +837,7 @@ function OutlineViewer({
                   <input
                     value={volume.name}
                     onChange={(e) => {
-                      const newVolumes = outline.volumes.map(v =>
+                      const newVolumes = outline.volumes!.map(v =>
                         v.volume_id === volume.volume_id ? { ...v, name: e.target.value } : v
                       )
                       updateField('volumes', newVolumes)
@@ -769,7 +866,7 @@ function OutlineViewer({
               <input
                 value={volume.theme}
                 onChange={(e) => {
-                  const newVolumes = outline.volumes.map(v =>
+                  const newVolumes = outline.volumes!.map(v =>
                     v.volume_id === volume.volume_id ? { ...v, theme: e.target.value } : v
                   )
                   updateField('volumes', newVolumes)
@@ -788,7 +885,7 @@ function OutlineViewer({
               <textarea
                 value={volume.arc_summary}
                 onChange={(e) => {
-                  const newVolumes = outline.volumes.map(v =>
+                  const newVolumes = outline.volumes!.map(v =>
                     v.volume_id === volume.volume_id ? { ...v, arc_summary: e.target.value } : v
                   )
                   updateField('volumes', newVolumes)
@@ -821,7 +918,32 @@ function OutlineViewer({
         </section>
       ))}
 
-      {/* 伏笔计划 */}
+      {/* 都市言情版本 - 直接展示章节列表（无卷分组） */}
+      {!hasVolumes && (
+        <section className="paper p-8">
+          <h2 className="font-title-lg text-ink-800 mb-6 flex items-center gap-3">
+            <div className="w-2 h-8 bg-indigo-500 rounded-full" />
+            <span>章节规划</span>
+          </h2>
+
+          <div className="space-y-4">
+            {outline.chapters.map((chapter) => (
+              <ChapterCard
+                key={chapter.chapter_num}
+                chapter={chapter}
+                editable={editable}
+                expanded={expandState.chapters[chapter.chapter_num]}
+                onToggle={() => onToggleChapter(chapter.chapter_num)}
+                onUpdate={(field, value) => updateChapter(chapter.chapter_num, field, value)}
+                onAddEvent={(event) => addChapterEvent(chapter.chapter_num, event)}
+                onRemoveEvent={(idx) => removeChapterEvent(chapter.chapter_num, idx)}
+              />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* 武侠修仙版本 - 伏笔计划 */}
       {outline.foreshadowing_plan && outline.foreshadowing_plan.length > 0 && (
         <section className="paper p-8">
           <h2 className="font-title-lg text-ink-800 mb-6 flex items-center gap-3">
@@ -905,7 +1027,7 @@ function ChapterCard({
       {/* 章节头部 */}
       <div className="flex items-center justify-between cursor-pointer" onClick={onToggle}>
         <div className="flex items-center gap-3">
-          <div className="seal w-8 h-8">{chapter.chapter_num}</div>
+          <div className={`seal w-8 h-8 ${chapter.sweet_point ? 'bg-gold-500' : ''}`}>{chapter.chapter_num}</div>
           <div>
             {editable ? (
               <input
@@ -917,6 +1039,14 @@ function ChapterCard({
               <span className="font-title-sm text-ink-800">{chapter.title}</span>
             )}
           </div>
+          {/* 都市言情版本 - 感情阶段标记 */}
+          {chapter.emotion_stage && (
+            <span className="badge bg-pink-100 text-pink-800 text-title-xs">{chapter.emotion_stage}</span>
+          )}
+          {/* 爽点章节标记 */}
+          {chapter.sweet_point && (
+            <span className="badge-gold text-title-xs">爽点</span>
+          )}
         </div>
 
         <button className="btn-text text-title-xs">
@@ -927,6 +1057,17 @@ function ChapterCard({
       {/* 章节详情 */}
       {expanded && (
         <div className="mt-4 pt-4 border-t border-ink-200">
+          {/* 都市言情版本 - 感情进度 */}
+          {chapter.emotion_progress && (
+            <div className="mb-4 bg-pink-50 border border-pink-200 p-3 rounded-paper-md">
+              <h4 className="font-title-sm text-pink-700 mb-2 flex items-center gap-2">
+                <span className="text-pink-500">♡</span>
+                感情进度
+              </h4>
+              <span className="font-prose text-sm text-ink-700">{chapter.emotion_progress}</span>
+            </div>
+          )}
+
           {/* 核心事件 */}
           <div className="mb-4">
             <h4 className="font-title-sm text-ink-700 mb-2 flex items-center gap-2">

@@ -134,12 +134,17 @@ export interface CharactersLibrary {
   }
 }
 
-// 章节大纲
+// 章节大纲（都市言情版）
 export interface ChapterOutline {
   chapter_num: number
   title: string
-  volume_id: string
   key_events: string[]
+  // 都市言情新增字段
+  emotion_stage?: string  // 感情阶段
+  emotion_progress?: string  // 感情进度描述
+  sweet_point?: boolean  // 是否为爽点章节
+  // 旧字段兼容（武侠修仙）
+  volume_id?: string
   turning_points?: Array<{
     event: string
     type: string
@@ -156,18 +161,44 @@ export interface ChapterOutline {
   }>
 }
 
+// 大纲（都市言情版）
 export interface Outline {
-  novel_id: string
-  version: number
-  volumes: Array<{
+  novel_id?: string
+  version?: number
+  genre?: string
+  // 都市言情新增字段
+  emotion_arc?: Array<{
+    range: string
+    stage: string
+    emotion: string
+    description: string
+  }>
+  sweet_points?: Array<{
+    chapter: number
+    type: string
+    detail: string
+    emotion_level: number
+  }>
+  chapters: ChapterOutline[]
+  main_conflict?: {
+    type: string
+    description: string
+    resolve_chapter?: number
+  }
+  // 旧字段兼容（武侠修仙）
+  volumes?: Array<{
     volume_id: string
     name: string
     chapters_range: { start: number; end: number }
     theme: string
     arc_summary: string
   }>
-  chapters: ChapterOutline[]
   foreshadowing_plan?: ForeshadowingPlan[]
+  character_growth_curve?: Array<{
+    chapter_range: string
+    character_id: string
+    growth: string
+  }>
 }
 
 // 伏笔计划
