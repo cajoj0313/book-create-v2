@@ -153,7 +153,7 @@ async def update_novel(novel_id: str, data: dict):
 
 # ==================== 世界观 ====================
 
-@router.get("/{novel_id}/world-setting/")
+@router.get("/{novel_id}/world-setting")
 async def get_world_setting(novel_id: str):
     """获取世界观设定"""
     from ..infrastructure.storage import FileStorage
@@ -199,7 +199,7 @@ async def update_world_setting(novel_id: str, data: dict):
 
 # ==================== 人物 ====================
 
-@router.get("/{novel_id}/characters/")
+@router.get("/{novel_id}/characters")
 async def get_characters(novel_id: str):
     """获取人物库"""
     from ..infrastructure.storage import FileStorage
@@ -226,7 +226,7 @@ class CreateCharacterRequest(BaseModel):
     goals: List[str] = []
 
 
-@router.post("/{novel_id}/characters/")
+@router.post("/{novel_id}/characters")
 async def create_character(novel_id: str, request: CreateCharacterRequest):
     """创建人物"""
     from ..infrastructure.storage import FileStorage
@@ -271,7 +271,7 @@ async def create_character(novel_id: str, request: CreateCharacterRequest):
     return {"success": True, "data": new_character}
 
 
-@router.put("/{novel_id}/characters/{character_id}/")
+@router.put("/{novel_id}/characters/{character_id}")
 async def update_character(novel_id: str, character_id: str, data: dict):
     """更新人物"""
     from ..infrastructure.storage import FileStorage
@@ -309,7 +309,7 @@ async def update_character(novel_id: str, character_id: str, data: dict):
     raise HTTPException(status_code=404, detail="Character not found")
 
 
-@router.delete("/{novel_id}/characters/{character_id}/")
+@router.delete("/{novel_id}/characters/{character_id}")
 async def delete_character(novel_id: str, character_id: str):
     """删除人物"""
     from ..infrastructure.storage import FileStorage
@@ -439,7 +439,7 @@ async def get_chapter(novel_id: str, chapter_num: int):
     return {"success": True, "data": chapter}
 
 
-@router.put("/{novel_id}/chapters/{chapter_num}/")
+@router.put("/{novel_id}/chapters/{chapter_num}")
 async def update_chapter(novel_id: str, chapter_num: int, data: dict):
     """更新章节"""
     from ..infrastructure.storage import FileStorage
@@ -482,7 +482,7 @@ async def update_chapter(novel_id: str, chapter_num: int, data: dict):
     return {"success": True, "data": chapter_data}
 
 
-@router.delete("/{novel_id}/chapters/{chapter_num}/")
+@router.delete("/{novel_id}/chapters/{chapter_num}")
 async def delete_chapter(novel_id: str, chapter_num: int):
     """删除章节"""
     from ..infrastructure.storage import FileStorage
