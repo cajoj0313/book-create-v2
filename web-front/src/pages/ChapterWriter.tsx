@@ -108,7 +108,8 @@ export default function ChapterWriter() {
         setEditedContent(chapterRes.data.content)
         setGeneratedContent('')
       } else {
-        setChapter({
+        // 章节不存在，创建空章节（用户可点击 AI 续写生成）
+        const emptyChapter: Chapter = {
           novel_id: id,
           chapter_num: num,
           title: `第${num}章`,
@@ -116,8 +117,11 @@ export default function ChapterWriter() {
           created_at: new Date().toISOString(),
           content: '',
           word_count: 0,
-        })
+        }
+        setChapter(emptyChapter)
         setEditedContent('')
+        // 提示用户章节尚未生成（友好提示）
+        setToast({ type: 'warning', message: '章节尚未生成，点击 AI 续写开始创作' })
       }
 
       // 加载大纲
@@ -597,6 +601,23 @@ export default function ChapterWriter() {
 
           {/* 内容编辑器 */}
           <div className="p-8">
+            {/* 空章节提示 */}
+            {!chapter?.content && generateStatus === 'idle' && (
+              <div className="mb-6 paper-flat p-6 border-ink-200">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center">
+                    <span className="text-indigo-500 text-2xl">✎</span>
+                  </div>
+                  <div>
+                    <h3 className="font-title-base text-ink-700">章节尚未生成</h3>
+                    <p className="text-title-sm text-ink-500 mt-1">
+                      点击右上角「AI 续写」按钮开始创作，或手动输入内容
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {generateStatus === 'streaming' || generateStatus === 'completed' ? (
               // 流式显示区
               <div className="min-h-[600px] font-writing text-writing-lg leading-[2.2] whitespace-pre-wrap text-ink-800">
