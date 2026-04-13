@@ -112,7 +112,7 @@ export async function getNovelList(): Promise<ApiResponse<NovelMeta[]>> {
  * 获取小说详情
  */
 export async function getNovelDetail(novelId: string): Promise<ApiResponse<NovelMeta>> {
-  const response = await apiClient.get(`/novels/${novelId}/`)
+  const response = await apiClient.get(`/novels/${novelId}`)
   return response.data
 }
 
@@ -133,7 +133,7 @@ export async function createNovel(data: {
  * 更新小说元信息
  */
 export async function updateNovel(novelId: string, data: Partial<NovelMeta>): Promise<ApiResponse<NovelMeta>> {
-  const response = await apiClient.put(`/novels/${novelId}/`, data)
+  const response = await apiClient.put(`/novels/${novelId}`, data)
   return response.data
 }
 
@@ -141,7 +141,7 @@ export async function updateNovel(novelId: string, data: Partial<NovelMeta>): Pr
  * 删除小说
  */
 export async function deleteNovel(novelId: string): Promise<ApiResponse<void>> {
-  const response = await apiClient.delete(`/novels/${novelId}/`)
+  const response = await apiClient.delete(`/novels/${novelId}`)
   return response.data
 }
 
@@ -151,7 +151,7 @@ export async function deleteNovel(novelId: string): Promise<ApiResponse<void>> {
  * 获取世界观设定
  */
 export async function getWorldSetting(novelId: string): Promise<ApiResponse<WorldSetting>> {
-  const response = await apiClient.get(`/novels/${novelId}/world-setting/`)
+  const response = await apiClient.get(`/novels/${novelId}/world-setting`)
   return response.data
 }
 
@@ -159,7 +159,7 @@ export async function getWorldSetting(novelId: string): Promise<ApiResponse<Worl
  * 更新世界观设定
  */
 export async function updateWorldSetting(novelId: string, data: Partial<WorldSetting>): Promise<ApiResponse<WorldSetting>> {
-  const response = await apiClient.put(`/novels/${novelId}/world-setting/`, data)
+  const response = await apiClient.put(`/novels/${novelId}/world-setting`, data)
   return response.data
 }
 
@@ -173,7 +173,7 @@ export function getWorldSettingStreamConfig(
   storyPreference?: string
 ): { url: string; body: Record<string, unknown> } {
   return {
-    url: `${API_BASE}/generation/world-setting/stream/`,
+    url: `${API_BASE}/generation/world-setting/stream`,
     body: {
       novel_id: novelId,
       user_description: description,
@@ -195,7 +195,7 @@ export function getWorldSettingStreamUrl(novelId: string, description: string): 
  * 获取人物库
  */
 export async function getCharacters(novelId: string): Promise<ApiResponse<CharactersLibrary>> {
-  const response = await apiClient.get(`/novels/${novelId}/characters/`)
+  const response = await apiClient.get(`/novels/${novelId}/characters`)
   return response.data
 }
 
@@ -203,7 +203,7 @@ export async function getCharacters(novelId: string): Promise<ApiResponse<Charac
  * 添加人物
  */
 export async function addCharacter(novelId: string, character: Partial<Character>): Promise<ApiResponse<Character>> {
-  const response = await apiClient.post(`/novels/${novelId}/characters/`, character)
+  const response = await apiClient.post(`/novels/${novelId}/characters`, character)
   return response.data
 }
 
@@ -211,7 +211,7 @@ export async function addCharacter(novelId: string, character: Partial<Character
  * 更新人物
  */
 export async function updateCharacter(novelId: string, characterId: string, data: Partial<Character>): Promise<ApiResponse<Character>> {
-  const response = await apiClient.put(`/novels/${novelId}/characters/${characterId}/`, data)
+  const response = await apiClient.put(`/novels/${novelId}/characters/${characterId}`, data)
   return response.data
 }
 
@@ -219,7 +219,7 @@ export async function updateCharacter(novelId: string, characterId: string, data
  * 删除人物
  */
 export async function deleteCharacter(novelId: string, characterId: string): Promise<ApiResponse<void>> {
-  const response = await apiClient.delete(`/novels/${novelId}/characters/${characterId}/`)
+  const response = await apiClient.delete(`/novels/${novelId}/characters/${characterId}`)
   return response.data
 }
 
@@ -229,7 +229,7 @@ export async function deleteCharacter(novelId: string, characterId: string): Pro
  * 获取大纲
  */
 export async function getOutline(novelId: string): Promise<ApiResponse<Outline>> {
-  const response = await apiClient.get(`/novels/${novelId}/outline/`)
+  const response = await apiClient.get(`/novels/${novelId}/outline`)
   return response.data
 }
 
@@ -237,7 +237,7 @@ export async function getOutline(novelId: string): Promise<ApiResponse<Outline>>
  * 更新大纲
  */
 export async function updateOutline(novelId: string, data: Partial<Outline>): Promise<ApiResponse<Outline>> {
-  const response = await apiClient.put(`/novels/${novelId}/outline/`, data)
+  const response = await apiClient.put(`/novels/${novelId}/outline`, data)
   return response.data
 }
 
@@ -250,7 +250,7 @@ export function getOutlineStreamConfig(
   preferences?: { story_preference?: string; pacing_preference?: string }
 ): { url: string; body: Record<string, unknown> } {
   return {
-    url: `${API_BASE}/generation/outline/stream/`,
+    url: `${API_BASE}/generation/outline/stream`,
     body: {
       novel_id: novelId,
       target_chapters: targetChapters,
@@ -272,7 +272,7 @@ export function getOutlineStreamUrl(novelId: string): string {
  * 获取章节列表
  */
 export async function getChapterList(novelId: string): Promise<ApiResponse<Chapter[]>> {
-  const response = await apiClient.get(`/novels/${novelId}/chapters/`)
+  const response = await apiClient.get(`/novels/${novelId}/chapters`)
   return response.data
 }
 
@@ -280,7 +280,7 @@ export async function getChapterList(novelId: string): Promise<ApiResponse<Chapt
  * 获取单个章节
  */
 export async function getChapter(novelId: string, chapterNum: number): Promise<ApiResponse<Chapter>> {
-  const response = await apiClient.get(`/novels/${novelId}/chapters/${chapterNum}/`)
+  const response = await apiClient.get(`/novels/${novelId}/chapters/${chapterNum}`)
   return response.data
 }
 
@@ -288,7 +288,7 @@ export async function getChapter(novelId: string, chapterNum: number): Promise<A
  * 更新章节内容
  */
 export async function updateChapter(novelId: string, chapterNum: number, content: string): Promise<ApiResponse<Chapter>> {
-  const response = await apiClient.put(`/novels/${novelId}/chapters/${chapterNum}/`, { content })
+  const response = await apiClient.put(`/novels/${novelId}/chapters/${chapterNum}`, { content })
   return response.data
 }
 
@@ -296,7 +296,7 @@ export async function updateChapter(novelId: string, chapterNum: number, content
  * 删除章节
  */
 export async function deleteChapter(novelId: string, chapterNum: number): Promise<ApiResponse<void>> {
-  const response = await apiClient.delete(`/novels/${novelId}/chapters/${chapterNum}/`)
+  const response = await apiClient.delete(`/novels/${novelId}/chapters/${chapterNum}`)
   return response.data
 }
 
@@ -309,7 +309,7 @@ export function getChapterStreamConfig(
   outlineContext?: { key_events?: string[]; turning_points?: unknown[] }
 ): { url: string; body: Record<string, unknown> } {
   return {
-    url: `${API_BASE}/generation/chapter/stream/`,
+    url: `${API_BASE}/generation/chapter/stream`,
     body: {
       novel_id: novelId,
       chapter_num: chapterNum,
@@ -331,7 +331,7 @@ export function getChapterStreamUrl(novelId: string, chapterNum: number): string
  * 执行单章校验
  */
 export async function validateChapter(novelId: string, chapterNum: number): Promise<ApiResponse<ValidationReport>> {
-  const response = await apiClient.post(`/novels/${novelId}/chapters/${chapterNum}/validate/`)
+  const response = await apiClient.post(`/novels/${novelId}/chapters/${chapterNum}/validate`)
   return response.data
 }
 
@@ -339,7 +339,7 @@ export async function validateChapter(novelId: string, chapterNum: number): Prom
  * 执行全书校验
  */
 export async function validateNovel(novelId: string): Promise<ApiResponse<ValidationReport[]>> {
-  const response = await apiClient.post(`/novels/${novelId}/validate/`)
+  const response = await apiClient.post(`/novels/${novelId}/validate`)
   return response.data
 }
 
@@ -358,7 +358,7 @@ export async function getValidationReport(novelId: string, chapterNum?: number):
  * 应用校验修正
  */
 export async function applyValidationFix(novelId: string, issueId: string): Promise<ApiResponse<void>> {
-  const response = await apiClient.post(`/novels/${novelId}/validation/fix/${issueId}/`)
+  const response = await apiClient.post(`/novels/${novelId}/validation/fix/${issueId}`)
   return response.data
 }
 
@@ -368,7 +368,7 @@ export async function applyValidationFix(novelId: string, issueId: string): Prom
  * 获取时间线状态
  */
 export async function getTimeline(novelId: string): Promise<ApiResponse<TimelineState>> {
-  const response = await apiClient.get(`/state/${novelId}/timeline/`)
+  const response = await apiClient.get(`/state/${novelId}/timeline`)
   return response.data
 }
 
@@ -376,7 +376,7 @@ export async function getTimeline(novelId: string): Promise<ApiResponse<Timeline
  * 更新时间线状态
  */
 export async function updateTimeline(novelId: string, data: Partial<TimelineState>): Promise<ApiResponse<TimelineState>> {
-  const response = await apiClient.put(`/state/${novelId}/timeline/`, data)
+  const response = await apiClient.put(`/state/${novelId}/timeline`, data)
   return response.data
 }
 
@@ -384,7 +384,7 @@ export async function updateTimeline(novelId: string, data: Partial<TimelineStat
  * 获取人物状态列表
  */
 export async function getCharacterStates(novelId: string): Promise<ApiResponse<CharacterState[]>> {
-  const response = await apiClient.get(`/state/${novelId}/character-states/`)
+  const response = await apiClient.get(`/state/${novelId}/character-states`)
   return response.data
 }
 
@@ -392,7 +392,7 @@ export async function getCharacterStates(novelId: string): Promise<ApiResponse<C
  * 更新人物状态
  */
 export async function updateCharacterState(novelId: string, charId: string, updates: Partial<CharacterState>): Promise<ApiResponse<CharacterState>> {
-  const response = await apiClient.put(`/state/${novelId}/character-states/${charId}/`, updates)
+  const response = await apiClient.put(`/state/${novelId}/character-states/${charId}`, updates)
   return response.data
 }
 
@@ -400,7 +400,7 @@ export async function updateCharacterState(novelId: string, charId: string, upda
  * 获取伏笔状态列表
  */
 export async function getForeshadowingState(novelId: string): Promise<ApiResponse<ForeshadowingState>> {
-  const response = await apiClient.get(`/state/${novelId}/foreshadowing/`)
+  const response = await apiClient.get(`/state/${novelId}/foreshadowing`)
   return response.data
 }
 
@@ -408,7 +408,7 @@ export async function getForeshadowingState(novelId: string): Promise<ApiRespons
  * 更新伏笔状态
  */
 export async function updateForeshadowingState(novelId: string, fsId: string, updates: Partial<ForeshadowingItem>): Promise<ApiResponse<ForeshadowingItem>> {
-  const response = await apiClient.put(`/state/${novelId}/foreshadowing/${fsId}/`, updates)
+  const response = await apiClient.put(`/state/${novelId}/foreshadowing/${fsId}`, updates)
   return response.data
 }
 
@@ -425,11 +425,11 @@ export const novelApi = {
 
   getNovel: async (novelId: string): Promise<Novel> => {
     const [metaRes, worldRes, charactersRes, outlineRes, chaptersRes] = await Promise.all([
-      apiClient.get(`/novels/${novelId}/`),
-      apiClient.get(`/novels/${novelId}/world-setting/`),
-      apiClient.get(`/novels/${novelId}/characters/`),
-      apiClient.get(`/novels/${novelId}/outline/`),
-      apiClient.get(`/novels/${novelId}/chapters/`),
+      apiClient.get(`/novels/${novelId}`),
+      apiClient.get(`/novels/${novelId}/world-setting`),
+      apiClient.get(`/novels/${novelId}/characters`),
+      apiClient.get(`/novels/${novelId}/outline`),
+      apiClient.get(`/novels/${novelId}/chapters`),
     ])
     return {
       meta: metaRes.data.data,
@@ -446,7 +446,7 @@ export const novelApi = {
   },
 
   updateNovel: async (novelId: string, data: Partial<NovelMeta>): Promise<NovelMeta> => {
-    const response = await apiClient.put(`/novels/${novelId}/`, data)
+    const response = await apiClient.put(`/novels/${novelId}`, data)
     return response.data.data
   },
 
@@ -456,12 +456,12 @@ export const novelApi = {
 
   // 人物管理
   addCharacter: async (novelId: string, character: Partial<Character>): Promise<Character> => {
-    const response = await apiClient.post(`/novels/${novelId}/characters/`, character)
+    const response = await apiClient.post(`/novels/${novelId}/characters`, character)
     return response.data.data
   },
 
   updateCharacter: async (novelId: string, characterId: string, data: Partial<Character>): Promise<Character> => {
-    const response = await apiClient.put(`/novels/${novelId}/characters/${characterId}/`, data)
+    const response = await apiClient.put(`/novels/${novelId}/characters/${characterId}`, data)
     return response.data.data
   },
 
