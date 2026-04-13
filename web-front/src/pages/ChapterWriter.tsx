@@ -12,7 +12,7 @@ import { useEffect, useState, useRef, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { SSEClient } from '@services/sse-client'
 import { getChapter, updateChapter, getOutline, getCharacters, deleteChapter } from '@services/api'
-import type { Chapter, ChapterOutline, Character } from '@/types/novel'
+import type { Chapter, Character, Outline } from '@/types/novel'
 
 // 流式生成状态
 type GenerateStatus = 'idle' | 'connecting' | 'streaming' | 'completed' | 'error'
@@ -29,7 +29,7 @@ export default function ChapterWriter() {
 
   // 章节数据
   const [chapter, setChapter] = useState<Chapter | null>(null)
-  const [outline, setOutline] = useState<ChapterOutline | null>(null)
+  const [fullOutline, setFullOutline] = useState<Outline | null>(null) // 完整大纲
   const [characters, setCharacters] = useState<Character[]>([])
 
   // 编辑内容
@@ -123,8 +123,7 @@ export default function ChapterWriter() {
       // 加载大纲
       const outlineRes = await getOutline(id)
       if (outlineRes.success && outlineRes.data) {
-        const chapterOutline = outlineRes.data.chapters.find(ch => ch.chapter_num === num)
-        setOutline(chapterOutline || null)
+        setFullOutline(outlineRes.data)
       }
 
       // 加载人物
@@ -293,8 +292,12 @@ export default function ChapterWriter() {
 
   const wordCount = displayContent.length
 
-  // 大纲事件列表
-  const outlineEvents = outline?.key_events || []
+  // 当前章节大纲
+  const currentChapterOutline = fullOutline?.chapters?.find(ch => ch.chapter_num === currentChapterNum)
+  const outlineEvents = currentChapterOutline?.key_events || []
+
+  // 所有章节大纲（用于左侧列表）
+  const allChapterOutlines = fullOutline?.chapters || []
 
   return (
     <div className="min-h-screen bg-paper-cream">
@@ -376,37 +379,81 @@ export default function ChapterWriter() {
       </header>
 
       <main className="max-w-7xl mx-auto px-6 py-8 flex gap-8">
-        {/* 左侧：大纲事件面板 */}
-        <aside className="w-72 paper p-6">
+        {/* 左侧：大纲面板 */}
+        <aside className="w-72 paper p-6 h-[calc(100vh-120px)] overflow-y-auto">
           <h2 className="font-title-lg text-ink-800 mb-6 flex items-center gap-2">
             <div className="w-1.5 h-6 bg-indigo-500 rounded-full" />
-            本章大纲
+            章节大纲
           </h2>
 
-          {outlineEvents.length > 0 ? (
-            <div className="space-y-3">
-              {outlineEvents.map((event, idx) => (
-                <div key={idx} className="paper-flat p-4">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="seal w-6 h-6 text-title-xs">{idx + 1}</span>
-                    <span className="font-title-sm text-ink-700">{event}</span>
+          {/* 章节列表 */}
+          {allChapterOutlines.length > 0 ? (
+            <div className="space-y-2">
+              {allChapterOutlines.slice(0, 30).map((chOutline) => (
+                <div
+                  key={chOutline.chapter_num}
+                  onClick={() => navigate(`/novels/${novelId}/chapters/${chOutline.chapter_num}`)}
+                  className={`paper-flat p-3 cursor-pointer transition-all ${
+                    chOutline.chapter_num === currentChapterNum
+                      ? 'border-vermilion-300 bg-vermilion-50'
+                      : 'hover:bg-paper-grey'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <span className={`seal w-6 h-6 text-title-xs ${
+                      chOutline.chapter_num === currentChapterNum ? 'bg-vermilion-500' : ''
+                    }`}>{chOutline.chapter_num}</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-title-sm text-ink-800 truncate">{chOutline.title}</div>
+                      {chOutline.emotion_stage && (
+                        <span className="badge bg-pink-100 text-pink-800 text-title-xs">{chOutline.emotion_stage}</span>
+                      )}
+                      {chOutline.sweet_point && (
+                        <span className="badge-gold text-title-xs ml-1">爽点</span>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}
+              {allChapterOutlines.length > 30 && (
+                <div className="text-center text-ink-400 text-title-xs py-2">
+                  共 {allChapterOutlines.length} 章
+                </div>
+              )}
             </div>
           ) : (
-            <p className="text-ink-400 font-prose">暂无大纲事件</p>
+            <p className="text-ink-400 font-prose">暂无大纲数据</p>
+          )}
+
+          {/* 当前章节大纲事件 */}
+          {outlineEvents.length > 0 && (
+            <div className="mt-6 pt-6 border-t border-ink-200">
+              <h3 className="font-title-base text-ink-700 mb-4 flex items-center gap-2">
+                <div className="w-1 h-4 bg-vermilion-500 rounded-full" />
+                本章事件
+              </h3>
+              <div className="space-y-2">
+                {outlineEvents.map((event, idx) => (
+                  <div key={idx} className="paper-flat p-3">
+                    <div className="flex items-center gap-2">
+                      <span className="seal w-5 h-5 text-title-xs">{idx + 1}</span>
+                      <span className="font-prose text-sm text-ink-700">{event}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           )}
 
           {/* 转折点 */}
-          {outline?.turning_points && outline.turning_points.length > 0 && (
-            <div className="mt-6 pt-6 border-t border-ink-200">
-              <h3 className="font-title-base text-ink-700 mb-4 flex items-center gap-2">
+          {currentChapterOutline?.turning_points && currentChapterOutline.turning_points.length > 0 && (
+            <div className="mt-4 pt-4 border-t border-ink-200">
+              <h3 className="font-title-base text-ink-700 mb-3 flex items-center gap-2">
                 <span className="text-gold-500">◆</span>
                 转折点
               </h3>
-              {outline.turning_points.map((tp, idx) => (
-                <div key={idx} className="bg-gold-50 border border-gold-200 p-4 rounded-paper-md mb-2">
+              {currentChapterOutline.turning_points.map((tp, idx) => (
+                <div key={idx} className="bg-gold-50 border border-gold-200 p-3 rounded-paper-md mb-2">
                   <span className="font-title-xs text-gold-700">{tp.type}:</span>
                   <span className="font-prose text-sm text-ink-700 ml-2">{tp.event}</span>
                 </div>
@@ -416,8 +463,8 @@ export default function ChapterWriter() {
 
           {/* 人物状态提示 */}
           {characters.length > 0 && (
-            <div className="mt-6 pt-6 border-t border-ink-200">
-              <h3 className="font-title-base text-ink-700 mb-4">出场人物</h3>
+            <div className="mt-4 pt-4 border-t border-ink-200">
+              <h3 className="font-title-base text-ink-700 mb-3">出场人物</h3>
               <div className="flex flex-wrap gap-2">
                 {(characters ?? []).slice(0, 8).map(c => (
                   <span key={c.character_id} className="badge-ink">{c.name}</span>
