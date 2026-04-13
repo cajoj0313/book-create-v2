@@ -326,11 +326,19 @@ async def delete_character(novel_id: str, character_id: str):
         if char["character_id"] == character_id:
             deleted_char = characters_data["characters"].pop(i)
 
-            # 同时删除相关关系
+            # 同时删除相关关系（关系图）
             characters_data["relationship_graph"]["edges"] = [
                 edge for edge in characters_data["relationship_graph"]["edges"]
                 if edge["from"] != character_id and edge["to"] != character_id
             ]
+
+            # 同时清理其他人物的个人关系列表
+            for other_char in characters_data["characters"]:
+                if "relationships" in other_char:
+                    other_char["relationships"] = [
+                        rel for rel in other_char["relationships"]
+                        if rel.get("target_id") != character_id
+                    ]
 
             characters_data["version"] = characters_data.get("version", 1) + 1
             storage.save_json(novel_id, "characters.json", characters_data)

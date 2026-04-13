@@ -9,8 +9,8 @@
 
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
-import { novelApi, getOutline } from '@services/api'
-import type { Novel, Character, Outline, ForeshadowingPlan } from '@/types/novel'
+import { novelApi, getOutline, getForeshadowingState, updateForeshadowingState, addCharacter, updateCharacter, deleteCharacter } from '@services/api'
+import type { Novel, Character, Outline, ForeshadowingPlan, ForeshadowingItem, ForeshadowingState } from '@/types/novel'
 
 // 关系类型颜色映射
 const RELATION_COLORS: Record<string, string> = {
@@ -42,6 +42,26 @@ export default function NovelDetail() {
   // 大纲详情（用于伏笔信息）
   const [outline, setOutline] = useState<Outline | null>(null)
 
+  // 弹窗状态
+  const [characterModal, setCharacterModal] = useState<{
+    open: boolean
+    mode: 'add' | 'edit'
+    character?: Character
+  }>({ open: false, mode: 'add' })
+  const [foreshadowingModal, setForeshadowingModal] = useState<{
+    open: boolean
+    item?: ForeshadowingItem
+  }>({ open: false })
+  const [deleteConfirm, setDeleteConfirm] = useState<{
+    open: boolean
+    type: 'character' | 'foreshadowing'
+    id: string
+    name: string
+  }>({ open: false, type: 'character', id: '', name: '' })
+
+  // 伏笔状态数据
+  const [foreshadowingState, setForeshadowingState] = useState<ForeshadowingState | null>(null)
+
   useEffect(() => {
     if (novelId) {
       loadNovelData(novelId)
@@ -62,10 +82,62 @@ export default function NovelDetail() {
         setOutline(outlineRes.data)
       }
 
+      // 加载伏笔状态
+      const fsStateRes = await getForeshadowingState(id)
+      if (fsStateRes.success && fsStateRes.data) {
+        setForeshadowingState(fsStateRes.data)
+      }
+
     } catch (err) {
       console.error('Failed to load novel:', err)
     } finally {
       setLoading(false)
+    }
+  }
+
+  // 刷新人物数据
+  async function refreshCharacters() {
+    if (!novelId) return
+    const data = await novelApi.getNovel(novelId)
+    setNovel(data)
+  }
+
+  // 刷新伏笔状态数据
+  async function refreshForeshadowing() {
+    if (!novelId) return
+    const fsStateRes = await getForeshadowingState(novelId)
+    if (fsStateRes.success && fsStateRes.data) {
+      setForeshadowingState(fsStateRes.data)
+    }
+    // 同时刷新大纲（伏笔计划）
+    const outlineRes = await getOutline(novelId)
+    if (outlineRes.success && outlineRes.data) {
+      setOutline(outlineRes.data)
+    }
+  }
+
+  // 删除人物
+  async function handleDeleteCharacter(charId: string) {
+    if (!novelId) return
+    try {
+      await deleteCharacter(novelId, charId)
+      await refreshCharacters()
+      setDeleteConfirm({ open: false, type: 'character', id: '', name: '' })
+    } catch (err) {
+      console.error('Failed to delete character:', err)
+    }
+  }
+
+  // 删除伏笔（标记为已回收或删除）
+  async function handleDeleteForeshadowing(fsId: string) {
+    if (!novelId) return
+    try {
+      // 将伏笔标记为已回收
+      await updateForeshadowingState(novelId, fsId, { status: 'recycled' })
+      await refreshForeshadowing()
+      setDeleteConfirm({ open: false, type: 'foreshadowing', id: '', name: '' })
+    } catch (err) {
+      console.error('Failed to update foreshadowing:', err)
     }
   }
 
@@ -162,6 +234,10 @@ export default function NovelDetail() {
           <CharactersTab
             characters={characters}
             relationships={relationshipEdges}
+            novelId={novelId!}
+            onEditCharacter={(char) => setCharacterModal({ open: true, mode: 'edit', character: char })}
+            onAddCharacter={() => setCharacterModal({ open: true, mode: 'add' })}
+            onDeleteCharacter={(char) => setDeleteConfirm({ open: true, type: 'character', id: char.character_id, name: char.name })}
           />
         )}
 
@@ -169,10 +245,57 @@ export default function NovelDetail() {
         {activeTab === 'foreshadowing' && (
           <ForeshadowingTab
             foreshadowings={foreshadowingPlan}
+            foreshadowingState={foreshadowingState}
             completedChapters={meta.completed_chapters}
+            novelId={novelId!}
+            onEditForeshadowing={(item) => setForeshadowingModal({ open: true, item })}
+            onDeleteForeshadowing={(item) => setDeleteConfirm({ open: true, type: 'foreshadowing', id: item.id, name: item.hint })}
           />
         )}
       </main>
+
+      {/* 人物编辑弹窗 */}
+      {characterModal.open && (
+        <CharacterModal
+          novelId={novelId!}
+          mode={characterModal.mode}
+          character={characterModal.character}
+          onClose={() => setCharacterModal({ open: false, mode: 'add' })}
+          onSuccess={() => {
+            setCharacterModal({ open: false, mode: 'add' })
+            refreshCharacters()
+          }}
+        />
+      )}
+
+      {/* 伏笔编辑弹窗 */}
+      {foreshadowingModal.open && foreshadowingModal.item && (
+        <ForeshadowingModal
+          novelId={novelId!}
+          item={foreshadowingModal.item}
+          onClose={() => setForeshadowingModal({ open: false })}
+          onSuccess={() => {
+            setForeshadowingModal({ open: false })
+            refreshForeshadowing()
+          }}
+        />
+      )}
+
+      {/* 删除确认弹窗 */}
+      {deleteConfirm.open && (
+        <DeleteConfirmModal
+          type={deleteConfirm.type}
+          name={deleteConfirm.name}
+          onCancel={() => setDeleteConfirm({ open: false, type: 'character', id: '', name: '' })}
+          onConfirm={() => {
+            if (deleteConfirm.type === 'character') {
+              handleDeleteCharacter(deleteConfirm.id)
+            } else {
+              handleDeleteForeshadowing(deleteConfirm.id)
+            }
+          }}
+        />
+      )}
     </div>
   )
 }
@@ -376,9 +499,17 @@ function ActionButton({
 function CharactersTab({
   characters,
   relationships,
+  novelId: _novelId,
+  onEditCharacter,
+  onAddCharacter,
+  onDeleteCharacter,
 }: {
   characters: Character[]
   relationships: Array<{ from: string; to: string; type: string; strength: number }>
+  novelId: string
+  onEditCharacter: (char: Character) => void
+  onAddCharacter: () => void
+  onDeleteCharacter: (char: Character) => void
 }) {
   // 人物ID到名字的映射
   const characterMap = new Map<string, Character>()
@@ -448,11 +579,24 @@ function CharactersTab({
 
       {/* 人物列表 */}
       <div className="bg-white rounded-lg shadow-sm p-6">
-        <h2 className="font-semibold mb-4">人物列表</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="font-semibold">人物列表</h2>
+          <button
+            onClick={onAddCharacter}
+            className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+          >
+            添加人物
+          </button>
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {characters.map((char) => (
-            <CharacterCard key={char.character_id} character={char} />
+            <CharacterCard
+              key={char.character_id}
+              character={char}
+              onEdit={() => onEditCharacter(char)}
+              onDelete={() => onDeleteCharacter(char)}
+            />
           ))}
         </div>
       </div>
@@ -461,7 +605,15 @@ function CharactersTab({
 }
 
 // 人物卡片
-function CharacterCard({ character }: { character: Character }) {
+function CharacterCard({
+  character,
+  onEdit,
+  onDelete,
+}: {
+  character: Character
+  onEdit: () => void
+  onDelete: () => void
+}) {
   const roleColors: Record<string, string> = {
     '主角': 'bg-blue-100 text-blue-700',
     '女主角': 'bg-pink-100 text-pink-700',
@@ -472,15 +624,39 @@ function CharacterCard({ character }: { character: Character }) {
 
   return (
     <div className="bg-gray-50 p-4 rounded-lg">
-      <div className="flex items-center gap-3 mb-2">
-        <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold">
-          {character.name[0]}
-        </div>
-        <div>
-          <div className="font-medium">{character.name}</div>
-          <div className={`text-xs px-2 py-0.5 rounded ${roleColors[character.role] || 'bg-gray-100 text-gray-700'}`}>
-            {character.role}
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold">
+            {character.name[0]}
           </div>
+          <div>
+            <div className="font-medium">{character.name}</div>
+            <div className={`text-xs px-2 py-0.5 rounded ${roleColors[character.role] || 'bg-gray-100 text-gray-700'}`}>
+              {character.role}
+            </div>
+          </div>
+        </div>
+
+        {/* 操作按钮 */}
+        <div className="flex items-center gap-1">
+          <button
+            onClick={onEdit}
+            className="p-1.5 text-gray-500 hover:text-blue-500 hover:bg-blue-50 rounded transition-colors"
+            title="编辑"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+          </button>
+          <button
+            onClick={onDelete}
+            className="p-1.5 text-gray-500 hover:text-red-500 hover:bg-red-50 rounded transition-colors"
+            title="删除"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+          </button>
         </div>
       </div>
 
@@ -501,10 +677,18 @@ function CharacterCard({ character }: { character: Character }) {
 // 伏笔状态Tab
 function ForeshadowingTab({
   foreshadowings,
+  foreshadowingState,
   completedChapters,
+  novelId: _novelId,
+  onEditForeshadowing,
+  onDeleteForeshadowing,
 }: {
   foreshadowings: ForeshadowingPlan[]
+  foreshadowingState: ForeshadowingState | null
   completedChapters: number
+  novelId: string
+  onEditForeshadowing: (item: ForeshadowingItem) => void
+  onDeleteForeshadowing: (item: ForeshadowingItem) => void
 }) {
   // 分类统计
   const planted = foreshadowings.filter(f => f.status === 'planted')
@@ -513,6 +697,18 @@ function ForeshadowingTab({
 
   // 待回收的伏笔（已到达回收章节）
   const dueForRecycle = planted.filter(f => f.recycle_chapter <= completedChapters)
+
+  // 合并伏笔状态数据（优先使用 state 数据）
+  const displayItems: ForeshadowingItem[] = foreshadowingState?.foreshadowings || foreshadowings.map(f => ({
+    id: f.id,
+    hint: f.hint,
+    planted_chapter: null,
+    planned_recycle_chapter: f.recycle_chapter,
+    recycle_chapter: null,
+    status: f.status,
+    significance: 'medium' as const,
+    resolution_hint: undefined,
+  }))
 
   return (
     <div className="space-y-6">
@@ -528,7 +724,7 @@ function ForeshadowingTab({
       {dueForRecycle.length > 0 && (
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
           <h3 className="font-medium text-yellow-700 mb-2">
-            ⚠️ 需要注意：以下伏笔已到达回收章节
+            需要注意：以下伏笔已到达回收章节
           </h3>
           <div className="space-y-2">
             {dueForRecycle.map((fs) => (
@@ -552,15 +748,15 @@ function ForeshadowingTab({
       <div className="bg-white rounded-lg shadow-sm p-6">
         <h2 className="font-semibold mb-4">伏笔清单</h2>
 
-        {foreshadowings.length > 0 ? (
+        {displayItems.length > 0 ? (
           <div className="space-y-3">
-            {foreshadowings.map((fs) => {
+            {displayItems.map((fs) => {
               const statusColor =
                 fs.status === 'recycled' ? 'bg-green-100 text-green-700' :
                 fs.status === 'planted' ? 'bg-blue-100 text-blue-700' :
                 'bg-gray-100 text-gray-700'
 
-              const isDue = fs.status === 'planted' && fs.recycle_chapter <= completedChapters
+              const isDue = fs.status === 'planted' && fs.planned_recycle_chapter <= completedChapters
 
               return (
                 <div key={fs.id} className={`p-4 rounded-lg border ${
@@ -573,9 +769,38 @@ function ForeshadowingTab({
                         {fs.status === 'recycled' ? '已回收' :
                          fs.status === 'planted' ? '已埋下' : '待埋'}
                       </span>
+                      {fs.significance === 'high' && (
+                        <span className="px-2 py-0.5 rounded text-xs bg-red-100 text-red-700">重要</span>
+                      )}
                     </div>
-                    <div className="text-sm text-gray-500">
-                      回收章节: 第{fs.recycle_chapter}章
+                    <div className="flex items-center gap-2">
+                      <div className="text-sm text-gray-500">
+                        回收章节: 第{fs.planned_recycle_chapter}章
+                      </div>
+
+                      {/* 操作按钮 */}
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => onEditForeshadowing(fs)}
+                          className="p-1.5 text-gray-500 hover:text-blue-500 hover:bg-blue-50 rounded transition-colors"
+                          title="编辑"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                          </svg>
+                        </button>
+                        {fs.status !== 'recycled' && (
+                          <button
+                            onClick={() => onDeleteForeshadowing(fs)}
+                            className="p-1.5 text-gray-500 hover:text-red-500 hover:bg-red-50 rounded transition-colors"
+                            title="标记已回收"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
 
@@ -583,9 +808,15 @@ function ForeshadowingTab({
                     {fs.hint}
                   </div>
 
+                  {fs.resolution_hint && (
+                    <div className="mt-2 text-sm text-gray-500">
+                      解答提示: {fs.resolution_hint}
+                    </div>
+                  )}
+
                   {isDue && (
                     <div className="mt-2 text-sm text-yellow-600">
-                      ⚠️ 当前已写到第{completedChapters}章，此伏笔需要回收
+                      当前已写到第{completedChapters}章，此伏笔需要回收
                     </div>
                   )}
                 </div>
@@ -623,6 +854,485 @@ function StatCard({
     <div className={`${colors[color]} rounded-lg p-4 text-center`}>
       <div className="text-2xl font-bold">{value}</div>
       <div className="text-sm text-gray-600">{label}</div>
+    </div>
+  )
+}
+
+// ==================== 弹窗组件 ====================
+
+// 人物编辑弹窗
+function CharacterModal({
+  novelId,
+  mode,
+  character,
+  onClose,
+  onSuccess,
+}: {
+  novelId: string
+  mode: 'add' | 'edit'
+  character?: Character
+  onClose: () => void
+  onSuccess: () => void
+}) {
+  const [formData, setFormData] = useState<Partial<Character>>({
+    name: character?.name || '',
+    role: character?.role || '重要配角',
+    age: character?.age || 18,
+    gender: character?.gender || '男',
+    appearance: character?.appearance || '',
+    personality: character?.personality || [],
+    background: character?.background || '',
+    goals: character?.goals || [],
+    abilities: character?.abilities || { skills: [] },
+  })
+  const [personalityInput, setPersonalityInput] = useState('')
+  const [goalsInput, setGoalsInput] = useState('')
+  const [skillsInput, setSkillsInput] = useState('')
+  const [loading, setLoading] = useState(false)
+
+  // 初始化多值字段
+  useEffect(() => {
+    if (character) {
+      setPersonalityInput(character.personality?.join(', ') || '')
+      setGoalsInput(character.goals?.join(', ') || '')
+      setSkillsInput(character.abilities?.skills?.join(', ') || '')
+    }
+  }, [character])
+
+  async function handleSubmit() {
+    if (!formData.name) {
+      alert('请填写人物姓名')
+      return
+    }
+
+    try {
+      setLoading(true)
+      const data = {
+        ...formData,
+        personality: personalityInput.split(',').map(s => s.trim()).filter(Boolean),
+        goals: goalsInput.split(',').map(s => s.trim()).filter(Boolean),
+        abilities: {
+          ...formData.abilities,
+          skills: skillsInput.split(',').map(s => s.trim()).filter(Boolean),
+        },
+      }
+
+      if (mode === 'add') {
+        await addCharacter(novelId, data)
+      } else if (character?.character_id) {
+        await updateCharacter(novelId, character.character_id, data)
+      }
+
+      onSuccess()
+    } catch (err) {
+      console.error('Failed to save character:', err)
+      alert('保存失败，请重试')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="dialog-overlay fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div className="dialog-paper bg-white rounded-lg shadow-xl w-full max-w-lg mx-4">
+        {/* 标题 */}
+        <div className="px-6 py-4 border-b flex items-center justify-between">
+          <h3 className="font-semibold text-lg">
+            {mode === 'add' ? '添加人物' : '编辑人物'}
+          </h3>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        {/* 内容 */}
+        <div className="px-6 py-4 space-y-4">
+          {/* 姓名 */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">姓名</label>
+            <input
+              type="text"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="人物姓名"
+            />
+          </div>
+
+          {/* 角色类型 */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">角色类型</label>
+            <select
+              value={formData.role}
+              onChange={(e) => setFormData({ ...formData, role: e.target.value as Character['role'] })}
+              className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="主角">主角</option>
+              <option value="女主角">女主角</option>
+              <option value="重要配角">重要配角</option>
+              <option value="次要配角">次要配角</option>
+              <option value="反派">反派</option>
+            </select>
+          </div>
+
+          {/* 年龄和性别 */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">年龄</label>
+              <input
+                type="number"
+                value={formData.age}
+                onChange={(e) => setFormData({ ...formData, age: parseInt(e.target.value) || 0 })}
+                className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">性别</label>
+              <select
+                value={formData.gender}
+                onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
+                className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="男">男</option>
+                <option value="女">女</option>
+                <option value="其他">其他</option>
+              </select>
+            </div>
+          </div>
+
+          {/* 外貌描述 */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">外貌描述</label>
+            <textarea
+              value={formData.appearance}
+              onChange={(e) => setFormData({ ...formData, appearance: e.target.value })}
+              className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              rows={2}
+              placeholder="人物外貌特征"
+            />
+          </div>
+
+          {/* 性格特点 */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">性格特点（逗号分隔）</label>
+            <input
+              type="text"
+              value={personalityInput}
+              onChange={(e) => setPersonalityInput(e.target.value)}
+              className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="坚韧, 冷静, 重情义"
+            />
+          </div>
+
+          {/* 背景 */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">背景故事</label>
+            <textarea
+              value={formData.background}
+              onChange={(e) => setFormData({ ...formData, background: e.target.value })}
+              className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              rows={2}
+              placeholder="人物背景经历"
+            />
+          </div>
+
+          {/* 技能 */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">技能（逗号分隔）</label>
+            <input
+              type="text"
+              value={skillsInput}
+              onChange={(e) => setSkillsInput(e.target.value)}
+              className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="剑法, 轻功"
+            />
+          </div>
+
+          {/* 目标 */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">目标（逗号分隔）</label>
+            <input
+              type="text"
+              value={goalsInput}
+              onChange={(e) => setGoalsInput(e.target.value)}
+              className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="复仇, 成为强者"
+            />
+          </div>
+        </div>
+
+        {/* 操作按钮 */}
+        <div className="px-6 py-4 border-t flex items-center justify-end gap-3">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+          >
+            取消
+          </button>
+          <button
+            onClick={handleSubmit}
+            disabled={loading}
+            className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors disabled:opacity-50"
+          >
+            {loading ? '保存中...' : '保存'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// 伏笔编辑弹窗
+function ForeshadowingModal({
+  novelId,
+  item,
+  onClose,
+  onSuccess,
+}: {
+  novelId: string
+  item: ForeshadowingItem
+  onClose: () => void
+  onSuccess: () => void
+}) {
+  const [formData, setFormData] = useState<Partial<ForeshadowingItem>>({
+    id: item.id,
+    hint: item.hint,
+    planned_recycle_chapter: item.planned_recycle_chapter,
+    status: item.status,
+    significance: item.significance,
+    resolution_hint: item.resolution_hint || '',
+  })
+  const [loading, setLoading] = useState(false)
+
+  async function handleSubmit() {
+    if (!formData.hint) {
+      alert('请填写伏笔提示内容')
+      return
+    }
+
+    try {
+      setLoading(true)
+      await updateForeshadowingState(novelId, item.id, formData)
+      onSuccess()
+    } catch (err) {
+      console.error('Failed to update foreshadowing:', err)
+      alert('保存失败，请重试')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function handleMarkPlanted() {
+    try {
+      setLoading(true)
+      await updateForeshadowingState(novelId, item.id, { status: 'planted' })
+      onSuccess()
+    } catch (err) {
+      console.error('Failed to mark as planted:', err)
+      alert('操作失败，请重试')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function handleMarkRecycled() {
+    try {
+      setLoading(true)
+      await updateForeshadowingState(novelId, item.id, { status: 'recycled' })
+      onSuccess()
+    } catch (err) {
+      console.error('Failed to mark as recycled:', err)
+      alert('操作失败，请重试')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="dialog-overlay fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div className="dialog-paper bg-white rounded-lg shadow-xl w-full max-w-lg mx-4">
+        {/* 标题 */}
+        <div className="px-6 py-4 border-b flex items-center justify-between">
+          <h3 className="font-semibold text-lg">编辑伏笔</h3>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        {/* 内容 */}
+        <div className="px-6 py-4 space-y-4">
+          {/* ID */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">伏笔ID</label>
+            <input
+              type="text"
+              value={formData.id}
+              disabled
+              className="w-full px-3 py-2 border rounded-md bg-gray-50 text-gray-500"
+            />
+          </div>
+
+          {/* 提示内容 */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">提示内容</label>
+            <textarea
+              value={formData.hint}
+              onChange={(e) => setFormData({ ...formData, hint: e.target.value })}
+              className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              rows={3}
+              placeholder="伏笔的具体提示"
+            />
+          </div>
+
+          {/* 回收章节 */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">计划回收章节</label>
+            <input
+              type="number"
+              value={formData.planned_recycle_chapter}
+              onChange={(e) => setFormData({ ...formData, planned_recycle_chapter: parseInt(e.target.value) || 0 })}
+              className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            />
+          </div>
+
+          {/* 重要性 */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">重要性</label>
+            <select
+              value={formData.significance}
+              onChange={(e) => setFormData({ ...formData, significance: e.target.value as 'high' | 'medium' | 'low' })}
+              className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="high">高</option>
+              <option value="medium">中</option>
+              <option value="low">低</option>
+            </select>
+          </div>
+
+          {/* 解答提示 */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">解答提示</label>
+            <textarea
+              value={formData.resolution_hint}
+              onChange={(e) => setFormData({ ...formData, resolution_hint: e.target.value })}
+              className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              rows={2}
+              placeholder="伏笔回收时的解答方向"
+            />
+          </div>
+
+          {/* 当前状态 */}
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium text-gray-700">当前状态:</span>
+            <span className={`px-2 py-0.5 rounded text-xs ${
+              formData.status === 'recycled' ? 'bg-green-100 text-green-700' :
+              formData.status === 'planted' ? 'bg-blue-100 text-blue-700' :
+              'bg-gray-100 text-gray-700'
+            }`}>
+              {formData.status === 'recycled' ? '已回收' :
+               formData.status === 'planted' ? '已埋下' : '待埋'}
+            </span>
+          </div>
+        </div>
+
+        {/* 操作按钮 */}
+        <div className="px-6 py-4 border-t flex items-center justify-between gap-3">
+          {/* 状态切换按钮 */}
+          <div className="flex items-center gap-2">
+            {formData.status === 'pending' && (
+              <button
+                onClick={handleMarkPlanted}
+                disabled={loading}
+                className="px-3 py-1.5 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition-colors disabled:opacity-50"
+              >
+                标记已埋
+              </button>
+            )}
+            {formData.status === 'planted' && (
+              <button
+                onClick={handleMarkRecycled}
+                disabled={loading}
+                className="px-3 py-1.5 bg-green-100 text-green-700 rounded-md hover:bg-green-200 transition-colors disabled:opacity-50"
+              >
+                标记已回收
+              </button>
+            )}
+          </div>
+
+          {/* 保存/取消 */}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={onClose}
+              className="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+            >
+              取消
+            </button>
+            <button
+              onClick={handleSubmit}
+              disabled={loading}
+              className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors disabled:opacity-50"
+            >
+              {loading ? '保存中...' : '保存'}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// 删除确认弹窗
+function DeleteConfirmModal({
+  type,
+  name,
+  onCancel,
+  onConfirm,
+}: {
+  type: 'character' | 'foreshadowing'
+  name: string
+  onCancel: () => void
+  onConfirm: () => void
+}) {
+  const title = type === 'character' ? '删除人物' : '标记伏笔已回收'
+  const message = type === 'character'
+    ? `确定要删除人物「${name}」吗？此操作不可恢复。`
+    : `确定要将伏笔「${name.substring(0, 30)}...」标记为已回收吗？`
+  const confirmText = type === 'character' ? '删除' : '标记已回收'
+  const confirmClass = type === 'character' ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'
+
+  return (
+    <div className="dialog-overlay fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div className="dialog-paper bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
+        {/* 标题 */}
+        <div className="px-6 py-4 border-b">
+          <h3 className="font-semibold text-lg">{title}</h3>
+        </div>
+
+        {/* 内容 */}
+        <div className="px-6 py-4">
+          <p className="text-gray-600">{message}</p>
+        </div>
+
+        {/* 操作按钮 */}
+        <div className="px-6 py-4 border-t flex items-center justify-end gap-3">
+          <button
+            onClick={onCancel}
+            className="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+          >
+            取消
+          </button>
+          <button
+            onClick={onConfirm}
+            className={`px-4 py-2 text-white rounded-md transition-colors ${confirmClass}`}
+          >
+            {confirmText}
+          </button>
+        </div>
+      </div>
     </div>
   )
 }

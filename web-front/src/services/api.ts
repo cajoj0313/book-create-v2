@@ -7,7 +7,7 @@
  */
 
 import axios, { AxiosError } from 'axios'
-import type { NovelMeta, Novel, WorldSetting, CharactersLibrary, Character, Outline, Chapter, ValidationReport, ApiResponse } from '@/types/novel'
+import type { NovelMeta, Novel, WorldSetting, CharactersLibrary, Character, Outline, Chapter, ValidationReport, ApiResponse, TimelineState, CharacterState, ForeshadowingState, ForeshadowingItem } from '@/types/novel'
 
 const API_BASE = '/api' // 通过 Vite proxy 转发到 localhost:8000
 
@@ -354,6 +354,56 @@ export async function getValidationReport(novelId: string, chapterNum?: number):
  */
 export async function applyValidationFix(novelId: string, issueId: string): Promise<ApiResponse<void>> {
   const response = await apiClient.post(`/novels/${novelId}/validation/fix/${issueId}/`)
+  return response.data
+}
+
+// ==================== 状态追踪 ====================
+
+/**
+ * 获取时间线状态
+ */
+export async function getTimeline(novelId: string): Promise<ApiResponse<TimelineState>> {
+  const response = await apiClient.get(`/state/${novelId}/timeline/`)
+  return response.data
+}
+
+/**
+ * 更新时间线状态
+ */
+export async function updateTimeline(novelId: string, data: Partial<TimelineState>): Promise<ApiResponse<TimelineState>> {
+  const response = await apiClient.put(`/state/${novelId}/timeline/`, data)
+  return response.data
+}
+
+/**
+ * 获取人物状态列表
+ */
+export async function getCharacterStates(novelId: string): Promise<ApiResponse<CharacterState[]>> {
+  const response = await apiClient.get(`/state/${novelId}/character-states/`)
+  return response.data
+}
+
+/**
+ * 更新人物状态
+ */
+export async function updateCharacterState(novelId: string, charId: string, updates: Partial<CharacterState>): Promise<ApiResponse<CharacterState>> {
+  const response = await apiClient.put(`/state/${novelId}/character-states/${charId}/`, updates)
+  return response.data
+}
+
+/**
+ * 获取伏笔状态列表
+ */
+export async function getForeshadowingState(novelId: string): Promise<ApiResponse<ForeshadowingState>> {
+  const response = await apiClient.get(`/state/${novelId}/foreshadowing/`)
+  return response.data
+}
+
+/**
+ * 更新伏笔状态
+ */
+export async function updateForeshadowingState(novelId: string, fsId: string, updates: Partial<ForeshadowingItem>): Promise<ApiResponse<ForeshadowingItem>> {
+  const response = await apiClient.put(`/state/${novelId}/foreshadowing/${fsId}/`, updates)
   return response.data
 }
 

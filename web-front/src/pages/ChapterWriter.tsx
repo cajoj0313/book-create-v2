@@ -11,7 +11,7 @@
 import { useEffect, useState, useRef, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { SSEClient } from '@services/sse-client'
-import { getChapter, updateChapter, getOutline, getCharacters } from '@services/api'
+import { getChapter, updateChapter, getOutline, getCharacters, deleteChapter } from '@services/api'
 import type { Chapter, ChapterOutline, Character } from '@/types/novel'
 
 // 流式生成状态
@@ -47,6 +47,10 @@ export default function ChapterWriter() {
   // 保存状态
   const [saving, setSaving] = useState(false)
   const [lastSavedAt, setLastSavedAt] = useState<string | null>(null)
+
+  // 删除确认弹窗状态
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [deleting, setDeleting] = useState(false)
 
   // 提示消息
   const [toast, setToast] = useState<{ type: 'success' | 'error' | 'warning'; message: string } | null>(null)
@@ -252,6 +256,37 @@ export default function ChapterWriter() {
     }, 500)
   }, [novelId, currentChapterNum, generatedContent, navigate])
 
+  // 打开删除确认弹窗
+  const handleDeleteClick = () => {
+    setShowDeleteConfirm(true)
+  }
+
+  // 确认删除章节
+  const handleConfirmDelete = async () => {
+    if (!novelId) return
+    setDeleting(true)
+    try {
+      await deleteChapter(novelId, currentChapterNum)
+      setToast({ type: 'success', message: '章节已删除' })
+      setShowDeleteConfirm(false)
+      // 删除后跳转：如果有上一章则跳转到上一章，否则跳转到小说详情页
+      if (currentChapterNum > 1) {
+        navigate(`/novels/${novelId}/chapters/${currentChapterNum - 1}`)
+      } else {
+        navigate(`/novels/${novelId}`)
+      }
+    } catch {
+      setToast({ type: 'error', message: '删除失败' })
+    } finally {
+      setDeleting(false)
+    }
+  }
+
+  // 取消删除
+  const handleCancelDelete = () => {
+    setShowDeleteConfirm(false)
+  }
+
   // 显示内容
   const displayContent = generateStatus === 'streaming' || generateStatus === 'completed'
     ? generatedContent
@@ -324,6 +359,17 @@ export default function ChapterWriter() {
                 className="btn-indigo"
               >
                 {saving ? '保存中...' : '保存'}
+              </button>
+
+              <button
+                onClick={handleDeleteClick}
+                className="btn-outline-vermilion"
+                title="删除当前章节"
+              >
+                <svg className="w-4 h-4 inline mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+                删除
               </button>
             </div>
           </div>
@@ -574,6 +620,37 @@ export default function ChapterWriter() {
                   <span>→</span>
                   <span>审核通过，继续下一章</span>
                 </div>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 删除确认弹窗 - 墨韵书香风格 */}
+      {showDeleteConfirm && (
+        <div className="dialog-overlay">
+          <div className="dialog-paper">
+            <h2 className="text-title-xl text-ink-800 mb-4">确认删除章节？</h2>
+            <p className="text-ink-600 mb-2 font-prose">
+              即将删除：<span className="font-semibold text-vermilion-600">第 {currentChapterNum} 章</span>
+            </p>
+            <p className="text-ink-500 mb-6 text-title-sm">
+              删除后无法恢复，章节内容将永久丢失。
+            </p>
+            <div className="flex gap-4">
+              <button
+                onClick={handleCancelDelete}
+                disabled={deleting}
+                className="btn-outline-ink flex-1"
+              >
+                取消
+              </button>
+              <button
+                onClick={handleConfirmDelete}
+                disabled={deleting}
+                className="btn-vermilion flex-1"
+              >
+                {deleting ? '删除中...' : '确认删除'}
               </button>
             </div>
           </div>

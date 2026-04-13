@@ -130,7 +130,157 @@
 
 ---
 
-*最后更新: 2026-04-13*
+## 2026-04-13 PM-PdM 协作机制优化 ✅
+
+### 完成内容
+
+**前置确认机制实现**:
+- ✅ PM 红线规则从 3 条扩展为 4 条（新增强制前置确认）
+- ✅ 开工检查清单添加前置确认步骤
+- ✅ 核心工作流程新增阶段0（前置确认）
+- ✅ 新增模板0：前置确认 SendMessage 示例
+- ✅ 并行调度红线表格添加前置确认规则
+- ✅ 调度前检查清单添加前置确认检查项
+
+### 核心改动
+
+1. **红线规则新增**
+   ```
+   1. 【强制前置确认】接收任务后必须先与 PdM 确认需求理解，未确认禁止进入任务分解
+   ```
+
+2. **工作流程新增阶段0**
+   ```
+   【阶段0】前置确认 → 【阶段1】任务分解 → ...
+       ↓
+     PdM确认
+   ```
+
+3. **前置确认内容**
+   - 复述任务目标（是什么、为什么）
+   - 确认验收标准（怎样才算完成）
+   - 确认优先级和截止时间
+   - 确认已知约束和风险
+
+4. **阻塞规则**
+   - 未得到 PdM 确认前，禁止进入阶段1
+   - PdM 不可用时，直接与用户确认
+
+---
+
+## 2026-04-13 功能补全需求分析 ✅
+
+### 完成内容
+
+**需求分析**:
+- ✅ 全面梳理页面交互功能缺失（57 项）
+- ✅ 定义优先级（P0/P1/P2 三级）
+- ✅ 编写 PRD 文档（docs/products/feature-completion-brief.md）
+- ✅ 更新需求池（docs/products/backlog.md）
+
+### 缺失统计
+
+| 优先级 | 功能数 | 内容 | 预计工期 |
+|--------|--------|------|----------|
+| **P0** | 23 | 状态追踪 API + 人物管理 + 伏笔管理 + 删除功能 | 3-4 天 |
+| **P1** | 21 | 版本历史 + WorldBuilder 增删 + OutlineEditor 增删 | 3-4 天 |
+| **P2** | 13 | ValidationReport 增强 + NovelDetail 增强 + NovelList 增强 | 2-3 天 |
+
+### 核心缺失项
+
+1. **"新增不能删"问题**: 小说、人物、章节、伏笔创建后无法删除
+2. **状态追踪 API**: 时间线/人物状态/伏笔状态 CRUD 完全缺失（10 个 API）
+3. **人物管理**: 添加/编辑/删除人物及关系缺失（6 个功能）
+4. **伏笔管理**: 手动标记已埋/已回收缺失（5 个功能）
+5. **版本历史**: 无法查看历史版本或回滚（3 个功能）
+
+### 下一步
+
+- 移交架构师评估技术方案
+- 确认实施计划后启动开发
+
+---
+
+## 2026-04-13 功能补全实施完成 ✅
+
+### 实施方案
+
+采用 **方案 B（模块化重构）**，支持未来 ECS 云部署。
+
+### 完成内容
+
+#### Phase 1: 后端状态追踪 API（10个）✅
+新增文件：
+- `backend/src/domain/services/timeline_service.py` - 时间线服务
+- `backend/src/domain/services/foreshadowing_service.py` - 伏笔服务
+- `backend/src/application/state_service.py` - 统一状态管理
+- `backend/src/interfaces/api_state.py` - 状态追踪 API（10 个端点）
+
+API 端点：
+- GET/PUT `/state/{id}/timeline` - 时间线 CRUD
+- POST/DELETE `/state/{id}/timeline/events` - 时间线事件增删
+- GET/PUT `/state/{id}/character-states` - 人物状态 CRUD
+- PUT `/state/{id}/character-states/{char_id}` - 单人物更新
+- GET/PUT `/state/{id}/foreshadowing` - 伏笔状态 CRUD
+- PUT `/state/{id}/foreshadowing/{fs_id}` - 单伏笔更新
+
+#### Phase 2: 后端人物管理增强 ✅
+修复：
+- 删除人物时同步清理其他人物的 `relationships` 数组
+
+#### Phase 3: 前端 NovelDetail 管理 ✅
+新增组件：
+- `CharacterModal` - 人物编辑弹窗（姓名/角色/年龄/性别/外貌/性格/背景/目标）
+- `ForeshadowingModal` - 伏笔编辑弹窗（ID/提示/回收章节/重要性/解答提示）
+- `DeleteConfirmModal` - 删除确认弹窗
+- 人物卡片编辑/删除按钮
+- 伏笔卡片编辑/标记按钮
+- 状态追踪 API 调用（`stateApi`）
+
+#### Phase 4: 前端删除功能 ✅
+新增：
+- NovelList 卡片删除按钮（悬停显示）
+- ChapterWriter 工具栏删除按钮
+- 删除确认弹窗（墨韵书香风格）
+
+#### Phase 5: 测试验证 ✅
+结果：
+- 后端单元测试：62 passed, 1 skipped
+- 前端 TypeScript：无错误
+- 后端模块导入：正常
+
+### 文件变更统计
+
+| 类型 | 新增 | 修改 | 行数 |
+|------|------|------|------|
+| 后端 | 4 | 2 | ~400 行 |
+| 前端 | 0 | 4 | ~300 行 |
+| **总计** | **4** | **6** | **~700 行** |
+
+### 架构改进
+
+```
+backend/src/
+├── interfaces/
+│   ├── api_novels.py      # 小说管理
+│   ├── api_generation.py  # AI生成
+│   └── api_state.py       # 状态追踪（新增）
+│
+├── application/
+│   ├── generation_service.py
+│   ├── validation_service.py
+│   └── state_service.py   # 统一状态管理（新增）
+│
+└── domain/services/
+    ├── timeline_service.py      # 时间线（新增）
+    └── foreshadowing_service.py # 伏笔（新增）
+```
+
+### 部署支持
+
+- ✅ 本地开发：单服务运行
+- ✅ ECS部署：模块化架构，平滑迁移
+- ✅ 云扩展：状态追踪服务可独立拆分部署
 
 ---
 

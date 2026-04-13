@@ -49,6 +49,8 @@ async def health():
 # 导入路由
 from .api_novels import router as novels_router
 from .api_generation import router as generation_router
+from .api_state import router as state_router
 
 app.include_router(novels_router, prefix="/novels", tags=["novels"])
 app.include_router(generation_router, prefix="/generation", tags=["generation"])
+app.include_router(state_router, prefix="/state", tags=["state"])

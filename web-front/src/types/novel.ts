@@ -207,3 +207,74 @@ export interface ApiResponse<T> {
   error?: string
   message?: string
 }
+
+// ==================== 状态追踪类型 ====================
+
+// 时间线状态
+export interface TimelineEvent {
+  order: number
+  chapter: number
+  time: string
+  event: string
+  participants: string[]
+  location: string
+  significance: 'high' | 'medium' | 'low'
+}
+
+export interface TimelineState {
+  novel_id: string
+  events: TimelineEvent[]
+  time_scale: {
+    unit: string
+    current_time: string
+    total_duration: string
+  }
+}
+
+// 人物状态
+export interface CharacterState {
+  character_id: string
+  current_location: string
+  cultivation_level?: string
+  physical_health: string
+  emotional_state: string
+  emotional_details?: {
+    toward_work?: string
+    toward_love?: string
+    overall_mood?: string
+  }
+  love_progress?: {
+    target: string
+    stage: string
+    stage_progress: number
+    recent_event?: string
+  }
+  equipment: string[]
+  relationships_current: Array<{
+    target_id: string
+    status: string
+  }>
+  goals_progress?: Record<string, string>
+}
+
+// 伏笔状态
+export interface ForeshadowingItem {
+  id: string
+  hint: string
+  planted_chapter: number | null
+  planned_recycle_chapter: number
+  recycle_chapter: number | null
+  status: 'pending' | 'planted' | 'recycled'
+  significance: 'high' | 'medium' | 'low'
+  resolution_hint?: string
+}
+
+export interface ForeshadowingState {
+  novel_id: string
+  foreshadowings: ForeshadowingItem[]
+  statistics: {
+    total_planted: number
+    recycled: number
+    pending: number
+  }
+}
