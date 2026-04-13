@@ -36,7 +36,7 @@ class QwenProvider:
             context: 上下文数据（世界观、人物等）
 
         Yields:
-            str: 生成的内容片段
+            str: 生成的内容片段（增量）
         """
         # 构建完整提示词
         full_prompt = self._build_prompt(prompt, context)
@@ -46,13 +46,15 @@ class QwenProvider:
             model=self.model,
             prompt=full_prompt,
             stream=True,
-            result_format='message'
+            result_format='message',
+            incremental_output=True  # 启用增量输出模式
         )
 
         for response in responses:
             if response.status_code == 200:
                 content = response.output.choices[0].message.content
-                yield content
+                if content:  # 增量模式下可能返回空字符串
+                    yield content
             else:
                 # 错误处理
                 error_msg = f"API Error: {response.code} - {response.message}"
