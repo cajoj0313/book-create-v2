@@ -18,7 +18,7 @@ type ValidationType = 'single_chapter' | 'full_novel'
 // 规则分类定义（都市言情简化版：3类5条规则）
 const RULE_CATEGORIES = {
   'G': { name: '语法规范', color: 'indigo', count: 2 },
-  'E': { name: '感情线', color: 'rose', count: 2 },
+  'E': { name: '感情线', color: 'vermilion', count: 2 },
   'P': { name: '人物一致性', color: 'purple', count: 1 },
 }
 
@@ -304,17 +304,21 @@ export default function ValidationReport() {
 
           {/* 规则分类展示 */}
           <div className="mt-8 pt-6 border-t border-ink-200">
-            <h3 className="font-title-base text-ink-700 mb-4">校验规则（36条）</h3>
-            <div className="grid grid-cols-4 md:grid-cols-7 gap-4">
+            <h3 className="font-title-base text-ink-700 mb-4">校验规则（5条基础规则）</h3>
+            <div className="grid grid-cols-3 gap-6">
               {Object.entries(RULE_CATEGORIES).map(([key, cat]) => (
-                <div key={key} className="paper-flat p-4 text-center">
-                  <div className={`seal w-8 h-8 mx-auto mb-2 bg-${cat.color}-100 text-${cat.color}-700`}>
-                    {key}
+                <div key={key} className="paper-flat p-6 text-center float-paper">
+                  <div className={`w-10 h-10 mx-auto mb-3 rounded-full flex items-center justify-center ${
+                    key === 'G' ? 'bg-indigo-100 text-indigo-700' :
+                    key === 'E' ? 'bg-rose-100 text-rose-700' :
+                    'bg-purple-100 text-purple-700'
+                  }`}>
+                    <span className="font-title-lg font-bold">{key}</span>
                   </div>
-                  <div className="font-title-sm text-ink-700">{cat.name}</div>
-                  <div className="text-title-xs text-ink-400">{cat.count} 条</div>
-                  <div className="mt-2 text-title-xs text-ink-500">
-                    {categoryStats.find(c => c.category === key)?.count || 0} 问题
+                  <div className="font-title-base text-ink-800 mb-2">{cat.name}</div>
+                  <div className="text-title-sm text-ink-500">{cat.count} 条规则</div>
+                  <div className="mt-4 text-title-xs text-vermilion-600">
+                    {categoryStats.find(c => c.category === key)?.count || 0} 个问题
                   </div>
                 </div>
               ))}
