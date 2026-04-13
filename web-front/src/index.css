@@ -1,0 +1,394 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================
+   灵笔品牌设计系统 - 墨韵书香
+   ============================================ */
+
+/* 基础样式 */
+@layer base {
+  html {
+    font-family: 'Noto Sans SC', system-ui, sans-serif;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply antialiased;
+    background-color: #faf8f0;
+    color: #2a2520;
+  }
+
+  /* 写作模式字体 */
+  .writing-mode {
+    font-family: 'Noto Serif SC', serif;
+    @apply text-writing-base;
+    color: #2a2520;
+  }
+
+  /* 选中文本样式 - 朱砂色 */
+  ::selection {
+    background-color: rgba(229, 57, 53, 0.2);
+    color: #2a2520;
+  }
+
+  /* 滚动条美化 */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #f5f2e8;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #d4d0c8;
+    border-radius: 4px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #b8b2a4;
+  }
+}
+
+/* 组件样式 */
+@layer components {
+  /* ========== 纸张卡片 ========== */
+  .paper {
+    @apply bg-paper-cream rounded-paper-md shadow-paper;
+    border: 1px solid #d4d0c8;
+  }
+
+  .paper-hover {
+    @apply paper transition-all duration-300;
+  }
+  .paper-hover:hover {
+    @apply shadow-paper-hover;
+    transform: translateY(-2px);
+  }
+
+  .paper-flat {
+    @apply bg-paper-cream rounded-paper-md;
+    border: 1px solid #e8e6e1;
+  }
+
+  /* ========== 按钮样式 ========== */
+
+  /* 主按钮 - 朱砂红 */
+  .btn-vermilion {
+    @apply px-6 py-3 rounded-paper-md font-title text-title-sm;
+    @apply bg-vermilion-500 text-white;
+    @apply shadow-ink transition-all duration-200;
+  }
+  .btn-vermilion:hover {
+    @apply bg-vermilion-600 shadow-ink-md;
+  }
+  .btn-vermilion:active {
+    @apply bg-vermilion-700;
+  }
+  .btn-vermilion:disabled {
+    @apply bg-ink-300 text-ink-100 cursor-not-allowed shadow-none;
+  }
+
+  /* 辅按钮 - 靛蓝 */
+  .btn-indigo {
+    @apply px-6 py-3 rounded-paper-md font-title text-title-sm;
+    @apply bg-indigo-500 text-white;
+    @apply shadow-ink transition-all duration-200;
+  }
+  .btn-indigo:hover {
+    @apply bg-indigo-600 shadow-ink-md;
+  }
+
+  /* 次按钮 - 墨灰 */
+  .btn-ink {
+    @apply px-6 py-3 rounded-paper-md font-title text-title-sm;
+    @apply bg-ink-100 text-ink-700;
+    @apply transition-all duration-200;
+  }
+  .btn-ink:hover {
+    @apply bg-ink-200;
+  }
+
+  /* 描边按钮 */
+  .btn-outline-ink {
+    @apply px-6 py-3 rounded-paper-md font-title text-title-sm;
+    @apply bg-transparent text-ink-700;
+    border: 1px solid #b8b2a4;
+    @apply transition-all duration-200;
+  }
+  .btn-outline-ink:hover {
+    @apply bg-ink-50 border-ink-300;
+  }
+
+  .btn-outline-vermilion {
+    @apply px-6 py-3 rounded-paper-md font-title text-title-sm;
+    @apply bg-transparent text-vermilion-600;
+    border: 1px solid #f89890;
+    @apply transition-all duration-200;
+  }
+  .btn-outline-vermilion:hover {
+    @apply bg-vermilion-50 border-vermilion-300;
+  }
+
+  /* 文字按钮 */
+  .btn-text {
+    @apply px-4 py-2 font-title text-title-sm text-ink-600;
+    @apply transition-all duration-200;
+  }
+  .btn-text:hover {
+    @apply text-vermilion-600;
+  }
+
+  /* 小按钮 */
+  .btn-sm-vermilion {
+    @apply px-3 py-1.5 rounded-paper text-title-xs;
+    @apply bg-vermilion-500 text-white;
+    @apply transition-all duration-200;
+  }
+  .btn-sm-vermilion:hover {
+    @apply bg-vermilion-600;
+  }
+
+  /* ========== 输入框样式 ========== */
+
+  /* 文本输入 */
+  .input-ink {
+    @apply w-full px-4 py-3 rounded-paper-md font-prose;
+    @apply bg-paper-white text-ink-800;
+    border: 1px solid #d4d0c8;
+    @apply transition-all duration-200;
+  }
+  .input-ink:focus {
+    @apply outline-none;
+    border-color: #2b7eb8;
+    @apply shadow-vermilion-focus;
+  }
+  .input-ink:placeholder {
+    color: #9c9482;
+  }
+
+  /* 写作输入 */
+  .textarea-writing {
+    @apply w-full px-6 py-4 rounded-paper-md;
+    @apply bg-paper-white text-ink-800;
+    @apply font-writing text-writing-base leading-relaxed;
+    border: 1px solid #e8e6e1;
+    @apply resize-none;
+  }
+  .textarea-writing:focus {
+    @apply outline-none;
+    border-color: #b8b2a4;
+  }
+
+  /* ========== 状态标签 ========== */
+  .badge {
+    @apply inline-flex items-center px-2.5 py-1 rounded-paper text-title-xs;
+  }
+
+  .badge-ink {
+    @apply badge bg-ink-100 text-ink-700;
+  }
+
+  .badge-vermilion {
+    @apply badge bg-vermilion-100 text-vermilion-700;
+  }
+
+  .badge-indigo {
+    @apply badge bg-indigo-100 text-indigo-700;
+  }
+
+  .badge-gold {
+    @apply badge bg-gold-100 text-gold-700;
+  }
+
+  /* 状态标签 */
+  .status-draft {
+    @apply badge bg-ink-100 text-ink-600;
+  }
+  .status-generating {
+    @apply badge bg-indigo-100 text-indigo-700;
+    @apply animate-pulse-gentle;
+  }
+  .status-reviewing {
+    @apply badge bg-gold-100 text-gold-700;
+  }
+  .status-success {
+    @apply badge bg-indigo-100 text-indigo-600;
+  }
+  .status-error {
+    @apply badge bg-vermilion-100 text-vermilion-700;
+  }
+  .status-completed {
+    @apply badge bg-ink-200 text-ink-700;
+  }
+
+  /* ========== 流式输出区域 ========== */
+  .stream-output {
+    @apply max-w-chapter-content mx-auto px-8 py-6;
+    @apply font-writing text-writing-base;
+    @apply bg-paper-white rounded-paper-md;
+    @apply animate-fade-in;
+  }
+
+  /* 章节内容样式 */
+  .chapter-content {
+    @apply stream-output;
+  }
+  .chapter-content p {
+    @apply mb-6 indent-8;
+  }
+
+  /* 流式生成光标 */
+  .stream-cursor {
+    @apply inline-block w-0.5 h-5 bg-vermilion-500;
+    @apply animate-writing-cursor;
+  }
+
+  /* ========== 加载动画 ========== */
+  .loading-spinner {
+    @apply w-8 h-8 rounded-full;
+    border: 2px solid #d4d0c8;
+    border-top-color: #2b7eb8;
+    @apply animate-spin-slow;
+  }
+
+  .loading-text {
+    @apply text-ink-500 animate-pulse-gentle;
+  }
+
+  /* ========== 分隔线 ========== */
+  .divider-ink {
+    @apply w-full h-px bg-ink-200;
+  }
+
+  .divider-vertical {
+    @apply w-px h-full bg-ink-200;
+  }
+
+  /* ========== 印章装饰 ========== */
+  .seal {
+    @apply w-8 h-8 rounded-seal;
+    @apply bg-vermilion-500 text-white;
+    @apply flex items-center justify-center;
+    @apply font-title text-title-xs font-bold;
+  }
+
+  .seal-lg {
+    @apply w-12 h-12 rounded-seal;
+    @apply bg-vermilion-600 text-white;
+    @apply flex items-center justify-center;
+    @apply font-title text-title-sm font-bold;
+    @apply shadow-ink-md;
+  }
+
+  /* ========== 确认对话框 ========== */
+  .dialog-overlay {
+    @apply fixed inset-0 z-50;
+    @apply bg-ink-900/30;
+    @apply flex items-center justify-center;
+    @apply animate-fade-in;
+  }
+
+  .dialog-paper {
+    @apply bg-paper-cream rounded-paper-lg;
+    @apply shadow-ink-xl;
+    @apply p-6 max-w-md;
+    @apply animate-slide-up;
+  }
+
+  /* ========== 提示消息 ========== */
+  .toast {
+    @apply fixed top-4 right-4 z-50;
+    @apply px-6 py-4 rounded-paper-md;
+    @apply shadow-ink-lg;
+    @apply animate-slide-down;
+  }
+
+  .toast-success {
+    @apply toast bg-indigo-500 text-white;
+  }
+
+  .toast-error {
+    @apply toast bg-vermilion-500 text-white;
+  }
+
+  .toast-warning {
+    @apply toast bg-gold-400 text-ink-900;
+  }
+
+  /* ========== 进度条 ========== */
+  .progress-bar {
+    @apply w-full h-1 bg-ink-200 rounded-full overflow-hidden;
+  }
+
+  .progress-bar-fill {
+    @apply h-full bg-stream-progress rounded-full;
+    @apply transition-all duration-300;
+  }
+}
+
+/* 工具样式 */
+@layer utilities {
+  /* 文字渐变 - 墨韵 */
+  .text-gradient-ink {
+    @apply bg-gradient-to-r from-ink-700 to-ink-500 bg-clip-text text-transparent;
+  }
+
+  /* 文字渐变 - 朱砂 */
+  .text-gradient-vermilion {
+    @apply bg-gradient-to-r from-vermilion-600 to-vermilion-500 bg-clip-text text-transparent;
+  }
+
+  /* 滚动条美化 */
+  .scrollbar-ink {
+    scrollbar-width: thin;
+    scrollbar-color: #d4d0c8 #f5f2e8;
+  }
+  .scrollbar-ink::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  .scrollbar-ink::-webkit-scrollbar-track {
+    background: #f5f2e8;
+  }
+  .scrollbar-ink::-webkit-scrollbar-thumb {
+    @apply bg-ink-200 rounded-full;
+  }
+  .scrollbar-ink::-webkit-scrollbar-thumb:hover {
+    @apply bg-ink-300;
+  }
+
+  /* 禁用滚动条 */
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* 水墨边框 */
+  .border-ink-gradient {
+    border-image: linear-gradient(135deg, #2a2520, #5c5447) 1;
+  }
+
+  /* 纸张背景 */
+  .bg-paper-aged {
+    background-image:
+      linear-gradient(to bottom, rgba(245,242,232,0.9), rgba(245,242,232,1)),
+      url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
+  }
+
+  /* 文字阴影 */
+  .text-shadow-ink {
+    text-shadow: 0 1px 2px rgba(26, 24, 21, 0.1);
+  }
+
+  /* 悬浮效果 */
+  .float-paper {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  .float-paper:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(26, 24, 21, 0.12);
+  }
+}
