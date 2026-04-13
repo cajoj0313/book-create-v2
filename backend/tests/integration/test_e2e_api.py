@@ -63,6 +63,16 @@ class MockAIProviderForE2E:
             yield chunk
 
 
+def get_response_data(response):
+    """辅助函数：提取 API 响应数据"""
+    result = response.json()
+    # API 返回格式: {success: true, data: {...}}
+    if "success" in result and result["success"]:
+        return result.get("data", result)
+    # 直接返回数据的情况
+    return result
+
+
 class TestE2EFullWorkflow:
     """完整业务流程测试"""
 
@@ -114,7 +124,7 @@ class TestE2EFullWorkflow:
         )
 
         assert response.status_code == 200
-        data = response.json()
+        data = get_response_data(response)
         self.novel_id = data["novel_id"]
 
         assert data["title"] == "E2E测试小说"
@@ -133,7 +143,7 @@ class TestE2EFullWorkflow:
             }
         )
         assert create_response.status_code == 200
-        novel_id = create_response.json()["novel_id"]
+        novel_id = get_response_data(create_response)["novel_id"]
 
         # 步骤 2: 生成世界观
         world_response = client.post(
@@ -144,13 +154,13 @@ class TestE2EFullWorkflow:
             }
         )
         assert world_response.status_code == 200
-        world_data = world_response.json()
+        world_data = get_response_data(world_response)
         assert world_data["novel_id"] == novel_id
 
         # 步骤 3: 获取小说详情，验证世界观已保存
         detail_response = client.get(f"/novels/{novel_id}")
         assert detail_response.status_code == 200
-        detail_data = detail_response.json()
+        detail_data = get_response_data(detail_response)
         assert detail_data["world_setting"] is not None
 
         # 步骤 4: 生成大纲
@@ -164,7 +174,7 @@ class TestE2EFullWorkflow:
             }
         )
         assert outline_response.status_code == 200
-        outline_data = outline_response.json()
+        outline_data = get_response_data(outline_response)
         assert outline_data["novel_id"] == novel_id
 
         # 步骤 5: 生成章节
@@ -176,7 +186,7 @@ class TestE2EFullWorkflow:
             }
         )
         assert chapter_response.status_code == 200
-        chapter_data = chapter_response.json()
+        chapter_data = get_response_data(chapter_response)
         assert chapter_data["chapter_num"] == 1
 
         # 步骤 6: 获取章节内容
@@ -195,7 +205,7 @@ class TestE2EFullWorkflow:
             }
         )
         assert validate_response.status_code == 200
-        validate_data = validate_response.json()
+        validate_data = get_response_data(validate_response)
         assert "issues" in validate_data
         assert "statistics" in validate_data
 
@@ -258,7 +268,10 @@ class TestE2EAPIEndpoints:
         """测试小说列表"""
         response = client.get("/novels/")
         assert response.status_code == 200
-        assert isinstance(response.json(), list)
+        # API 返回格式: {success: true, data: [...]}
+        result = response.json()
+        assert result["success"] is True
+        assert isinstance(result["data"], list)
 
     def test_create_novel_endpoint(self, client):
         """测试创建小说"""
@@ -267,7 +280,7 @@ class TestE2EAPIEndpoints:
             json={"title": "API测试小说", "genre": "都市职场"}
         )
         assert response.status_code == 200
-        data = response.json()
+        data = get_response_data(response)
         assert "novel_id" in data
         assert data["title"] == "API测试小说"
 
@@ -278,12 +291,12 @@ class TestE2EAPIEndpoints:
             "/novels/",
             json={"title": "详情测试", "genre": "都市职场"}
         )
-        novel_id = create_response.json()["novel_id"]
+        novel_id = get_response_data(create_response)["novel_id"]
 
         # 获取详情
         response = client.get(f"/novels/{novel_id}")
         assert response.status_code == 200
-        data = response.json()
+        data = get_response_data(response)
         assert "meta" in data
 
     def test_get_novel_not_found(self, client):
@@ -298,7 +311,7 @@ class TestE2EAPIEndpoints:
             "/novels/",
             json={"title": "删除测试", "genre": "都市职场"}
         )
-        novel_id = create_response.json()["novel_id"]
+        novel_id = get_response_data(create_response)["novel_id"]
 
         # 删除
         response = client.delete(f"/novels/{novel_id}")
@@ -331,7 +344,7 @@ class TestE2EAPIEndpoints:
             "/novels/",
             json={"title": "无世界观测试", "genre": "都市职场"}
         )
-        novel_id = create_response.json()["novel_id"]
+        novel_id = get_response_data(create_response)["novel_id"]
 
         # 直接尝试生成大纲
         response = client.post(
@@ -347,7 +360,7 @@ class TestE2EAPIEndpoints:
             "/novels/",
             json={"title": "无大纲测试", "genre": "都市职场"}
         )
-        novel_id = create_response.json()["novel_id"]
+        novel_id = get_response_data(create_response)["novel_id"]
 
         # 直接尝试生成章节
         response = client.post(
@@ -363,7 +376,7 @@ class TestE2EAPIEndpoints:
             "/novels/",
             json={"title": "校验测试", "genre": "都市职场"}
         )
-        novel_id = create_response.json()["novel_id"]
+        novel_id = get_response_data(create_response)["novel_id"]
 
         # 校验不存在章节
         response = client.post(
@@ -417,7 +430,7 @@ class TestE2ESSEStreaming:
             "/novels/",
             json={"title": "SSE测试", "genre": "都市职场"}
         )
-        novel_id = create_response.json()["novel_id"]
+        novel_id = get_response_data(create_response)["novel_id"]
 
         # 流式生成世界观
         response = client.post(
@@ -446,7 +459,7 @@ class TestE2ESSEStreaming:
             "/novels/",
             json={"title": "大纲SSE测试", "genre": "都市职场"}
         )
-        novel_id = create_response.json()["novel_id"]
+        novel_id = get_response_data(create_response)["novel_id"]
 
         # 先生成世界观
         client.post(
@@ -476,7 +489,7 @@ class TestE2ESSEStreaming:
             "/novels/",
             json={"title": "章节SSE测试", "genre": "都市职场"}
         )
-        novel_id = create_response.json()["novel_id"]
+        novel_id = get_response_data(create_response)["novel_id"]
 
         client.post(
             "/generation/world-setting",
@@ -564,7 +577,7 @@ class TestE2EErrorHandling:
             "/novels/",
             json={"title": "报告测试", "genre": "都市职场"}
         )
-        novel_id = create_response.json()["novel_id"]
+        novel_id = get_response_data(create_response)["novel_id"]
 
         response = client.get(f"/generation/validate/report/{novel_id}/1")
         assert response.status_code == 404
@@ -611,13 +624,13 @@ class TestE2EDataPersistence:
             "/novels/",
             json={"title": "持久化测试", "genre": "都市职场", "target_chapters": 10}
         )
-        novel_id = create_response.json()["novel_id"]
+        novel_id = get_response_data(create_response)["novel_id"]
 
         # 多次获取验证数据持久化
         for _ in range(3):
             response = client.get(f"/novels/{novel_id}")
             assert response.status_code == 200
-            data = response.json()
+            data = get_response_data(response)
             assert data["meta"]["title"] == "持久化测试"
 
     def test_world_setting_persistence(self, client):
@@ -626,7 +639,7 @@ class TestE2EDataPersistence:
             "/novels/",
             json={"title": "世界观持久化", "genre": "都市职场"}
         )
-        novel_id = create_response.json()["novel_id"]
+        novel_id = get_response_data(create_response)["novel_id"]
 
         # 生成世界观
         client.post(
@@ -637,7 +650,8 @@ class TestE2EDataPersistence:
         # 多次获取验证持久化
         for _ in range(3):
             response = client.get(f"/novels/{novel_id}")
-            assert response.json()["world_setting"] is not None
+            data = get_response_data(response)
+            assert data["world_setting"] is not None
 
     def test_chapter_persistence(self, client):
         """测试章节持久化"""
@@ -645,7 +659,7 @@ class TestE2EDataPersistence:
             "/novels/",
             json={"title": "章节持久化", "genre": "都市职场"}
         )
-        novel_id = create_response.json()["novel_id"]
+        novel_id = get_response_data(create_response)["novel_id"]
 
         # 生成必要数据
         client.post(
@@ -675,7 +689,7 @@ class TestE2EDataPersistence:
             "/novels/",
             json={"title": "状态文件测试", "genre": "都市职场"}
         )
-        novel_id = create_response.json()["novel_id"]
+        novel_id = get_response_data(create_response)["novel_id"]
 
         # 生成大纲（会初始化伏笔状态）
         client.post(

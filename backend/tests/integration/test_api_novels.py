@@ -52,7 +52,11 @@ class TestNovelAPI:
         )
 
         assert response.status_code == 200
-        data = response.json()
+        result = response.json()
+
+        # API 返回格式: {success: true, data: {...}}
+        assert result["success"] is True
+        data = result["data"]
 
         assert data["title"] == "剑破苍穹"
         assert data["genre"] == "武侠修仙"
@@ -73,7 +77,11 @@ class TestNovelAPI:
         response = client.get("/novels/")
 
         assert response.status_code == 200
-        data = response.json()
+        result = response.json()
+
+        # API 返回格式: {success: true, data: [...]}
+        assert result["success"] is True
+        data = result["data"]
 
         assert isinstance(data, list)
         assert len(data) >= 1
@@ -85,13 +93,17 @@ class TestNovelAPI:
             "/novels/",
             json={"title": "详情测试", "genre": "都市职场"}
         )
-        novel_id = create_response.json()["novel_id"]
+        novel_id = create_response.json()["data"]["novel_id"]
 
         # 获取详情
         response = client.get(f"/novels/{novel_id}")
 
         assert response.status_code == 200
-        data = response.json()
+        result = response.json()
+
+        # API 返回格式: {success: true, data: {meta: ...}}
+        assert result["success"] is True
+        data = result["data"]
 
         assert "meta" in data
         assert data["meta"]["title"] == "详情测试"
@@ -109,13 +121,14 @@ class TestNovelAPI:
             "/novels/",
             json={"title": "待删除", "genre": "都市职场"}
         )
-        novel_id = create_response.json()["novel_id"]
+        novel_id = create_response.json()["data"]["novel_id"]
 
         # 删除
         response = client.delete(f"/novels/{novel_id}")
 
         assert response.status_code == 200
-        assert response.json()["message"] == "Novel deleted"
+        result = response.json()
+        assert result["success"] is True
 
         # 验证已删除
         get_response = client.get(f"/novels/{novel_id}")
