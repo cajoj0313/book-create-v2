@@ -151,14 +151,13 @@ export default function ChapterWriter() {
     sseClientRef.current = client
 
     client.connect(
-      `/api/generation/chapter/stream/${novelId}/${currentChapterNum}`,
+      `/api/generation/chapter/stream`,
       {
         method: 'POST',
         body: JSON.stringify({
-          outline_context: outline ? {
-            key_events: outline.key_events,
-            turning_points: outline.turning_points,
-          } : null,
+          novel_id: novelId,
+          chapter_num: currentChapterNum,
+          user_special_request: null,
         }),
       },
       {
@@ -184,7 +183,7 @@ export default function ChapterWriter() {
         },
       }
     )
-  }, [novelId, currentChapterNum, outline])
+  }, [novelId, currentChapterNum])
 
   // 停止生成
   const handleStopGenerate = useCallback(() => {
