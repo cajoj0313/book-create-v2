@@ -420,11 +420,11 @@ export default function ChapterWriter() {
             <div className="mt-6 pt-6 border-t border-ink-200">
               <h3 className="font-title-base text-ink-700 mb-4">出场人物</h3>
               <div className="flex flex-wrap gap-2">
-                {characters.slice(0, 8).map(c => (
+                {(characters ?? []).slice(0, 8).map(c => (
                   <span key={c.character_id} className="badge-ink">{c.name}</span>
                 ))}
-                {characters.length > 8 && (
-                  <span className="text-title-xs text-ink-400">等{characters.length}人</span>
+                {(characters ?? []).length > 8 && (
+                  <span className="text-title-xs text-ink-400">等{(characters ?? []).length}人</span>
                 )}
               </div>
             </div>

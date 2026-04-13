@@ -589,10 +589,13 @@ function CharacterCard({
         {character.abilities?.cultivation_level && (
           <div>境界: {character.abilities.cultivation_level}</div>
         )}
+        {character.abilities?.skills && character.abilities.skills.length > 0 && (
+          <div>技能: {character.abilities.skills.slice(0, 3).join(' · ')}</div>
+        )}
       </div>
 
       <div className="text-xs text-gray-400 mt-2">
-        {character.personality.slice(0, 3).join(' · ')}
+        {(character.personality ?? []).slice(0, 3).join(' · ')}
       </div>
     </div>
   )
