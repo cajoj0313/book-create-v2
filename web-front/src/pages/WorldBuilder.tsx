@@ -116,7 +116,8 @@ export default function WorldBuilder() {
         jsonContent = jsonMatch[1]
       }
       const parsed = JSON.parse(jsonContent)
-      if (parsed.novel_id && parsed.background) {
+      // 只检查 background 字段，novel_id 由后端添加
+      if (parsed.background) {
         return parsed
       }
       return null

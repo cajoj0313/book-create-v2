@@ -70,6 +70,7 @@ class SSEParser {
    * 解析数据行
    */
   private parseDataLine(data: string, onEvent: SSEEventHandler): void {
+    // 尝试解析为 JSON 对象
     try {
       const parsed = JSON.parse(data)
       onEvent({
@@ -77,14 +78,31 @@ class SSEParser {
         data: parsed.content || parsed.data || '',
         timestamp: new Date().toISOString()
       })
+      return
     } catch {
-      // 非 JSON，作为纯文本
+      // 不是 JSON 对象，可能是 JSON 转义的字符串
+    }
+
+    // 尝试解转义 JSON 字符串（后端使用 json.dumps(text)[1:-1]）
+    try {
+      // 添加引号使其成为有效的 JSON 字符串
+      const unescaped = JSON.parse(`"${data}"`)
       onEvent({
         event: 'chunk',
-        data: data,
+        data: unescaped,
         timestamp: new Date().toISOString()
       })
+      return
+    } catch {
+      // 解转义失败，作为纯文本
     }
+
+    // 纯文本
+    onEvent({
+      event: 'chunk',
+      data: data,
+      timestamp: new Date().toISOString()
+    })
   }
 
   /**
