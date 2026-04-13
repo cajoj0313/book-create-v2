@@ -126,7 +126,7 @@ export default function OutlineEditor() {
             volumesExpand[v.volume_id] = true
           })
         }
-        outlineRes.data.chapters.slice(0, 10).forEach(ch => {
+        (outlineRes.data.chapters ?? []).slice(0, 10).forEach(ch => {
           chaptersExpand[ch.chapter_num] = true
         })
         setExpandState({ volumes: volumesExpand, chapters: chaptersExpand })
@@ -238,7 +238,7 @@ export default function OutlineEditor() {
           volumesExpand[v.volume_id] = true
         })
       }
-      pendingOutline.chapters.slice(0, 10).forEach(ch => {
+      (pendingOutline.chapters ?? []).slice(0, 10).forEach(ch => {
         chaptersExpand[ch.chapter_num] = true
       })
       setExpandState({ volumes: volumesExpand, chapters: chaptersExpand })
@@ -326,9 +326,11 @@ export default function OutlineEditor() {
         volumesExpand[v.volume_id] = expand
       })
     }
-    outline.chapters.forEach(ch => {
-      chaptersExpand[ch.chapter_num] = expand
-    })
+    if (outline.chapters) {
+      outline.chapters.forEach(ch => {
+        chaptersExpand[ch.chapter_num] = expand
+      })
+    }
 
     setExpandState({ volumes: volumesExpand, chapters: chaptersExpand })
   }, [outline])
@@ -718,7 +720,7 @@ function OutlineViewer({
   const hasVolumes = outline.volumes && outline.volumes.length > 0
 
   if (hasVolumes) {
-    outline.chapters.forEach(ch => {
+    (outline.chapters ?? []).forEach(ch => {
       const volId = ch.volume_id || 'default'
       if (!chaptersByVolume[volId]) {
         chaptersByVolume[volId] = []
@@ -742,7 +744,7 @@ function OutlineViewer({
         </div>
 
         <div className="flex items-center gap-4 text-ink-600">
-          <span className="font-title-sm">共 {outline.chapters.length} 章</span>
+          <span className="font-title-sm">共 {(outline.chapters ?? []).length} 章</span>
           {hasVolumes && (
             <span className="font-title-sm">{outline.volumes!.length} 卷</span>
           )}
@@ -826,7 +828,7 @@ function OutlineViewer({
       )}
 
       {/* 武侠修仙版本 - 卷划分展示 */}
-      {hasVolumes && outline.volumes!.map((volume) => (
+      {hasVolumes && (outline.volumes ?? []).map((volume) => (
         <section key={volume.volume_id} className="paper p-8">
           {/* 卷标题 */}
           <div className="flex items-center justify-between mb-6">
@@ -837,7 +839,7 @@ function OutlineViewer({
                   <input
                     value={volume.name}
                     onChange={(e) => {
-                      const newVolumes = outline.volumes!.map(v =>
+                      const newVolumes = (outline.volumes ?? []).map(v =>
                         v.volume_id === volume.volume_id ? { ...v, name: e.target.value } : v
                       )
                       updateField('volumes', newVolumes)
@@ -866,7 +868,7 @@ function OutlineViewer({
               <input
                 value={volume.theme}
                 onChange={(e) => {
-                  const newVolumes = outline.volumes!.map(v =>
+                  const newVolumes = (outline.volumes ?? []).map(v =>
                     v.volume_id === volume.volume_id ? { ...v, theme: e.target.value } : v
                   )
                   updateField('volumes', newVolumes)
@@ -885,7 +887,7 @@ function OutlineViewer({
               <textarea
                 value={volume.arc_summary}
                 onChange={(e) => {
-                  const newVolumes = outline.volumes!.map(v =>
+                  const newVolumes = (outline.volumes ?? []).map(v =>
                     v.volume_id === volume.volume_id ? { ...v, arc_summary: e.target.value } : v
                   )
                   updateField('volumes', newVolumes)
@@ -927,7 +929,7 @@ function OutlineViewer({
           </h2>
 
           <div className="space-y-4">
-            {outline.chapters.map((chapter) => (
+            {(outline.chapters ?? []).map((chapter) => (
               <ChapterCard
                 key={chapter.chapter_num}
                 chapter={chapter}
