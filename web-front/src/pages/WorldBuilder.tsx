@@ -173,6 +173,53 @@ export default function WorldBuilder() {
     )
   }, [novelId, description, storyPreference])
 
+  // AI 随机生成
+  const handleRandomGenerate = useCallback(() => {
+    if (!novelId) return
+
+    setGenerateStatus('connecting')
+    setGeneratedContent('')
+    setGenerateError(null)
+    setWorldSetting(null)
+    setPendingSetting(null)
+
+    const client = new SSEClient()
+    sseClientRef.current = client
+
+    client.connect(
+      `/api/generation/world-setting/stream`,
+      {
+        method: 'POST',
+        body: JSON.stringify({
+          novel_id: novelId,
+          random_generate: true,
+          genre: '都市职场',
+        }),
+      },
+      {
+        onEvent: (event) => {
+          if (event.event === 'start') {
+            setGenerateStatus('streaming')
+          } else if (event.event === 'chunk') {
+            setGeneratedContent(prev => prev + event.data)
+          } else if (event.event === 'complete') {
+            setGenerateStatus('completed')
+          } else if (event.event === 'error') {
+            setGenerateStatus('error')
+            setGenerateError(event.data)
+          }
+        },
+        onError: (err) => {
+          setGenerateStatus('error')
+          setGenerateError(err.message)
+        },
+        onComplete: () => {
+          setGenerateStatus('completed')
+        },
+      }
+    )
+  }, [novelId])
+
   // 停止生成
   const handleStopGenerate = useCallback(() => {
     if (sseClientRef.current) {
@@ -338,18 +385,32 @@ export default function WorldBuilder() {
                     停止生成
                   </button>
                 ) : (
-                  <button
-                    onClick={handleGenerate}
-                    disabled={!description.trim() || generateStatus === 'connecting'}
-                    className="btn-vermilion"
-                  >
-                    {generateStatus === 'connecting' ? (
-                      <span className="flex items-center gap-2">
-                        <div className="loading-spinner w-4 h-4" />
-                        连接中...
-                      </span>
-                    ) : '开始生成'}
-                  </button>
+                  <>
+                    <button
+                      onClick={handleGenerate}
+                      disabled={!description.trim() || generateStatus === 'connecting'}
+                      className="btn-vermilion"
+                    >
+                      {generateStatus === 'connecting' ? (
+                        <span className="flex items-center gap-2">
+                          <div className="loading-spinner w-4 h-4" />
+                          连接中...
+                        </span>
+                      ) : '开始生成'}
+                    </button>
+                    <button
+                      onClick={handleRandomGenerate}
+                      disabled={generateStatus === 'connecting'}
+                      className="btn-indigo"
+                    >
+                      {generateStatus === 'connecting' ? (
+                        <span className="flex items-center gap-2">
+                          <div className="loading-spinner w-4 h-4" />
+                          连接中...
+                        </span>
+                      ) : 'AI 随机生成'}
+                    </button>
+                  </>
                 )}
               </div>
             </div>
