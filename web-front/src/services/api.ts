@@ -28,7 +28,7 @@ const apiClient = axios.create({
   },
 })
 
-// 请求拦截器 - 添加超时配置
+// 请求拦截器 - 添加超时配置 + 去掉尾随斜杠
 apiClient.interceptors.request.use(
   (config) => {
     // 根据请求类型设置超时时间
@@ -38,6 +38,11 @@ apiClient.interceptors.request.use(
       config.timeout = TIMEOUT_CONFIG.generation
     } else if (config.method === 'get') {
       config.timeout = TIMEOUT_CONFIG.short
+    }
+
+    // 去掉 URL 尾随斜杠（避免 307 重定向）
+    if (config.url && config.url.endsWith('/') && config.url.length > 1) {
+      config.url = config.url.slice(0, -1)
     }
 
     return config
