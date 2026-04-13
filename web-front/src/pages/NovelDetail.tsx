@@ -180,7 +180,7 @@ export default function NovelDetail() {
               <div>
                 <h1 className="text-xl font-semibold">{meta.title}</h1>
                 <div className="text-sm text-gray-500">
-                  {meta.genre} | {meta.word_count.toLocaleString()}字
+                  {meta.genre} | {(meta.word_count ?? 0).toLocaleString()}字
                 </div>
               </div>
             </div>
@@ -195,7 +195,7 @@ export default function NovelDetail() {
               </span>
 
               <span className="text-sm text-gray-500">
-                章节: {meta.completed_chapters}/{meta.target_chapters}
+                章节: {meta.completed_chapters ?? 0}/{meta.target_chapters ?? 0}
               </span>
             </div>
           </div>
@@ -246,7 +246,7 @@ export default function NovelDetail() {
           <ForeshadowingTab
             foreshadowings={foreshadowingPlan}
             foreshadowingState={foreshadowingState}
-            completedChapters={meta.completed_chapters}
+            completedChapters={meta.completed_chapters ?? 0}
             novelId={novelId!}
             onEditForeshadowing={(item) => setForeshadowingModal({ open: true, item })}
             onDeleteForeshadowing={(item) => setDeleteConfirm({ open: true, type: 'foreshadowing', id: item.id, name: item.hint })}
@@ -330,7 +330,7 @@ function OverviewTab({
           <ProgressCard
             title="人物库"
             status={novel.characters ? 'completed' : 'pending'}
-            subtitle={novel.characters ? `${novel.characters.characters.length}人` : undefined}
+            subtitle={novel.characters ? `${(novel.characters.characters ?? []).length}人` : undefined}
             onClick={() => onNavigate(`/novels/${novelId}/world-setting`)}
           />
 
@@ -338,16 +338,16 @@ function OverviewTab({
           <ProgressCard
             title="大纲"
             status={novel.outline ? 'completed' : 'pending'}
-            subtitle={novel.outline ? `${novel.outline.volumes.length}卷` : undefined}
+            subtitle={novel.outline ? `${(novel.outline.volumes ?? []).length}卷` : undefined}
             onClick={() => onNavigate(`/novels/${novelId}/outline`)}
           />
 
           {/* 章节 */}
           <ProgressCard
             title="章节"
-            status={meta.completed_chapters > 0 ? 'in_progress' : 'pending'}
-            subtitle={`${meta.completed_chapters}/${meta.target_chapters}`}
-            progress={meta.completed_chapters / meta.target_chapters}
+            status={(meta.completed_chapters ?? 0) > 0 ? 'in_progress' : 'pending'}
+            subtitle={`${meta.completed_chapters ?? 0}/${meta.target_chapters ?? 0}`}
+            progress={(meta.completed_chapters ?? 0) / (meta.target_chapters ?? 1)}
             onClick={() => onNavigate(`/novels/${novelId}/chapters`)}
           />
         </div>
@@ -360,19 +360,19 @@ function OverviewTab({
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div className="flex justify-between">
             <span className="text-gray-500">类型</span>
-            <span>{meta.genre}</span>
+            <span>{meta.genre ?? '未设置'}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-gray-500">主题</span>
-            <span>{meta.theme.join(', ')}</span>
+            <span>{(meta.theme ?? []).join(', ')}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-gray-500">创建时间</span>
-            <span>{new Date(meta.created_at).toLocaleDateString()}</span>
+            <span>{meta.created_at ? new Date(meta.created_at).toLocaleDateString() : '未知'}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-gray-500">更新时间</span>
-            <span>{new Date(meta.updated_at).toLocaleDateString()}</span>
+            <span>{meta.updated_at ? new Date(meta.updated_at).toLocaleDateString() : '未知'}</span>
           </div>
         </div>
       </div>
