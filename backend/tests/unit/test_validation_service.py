@@ -1,4 +1,4 @@
-"""校验服务单元测试"""
+"""校验服务单元测试（都市言情简化版）"""
 import pytest
 import os
 import tempfile
@@ -22,22 +22,18 @@ class MockAIProvider:
 
 
 class TestValidationRules:
-    """校验规则测试"""
+    """校验规则测试（都市言情简化版）"""
 
     def test_rules_count(self):
-        """测试规则总数"""
-        assert len(VALIDATION_RULES) == 36
+        """测试规则总数（简化版：5条）"""
+        assert len(VALIDATION_RULES) == 5
 
     def test_rule_categories(self):
-        """测试规则分类"""
+        """测试规则分类（简化版：3类）"""
         categories = {
-            "逻辑一致性": ["L001", "L002", "L003", "L004", "L005"],
-            "语法规范": ["G001", "G002", "G003", "G004", "G005"],
-            "风格一致性": ["S001", "S002", "S003"],
-            "人物一致性": ["P001", "P002", "P003", "P004"],
-            "伏笔一致性": ["F001", "F002", "F003"],
-            "商业逻辑": ["B001", "B002", "B003", "B004", "B005", "B006", "B007", "B008"],
-            "感情线": ["E001", "E002", "E003", "E004", "E005", "E006", "E007", "E008"]
+            "语法规范": ["G001", "G002"],
+            "感情线": ["E001", "E002"],
+            "人物一致性": ["P001"]
         }
 
         for category, rules in categories.items():
@@ -45,39 +41,39 @@ class TestValidationRules:
                 assert rule_id in VALIDATION_RULES
                 assert VALIDATION_RULES[rule_id]["category"] == category
 
-    def test_logic_rules(self):
-        """测试逻辑一致性规则"""
-        for rule_id in ["L001", "L002", "L003", "L004", "L005"]:
+    def test_grammar_rules(self):
+        """测试语法规范规则"""
+        for rule_id in ["G001", "G002"]:
             rule = VALIDATION_RULES[rule_id]
-            assert rule["severity"] in ["high", "medium"]
+            assert rule["severity"] == "low"
             assert "description" in rule
             assert "trigger" in rule
             assert "action" in rule
-
-    def test_business_rules(self):
-        """测试商业逻辑规则（都市职场专项）"""
-        business_rules = ["B001", "B002", "B003", "B004", "B005", "B006", "B007", "B008"]
-
-        for rule_id in business_rules:
-            rule = VALIDATION_RULES[rule_id]
-            assert rule["category"] == "商业逻辑"
-            assert rule["severity"] in ["high", "medium"]
+            assert "auto_fix_threshold" in rule
 
     def test_emotion_rules(self):
-        """测试感情线规则（都市职场专项）"""
-        emotion_rules = ["E001", "E002", "E003", "E004", "E005", "E006", "E007", "E008"]
+        """测试感情线规则（简化版：E001/E002）"""
+        emotion_rules = ["E001", "E002"]
 
         for rule_id in emotion_rules:
             rule = VALIDATION_RULES[rule_id]
             assert rule["category"] == "感情线"
-            assert rule["severity"] in ["high", "medium", "low"]
+            assert rule["severity"] in ["high", "medium"]
+
+    def test_character_rule(self):
+        """测试人物一致性规则"""
+        rule = VALIDATION_RULES["P001"]
+        assert rule["category"] == "人物一致性"
+        assert rule["severity"] == "medium"
 
     def test_auto_fix_threshold(self):
         """测试自动修复阈值"""
+        # 只有语法规则有自动修复阈值
         assert VALIDATION_RULES["G001"]["auto_fix_threshold"] == 90
         assert VALIDATION_RULES["G002"]["auto_fix_threshold"] == 95
 
-        for rule_id in ["L001", "L002", "L003", "L004", "L005"]:
+        # 感情线和人物一致性规则无自动修复阈值
+        for rule_id in ["E001", "E002", "P001"]:
             assert "auto_fix_threshold" not in VALIDATION_RULES[rule_id]
 
 
@@ -102,7 +98,7 @@ class TestValidationServiceChapterValidation:
 
     @pytest.fixture
     def mock_storage_with_chapter(self):
-        """创建带章节的 Mock 存储"""
+        """创建带章节的 Mock 存储（简化版）"""
         temp_dir = tempfile.mkdtemp()
         storage = FileStorage(os.path.join(temp_dir, "data", "novels"))
         storage.create_novel_dir("test-novel-validation")
@@ -114,59 +110,44 @@ class TestValidationServiceChapterValidation:
 
         storage.save_json("test-novel-validation", "world_setting.json", {
             "novel_id": "test-novel-validation",
-            "background": {"era": "现代"}
+            "background": {"era": "现代"},
+            "emotion_stages": ["陌生人", "暧昧", "心动", "热恋", "稳定"]
         })
 
         storage.save_json("test-novel-validation", "characters.json", {
             "novel_id": "test-novel-validation",
             "characters": [{
                 "character_id": "char-001",
-                "name": "主角",
-                "personality": ["冷静"]
+                "name": "男主",
+                "role": "主角",
+                "personality": ["冷静", "霸道"]
+            }, {
+                "character_id": "char-002",
+                "name": "女主",
+                "role": "主角",
+                "personality": ["温柔", "坚强"]
             }]
         })
 
         storage.save_json("test-novel-validation", "outline.json", {
-            "novel_id": "test-novel-validation"
-        })
-
-        storage.save_json("test-novel-validation", "state/timeline.json", {
             "novel_id": "test-novel-validation",
-            "events": [{
-                "order": 1,
-                "chapter": 1,
-                "time": "第一天",
-                "event": "入职"
+            "emotion_schedule": [{
+                "chapter_range": "1-10",
+                "stage": "陌生人",
+                "key_events": ["初遇", "误会"]
             }]
         })
 
-        storage.save_json("test-novel-validation", "state/character_states.json", {
-            "novel_id": "test-novel-validation",
-            "states": [{
-                "character_id": "char-001",
-                "current_location": "公司",
-                "emotional_state": "正常"
-            }]
-        })
-
-        storage.save_json("test-novel-validation", "state/foreshadowing.json", {
-            "novel_id": "test-novel-validation",
-            "foreshadowings": [{
-                "id": "fs-001",
-                "hint": "神秘老板",
-                "planted_chapter": 1,
-                "planned_recycle_chapter": 10,
-                "status": "planted"
-            }]
-        })
+        # 简化版：移除 timeline/foreshadowing/character_states
 
         storage.save_json("test-novel-validation", "chapters/chapter_001.json", {
             "novel_id": "test-novel-validation",
             "chapter_num": 1,
             "title": "第一章",
             "content": "这是第一章内容...",
+            "emotion_stage": "陌生人",
             "summary": {
-                "key_events": ["入职"],
+                "key_events": ["初遇"],
                 "emotional_tone": "紧张"
             },
             "validation_status": {
@@ -181,7 +162,7 @@ class TestValidationServiceChapterValidation:
 
     @pytest.mark.asyncio
     async def test_load_validation_context(self, mock_storage_with_chapter):
-        """测试加载校验上下文"""
+        """测试加载校验上下文（简化版）"""
         storage, temp_dir = mock_storage_with_chapter
 
         with patch.dict(os.environ, {"DASHSCOPE_API_KEY": "test-key"}, clear=False):
@@ -192,14 +173,14 @@ class TestValidationServiceChapterValidation:
 
                 context = service._load_validation_context("test-novel-validation", 1)
 
+                # 简化版：只检查核心数据
                 assert context["world_setting"] is not None
                 assert context["characters"] is not None
-                assert context["timeline"] is not None
-                assert context["character_states"] is not None
-                assert context["foreshadowing"] is not None
+                assert context["outline"] is not None
+                # timeline/foreshadowing 已移除
 
     def test_get_rules_by_category(self, mock_storage_with_chapter):
-        """测试按类别获取规则"""
+        """测试按类别获取规则（简化版）"""
         storage, temp_dir = mock_storage_with_chapter
 
         with patch.dict(os.environ, {"DASHSCOPE_API_KEY": "test-key"}, clear=False):
@@ -208,18 +189,23 @@ class TestValidationServiceChapterValidation:
                 from src.application.validation_service import ValidationService
                 service = ValidationService(storage)
 
-                rules = service._get_rules_by_category("逻辑一致性")
-                assert len(rules) == 5
-                assert "L001" in rules
-
-                rules = service._get_rules_by_category("商业逻辑")
-                assert len(rules) == 8
+                # 简化版：只有3类
+                rules = service._get_rules_by_category("语法规范")
+                assert len(rules) == 2
+                assert "G001" in rules
+                assert "G002" in rules
 
                 rules = service._get_rules_by_category("感情线")
-                assert len(rules) == 8
+                assert len(rules) == 2
+                assert "E001" in rules
+                assert "E002" in rules
+
+                rules = service._get_rules_by_category("人物一致性")
+                assert len(rules) == 1
+                assert "P001" in rules
 
     def test_build_validation_prompt(self, mock_storage_with_chapter):
-        """测试构建校验 Prompt"""
+        """测试构建校验 Prompt（简化版）"""
         storage, temp_dir = mock_storage_with_chapter
 
         with patch.dict(os.environ, {"DASHSCOPE_API_KEY": "test-key"}, clear=False):
@@ -234,14 +220,15 @@ class TestValidationServiceChapterValidation:
                 prompt = service._build_validation_prompt(
                     chapter,
                     context,
-                    ["L001", "G001"]
+                    ["G001", "E001"]
                 )
 
-                assert "L001" in prompt
                 assert "G001" in prompt
+                assert "E001" in prompt
                 assert "issues" in prompt
                 assert "statistics" in prompt
-                assert "红线规则" in prompt
+                # 简化版：使用"校验约束"而非"红线规则"
+                assert "校验约束" in prompt
 
     @pytest.mark.asyncio
     async def test_validate_chapter_success(self, mock_storage_with_chapter):
@@ -299,15 +286,16 @@ class TestValidationServiceChapterValidation:
         """测试校验发现高严重问题"""
         storage, temp_dir = mock_storage_with_chapter
 
+        # 简化版：使用 E001 而非 L001
         mock_response = '''
         {
             "issues": [{
                 "issue_id": "ISS-001",
-                "rule_id": "L001",
+                "rule_id": "E001",
                 "severity": "high",
                 "confidence": 85,
-                "description": "时间线矛盾：本章描述'三天后'，但上一章'次日'",
-                "suggestion": "修正时间描述",
+                "description": "感情节奏矛盾：当前应为'陌生人'阶段，但描述为'心动'",
+                "suggestion": "修正感情描述",
                 "auto_fix_available": false,
                 "status": "pending"
             }],
@@ -373,10 +361,11 @@ class TestValidationServiceChapterValidation:
                 from src.application.validation_service import ValidationService
                 service = ValidationService(storage)
 
+                # 简化版：使用存在的类别"感情线"
                 report = await service.validate_chapter(
                     "test-novel-validation",
                     1,
-                    validation_types=["逻辑一致性"]
+                    validation_types=["感情线"]
                 )
 
                 assert report is not None
@@ -387,7 +376,7 @@ class TestValidationServiceFullNovel:
 
     @pytest.fixture
     def mock_storage_with_multiple_chapters(self):
-        """创建带多章节的 Mock 存储"""
+        """创建带多章节的 Mock 存储（简化版）"""
         temp_dir = tempfile.mkdtemp()
         storage = FileStorage(os.path.join(temp_dir, "data", "novels"))
         storage.create_novel_dir("test-novel-full")
@@ -402,19 +391,8 @@ class TestValidationServiceFullNovel:
         storage.save_json("test-novel-full", "world_setting.json", {"era": "现代"})
         storage.save_json("test-novel-full", "characters.json", {"characters": []})
         storage.save_json("test-novel-full", "outline.json", {"chapters": []})
-        storage.save_json("test-novel-full", "state/timeline.json", {"events": []})
-        storage.save_json("test-novel-full", "state/character_states.json", {"states": []})
 
-        storage.save_json("test-novel-full", "state/foreshadowing.json", {
-            "novel_id": "test-novel-full",
-            "foreshadowings": [{
-                "id": "fs-001",
-                "hint": "神秘老板",
-                "planted_chapter": 1,
-                "planned_recycle_chapter": 5,
-                "status": "planted"
-            }]
-        })
+        # 简化版：移除 state 目录文件
 
         for i in range(1, 3):
             storage.save_json("test-novel-full", f"chapters/chapter_{i:03d}.json", {
@@ -430,20 +408,34 @@ class TestValidationServiceFullNovel:
 
     @pytest.mark.asyncio
     async def test_cross_chapter_validation(self, mock_storage_with_multiple_chapters):
-        """测试跨章校验"""
+        """测试全书校验（简化版：移除跨章校验方法）"""
         storage, temp_dir = mock_storage_with_multiple_chapters
 
         with patch.dict(os.environ, {"DASHSCOPE_API_KEY": "test-key"}, clear=False):
-            mock_provider = MockAIProvider('{"issues": [], "statistics": {}}')
+            mock_response = '''
+            {
+                "issues": [],
+                "statistics": {
+                    "total_issues": 0,
+                    "high_severity": 0,
+                    "medium_severity": 0,
+                    "low_severity": 0,
+                    "auto_fixed": 0,
+                    "pending": 0
+                }
+            }
+            '''
+            mock_provider = MockAIProvider(mock_response)
             with patch('src.infrastructure.ai_provider.AIProviderFactory.create', return_value=mock_provider):
                 from src.application.validation_service import ValidationService
                 service = ValidationService(storage)
 
-                issues = await service._cross_chapter_validation("test-novel-full")
+                # 简化版：直接测试 validate_novel 而非 _cross_chapter_validation
+                report = await service.validate_novel("test-novel-full")
 
-                assert len(issues) >= 1
-                assert issues[0]["rule_id"] == "F001"
-                assert "伏笔" in issues[0]["description"]
+                assert report is not None
+                assert report["validation_type"] == "full_novel"
+                assert "issues" in report
 
     def test_calculate_statistics(self, mock_storage_with_multiple_chapters):
         """测试统计计算"""
@@ -472,7 +464,7 @@ class TestValidationServiceFullNovel:
                 assert stats["pending"] == 2
 
     def test_get_rules_info(self, mock_storage_with_multiple_chapters):
-        """测试获取规则信息"""
+        """测试获取规则信息（简化版）"""
         storage, temp_dir = mock_storage_with_multiple_chapters
 
         with patch.dict(os.environ, {"DASHSCOPE_API_KEY": "test-key"}, clear=False):
@@ -483,11 +475,14 @@ class TestValidationServiceFullNovel:
 
                 info = service.get_rules_info()
 
-                assert info["total_rules"] == 36
+                # 简化版：5条规则，3类
+                assert info["total_count"] == 5
                 assert "categories" in info
-                assert info["categories"]["逻辑一致性"] == 5
-                assert info["categories"]["商业逻辑"] == 8
-                assert info["categories"]["感情线"] == 8
+                assert "rules" in info
+                # 验证分类结构
+                assert "G" in info["categories"]
+                assert "E" in info["categories"]
+                assert "P" in info["categories"]
 
 
 class TestValidationServiceJSONParse:
@@ -523,7 +518,7 @@ class TestValidationServiceJSONParse:
                 assert parsed is not None
 
     def test_parse_validation_result_empty_on_failure(self):
-        """测试解析失败返回空报告"""
+        """测试解析失败返回 None"""
         storage = MagicMock()
         with patch.dict(os.environ, {"DASHSCOPE_API_KEY": "test-key"}, clear=False):
             mock_provider = MockAIProvider("{}")
@@ -534,6 +529,5 @@ class TestValidationServiceJSONParse:
                 result = "完全无效的文本"
                 parsed = service._parse_validation_result(result, 1)
 
-                assert parsed is not None
-                assert parsed["issues"] == []
-                assert parsed["statistics"]["total_issues"] == 0
+                # 解析失败时返回 None
+                assert parsed is None

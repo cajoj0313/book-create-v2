@@ -326,8 +326,14 @@ class TestE2EAPIEndpoints:
         response = client.get("/generation/validate/rules")
         assert response.status_code == 200
         data = response.json()
-        assert data["total_rules"] == 36
+        # 都市言情简化版：5条规则（G001, G002, E001, E002, P001）
+        assert data["total_rules"] == 5
         assert "categories" in data
+        # 验证规则详情存在
+        assert "rules" in data
+        # 验证规则 ID 正确
+        expected_rules = {"G001", "G002", "E001", "E002", "P001"}
+        assert set(data["rules"].keys()) == expected_rules
 
     def test_world_setting_not_found(self, client):
         """测试世界观生成 - 小说不存在"""
@@ -683,29 +689,4 @@ class TestE2EDataPersistence:
             assert response.status_code == 200
             assert response.json()["chapter_num"] == 1
 
-    def test_state_files_created(self, client):
-        """测试状态文件创建"""
-        create_response = client.post(
-            "/novels/",
-            json={"title": "状态文件测试", "genre": "都市职场"}
-        )
-        novel_id = get_response_data(create_response)["novel_id"]
-
-        # 生成大纲（会初始化伏笔状态）
-        client.post(
-            "/generation/world-setting",
-            json={"novel_id": novel_id, "user_description": "都市职场"}
-        )
-        client.post(
-            "/generation/outline",
-            json={"novel_id": novel_id, "target_chapters": 10}
-        )
-
-        # 验证状态文件目录存在
-        from pathlib import Path
-        novel_dir = Path(self.test_data_dir) / novel_id / "state"
-        assert novel_dir.exists()
-
-        # 验证伏笔状态文件存在
-        foreshadowing_file = novel_dir / "foreshadowing.json"
-        assert foreshadowing_file.exists()
+    

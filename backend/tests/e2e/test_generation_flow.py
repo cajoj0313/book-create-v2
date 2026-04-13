@@ -33,6 +33,10 @@ def test_generation_flow():
 
         # 2. 进入世界观页面
         print("\n[步骤2] 世界观页面检查...")
+        # 先定义变量，避免条件块内定义导致 UnboundLocalError
+        textarea = page.locator('textarea').first
+        gen_btn = page.locator('button:has-text("生成"), button:has-text("开始")').first
+
         if '/world-setting' in current_url:
             print("✅ 已进入世界观页面")
 
@@ -40,11 +44,9 @@ def test_generation_flow():
             page.screenshot(path='/tmp/world_setting_initial.png')
 
             # 检查关键元素
-            textarea = page.locator('textarea').first
             print("✅ 发现描述输入框")
 
             # 检查生成按钮
-            gen_btn = page.locator('button:has-text("生成"), button:has-text("开始")').first
             print("✅ 发现生成按钮")
 
         # 3. 输入描述
@@ -54,7 +56,6 @@ def test_generation_flow():
         page.wait_for_timeout(300)
 
         # 检查按钮是否可点击
-        gen_btn = page.locator('button:has-text("生成"), button:has-text("开始")').first
         if not gen_btn.is_disabled():
             print("✅ 生成按钮已启用")
         else:
