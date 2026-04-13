@@ -14,7 +14,9 @@ router = APIRouter()
 class GenerateWorldSettingRequest(BaseModel):
     """生成世界观请求"""
     novel_id: str
-    user_description: str
+    user_description: str = ""  # 随机生成时可忽略
+    random_generate: bool = False  # 是否随机生成
+    genre: str = "都市职场"  # 小说类型（MVP 固定为都市职场）
 
 
 class WorldSettingResponse(BaseModel):
@@ -86,7 +88,7 @@ async def stream_generate_world_setting(request: GenerateWorldSettingRequest):
     """流式生成世界观设定（SSE）
 
     Args:
-        request: 包含novel_id和用户描述
+        request: 包含novel_id、用户描述、随机生成参数
 
     Returns:
         SSE流式响应
@@ -110,7 +112,9 @@ async def stream_generate_world_setting(request: GenerateWorldSettingRequest):
             full_content = ""
             async for chunk in service.stream_generate_world_setting(
                 request.novel_id,
-                request.user_description
+                request.user_description,
+                request.random_generate,
+                request.genre
             ):
                 full_content += chunk
                 # 发送内容片段

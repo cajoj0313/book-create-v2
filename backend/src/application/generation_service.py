@@ -64,18 +64,25 @@ class GenerationService:
     async def stream_generate_world_setting(
         self,
         novel_id: str,
-        user_description: str
+        user_description: str = "",
+        random_generate: bool = False,
+        genre: str = "都市职场"
     ) -> AsyncGenerator[str, None]:
         """流式生成世界观设定
 
         Args:
             novel_id: 小说ID
-            user_description: 用户简短描述
+            user_description: 用户简短描述（随机生成时可忽略）
+            random_generate: 是否随机生成
+            genre: 小说类型（随机生成时使用，MVP 固定为"都市职场"）
 
         Yields:
             str: 生成的内容片段
         """
-        prompt = self._build_world_setting_prompt(user_description)
+        if random_generate:
+            prompt = self._build_random_world_setting_prompt(genre)
+        else:
+            prompt = self._build_world_setting_prompt(user_description)
 
         async for chunk in self.ai_provider.stream_generate(prompt):
             yield chunk
@@ -126,6 +133,106 @@ class GenerationService:
 2. 能力体系必须有明确的等级和晋升规则
 3. 核心冲突必须能支撑至少50章的故事发展
 4. 如果是都市职场题材，power_system应为职场等级体系
+
+## 输出格式
+输出严格遵循 JSON 结构，不要添加任何额外文字说明。
+只输出JSON对象，不要包含markdown代码块标记。
+
+## 写作风格指南（强制遵守）
+
+### 信息密度控制
+1. 每句话不超过 2 个核心信息点
+2. 专业术语每段不超过 3 个，首次出现需有简短解释（不超过 15 字）
+3. 描述类内容：先总述（1句），再分述（每点1句）
+
+### 句子结构控制
+1. 单句长度不超过 40 字
+2. 长短句交替：每 2 个短句后可接 1 个中长句（不超过 60 字）
+3. 避免多层并列：并列结构不超过 3 层
+
+### 过渡衔接控制
+1. 因果关系必须明确过渡（如"因此"、"于是"、"这导致"）
+2. 时间顺序必须标注（如"随后"、"最终"、"在此期间"）
+3. 场景切换必须说明（如"与此同时"、"另一处"）
+
+### 术语处理规则
+1. 世界观术语首次出现需简短定义（不超过 15 字）
+2. 能力等级术语需用"→"标注晋升路径
+3. 地名/组织名需标注所属层级（如"中州·承天阙"）
+
+### 语言风格
+- 使用现代白话文风格
+- 保持统一，不要文言和白话混用
+
+## 输出前自检（强制执行）
+
+生成内容后，请按以下规则自检：
+1. 【信息密度】每句话是否不超过 2 个核心信息点？若超标，请拆分为多句
+2. 【术语密度】每段是否不超过 3 个专业术语？若超标，请将术语分散到不同段落
+3. 【句子长度】单句是否不超过 40 字？若超标，请拆分或重新组织
+4. 【过渡衔接】因果关系是否有明确过渡词？若缺失，请添加"因此/于是/这导致"
+5. 【风格统一】是否全程保持一致的语言风格？若混用，请统一为现代白话
+6. 【段落过渡】每个新段落开头是否有衔接句？若缺失，请添加"与此同时/转眼间/随后"
+7. 【首次出场】地区/组织首次出场是否有简短描述（≤30字）？若缺失，请补充
+
+请确保以上检查全部通过后再输出。
+"""
+        return prompt
+
+    def _build_random_world_setting_prompt(self, genre: str = "都市职场") -> str:
+        """构建随机生成世界观 Prompt
+
+        Args:
+            genre: 小说类型，MVP 阶段固定为"都市职场"
+
+        Returns:
+            str: 完整 Prompt
+        """
+        prompt = f"""
+# 任务：随机生成都市职场小说世界观
+
+## 小说类型
+{genre}
+
+## 输出要求
+请随机生成一个完整的都市职场小说世界观设定。
+
+### 主题选择（随机选择其一）
+- 职场晋升：主角从基层员工晋升为高管
+- 商业博弈：主角在商业竞争中突围
+- 创业奋斗：主角从零开始创业
+- 职场爱情：主角在职场中遇到爱情
+
+### background（背景设定）
+- era: "现代都市"
+- era_name: 具体时代名称（如"2024年上海"）
+- geography: 都市地理设定，包含：
+  - world_name: 城市名称
+  - regions: 至少3个主要区域（如商务区、住宅区、工业区），每个包含 name, description
+- society: 职场社会设定，包含：
+  - power_structure: 企业权力结构描述
+  - social_classes: 职场层级列表（至少3层，如高管、中层、基层）
+  - key_institutions: 关键企业/机构（至少2个）
+
+### power_system（能力体系 - 职场改编）
+- name: "职场等级体系"
+- levels: 职场等级列表（至少4级），每个包含 name, rank, description
+  - 示例：实习生→专员→主管→经理→总监→高管
+- key_rules: 晋升规则列表（至少3条核心规则）
+
+### core_conflict（核心冲突）
+- main_conflict: 职场主线冲突，包含 type, description, antagonist
+  - 类型示例：晋升竞争、商业博弈、职场阴谋
+- sub_conflicts: 子冲突列表（至少2个）
+
+### special_elements（特殊元素）
+至少包含2个特殊元素（如关键项目、重要资源、特殊关系）
+
+## 约束条件
+1. 设定必须符合都市职场现实逻辑
+2. 冲突必须能支撑至少50章的职场剧情发展
+3. 人物设定需要有明确的职业背景和目标
+4. 所有设定必须自洽，不能存在内部矛盾
 
 ## 输出格式
 输出严格遵循 JSON 结构，不要添加任何额外文字说明。
