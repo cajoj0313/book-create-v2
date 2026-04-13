@@ -443,9 +443,10 @@ export default function OutlineEditor() {
                   <span className="font-title-sm text-ink-700">基于已有世界观生成</span>
                 </div>
                 <div className="font-prose text-sm text-ink-600">
-                  世界: {worldSetting.background.geography.world_name} ·
-                  时代: {worldSetting.background.era_name} ·
-                  {worldSetting.power_system && `体系: ${worldSetting.power_system.name}`}
+                  城市: {worldSetting.background?.city || '未设定'} ·
+                  职场: {worldSetting.background?.workplace || '未设定'} ·
+                  男主: {worldSetting.male_lead?.name || '未设定'} ·
+                  女主: {worldSetting.female_lead?.name || '未设定'}
                 </div>
               </div>
             )}

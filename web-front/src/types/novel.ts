@@ -26,37 +26,75 @@ export interface Novel {
   chapters?: Chapter[]
 }
 
-// 世界观设定
+// 世界观设定（都市言情版）
 export interface WorldSetting {
-  novel_id: string
-  version: number
-  background: {
-    era: string
-    era_name: string
-    geography: {
-      world_name: string
-      regions: Array<{ name: string; description: string }>
+  novel_id?: string
+  version?: number
+  genre?: string
+  background?: {
+    city?: string
+    workplace?: string
+    workplace_name?: string
+    // 旧字段兼容（可选）
+    era?: string
+    era_name?: string
+    geography?: {
+      world_name?: string
+      regions?: Array<{ name: string; description: string }>
     }
-    society: {
-      power_structure: string
-      social_classes: string[]
-      key_institutions: string[]
+    society?: {
+      power_structure?: string
+      social_classes?: string[]
+      key_institutions?: string[]
     }
   }
-  power_system: {
+  male_lead?: {
+    name: string
+    identity: string
+    age: number
+    appearance: string
+    personality: string[]
+    wealth?: string
+    occupation?: string
+  }
+  female_lead?: {
+    name: string
+    identity: string
+    age: number
+    appearance: string
+    personality: string[]
+    background?: string
+    occupation?: string
+  }
+  emotion_arc?: {
+    stages: string[]
+  }
+  main_conflict?: {
+    type: string
+    description: string
+    antagonist?: string
+  }
+  supporting_chars?: Array<{
+    role: string
+    name: string
+    identity: string
+    relation_to_lead: string
+  }>
+  // 旧字段兼容（可选）
+  power_system?: {
     name: string
     levels: Array<{ name: string; rank: number; description: string }>
     key_rules: string[]
   } | null
-  core_conflict: {
+  core_conflict?: {
     main_conflict: {
       type: string
       description: string
       antagonist: string
     }
-    sub_conflicts: Array<{ type: string; description: string }>
+    sub_conflicts?: Array<{ type: string; description: string }>
   }
-  special_elements: Array<{ name: string; type: string; description: string }>
+  special_elements?: Array<{ name: string; type: string; description: string }>
 }
 
 // 人物信息

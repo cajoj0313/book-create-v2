@@ -490,12 +490,17 @@ export default function WorldBuilder() {
 
             <div className="bg-paper-aged rounded-paper-md p-4 mb-6 max-h-48 overflow-y-auto scrollbar-ink">
               <div className="font-prose text-sm text-ink-700">
-                <p className="mb-2"><strong>时代:</strong> {pendingSetting.background.era_name}</p>
-                <p className="mb-2"><strong>世界:</strong> {pendingSetting.background.geography.world_name}</p>
-                {pendingSetting.power_system && (
-                  <p className="mb-2"><strong>体系:</strong> {pendingSetting.power_system.name}</p>
+                <p className="mb-2"><strong>城市:</strong> {pendingSetting.background?.city || '未设定'}</p>
+                <p className="mb-2"><strong>职场:</strong> {pendingSetting.background?.workplace || '未设定'}</p>
+                {pendingSetting.male_lead && (
+                  <p className="mb-2"><strong>男主:</strong> {pendingSetting.male_lead.name} ({pendingSetting.male_lead.identity})</p>
                 )}
-                <p><strong>核心冲突:</strong> {pendingSetting.core_conflict.main_conflict.type}</p>
+                {pendingSetting.female_lead && (
+                  <p className="mb-2"><strong>女主:</strong> {pendingSetting.female_lead.name} ({pendingSetting.female_lead.identity})</p>
+                )}
+                {pendingSetting.main_conflict && (
+                  <p><strong>核心冲突:</strong> {pendingSetting.main_conflict.type}</p>
+                )}
               </div>
             </div>
 
@@ -555,7 +560,7 @@ export default function WorldBuilder() {
   )
 }
 
-// 世界观可视化组件 - 墨韵书香风格
+// 世界观可视化组件 - 都市言情风格
 function WorldSettingViewer({
   setting,
   editable,
@@ -583,136 +588,229 @@ function WorldSettingViewer({
       <section className="paper p-8">
         <h2 className="font-title-lg text-ink-800 mb-6 flex items-center gap-3">
           <div className="w-2 h-8 bg-indigo-500 rounded-full" />
-          <span>世界设定</span>
-          <span className="badge-indigo">背景</span>
+          <span>都市背景</span>
+          <span className="badge-indigo">城市职场</span>
         </h2>
 
         <div className="grid grid-cols-2 gap-6">
           <div>
-            <label className="block text-title-sm text-ink-600 mb-2">时代类型</label>
+            <label className="block text-title-sm text-ink-600 mb-2">所在城市</label>
             {editable ? (
-              <input value={setting.background.era} onChange={(e) => updateField('background.era', e.target.value)} className="input-ink" />
+              <input value={setting.background?.city || ''} onChange={(e) => updateField('background.city', e.target.value)} className="input-ink" />
             ) : (
-              <div className="font-title-base text-ink-800">{setting.background.era}</div>
+              <div className="font-title-base text-ink-800">{setting.background?.city || '未设定'}</div>
             )}
           </div>
           <div>
-            <label className="block text-title-sm text-ink-600 mb-2">具体时代</label>
+            <label className="block text-title-sm text-ink-600 mb-2">职场环境</label>
             {editable ? (
-              <input value={setting.background.era_name} onChange={(e) => updateField('background.era_name', e.target.value)} className="input-ink" />
+              <input value={setting.background?.workplace || ''} onChange={(e) => updateField('background.workplace', e.target.value)} className="input-ink" />
             ) : (
-              <div className="font-title-base text-ink-800">{setting.background.era_name}</div>
+              <div className="font-title-base text-ink-800">{setting.background?.workplace || '未设定'}</div>
             )}
           </div>
         </div>
 
-        {/* 地理设定 */}
-        <div className="mt-8 pt-6 border-t border-ink-200">
-          <h3 className="font-title-base text-ink-700 mb-4">{setting.background.geography.world_name}</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {setting.background.geography.regions.map((region, idx) => (
-              <div key={idx} className="paper-flat p-4 float-paper">
-                <div className="font-title-sm text-ink-800">{region.name}</div>
-                {editable ? (
-                  <textarea value={region.description} onChange={(e) => {
-                    const newRegions = [...setting.background.geography.regions]
-                    newRegions[idx] = { ...region, description: e.target.value }
-                    updateField('background.geography.regions', newRegions)
-                  }} className="input-ink text-sm mt-2" rows={2} />
-                ) : (
-                  <div className="font-prose text-sm text-ink-600 mt-2">{region.description}</div>
-                )}
-              </div>
-            ))}
+        {setting.background?.workplace_name && (
+          <div className="mt-6">
+            <label className="block text-title-sm text-ink-600 mb-2">公司名称</label>
+            {editable ? (
+              <input value={setting.background.workplace_name} onChange={(e) => updateField('background.workplace_name', e.target.value)} className="input-ink" />
+            ) : (
+              <div className="font-prose text-ink-700">{setting.background.workplace_name}</div>
+            )}
           </div>
-        </div>
-
-        {/* 社会设定 */}
-        <div className="mt-8 pt-6 border-t border-ink-200">
-          <h3 className="font-title-base text-ink-700 mb-4">社会结构</h3>
-          <div className="font-prose text-ink-600 mb-4">{setting.background.society.power_structure}</div>
-          <div className="flex gap-2">
-            {setting.background.society.social_classes.map((cls, idx) => (
-              <span key={idx} className="badge-ink">{cls}</span>
-            ))}
-          </div>
-        </div>
+        )}
       </section>
 
-      {/* 能力体系 */}
-      {setting.power_system && (
+      {/* 男主角 */}
+      <section className="paper p-8">
+        <h2 className="font-title-lg text-ink-800 mb-6 flex items-center gap-3">
+          <div className="w-2 h-8 bg-vermilion-500 rounded-full" />
+          <span>男主角</span>
+          <span className="badge-vermilion">男主</span>
+        </h2>
+
+        {setting.male_lead && (
+          <div className="space-y-4">
+            <div className="grid grid-cols-3 gap-6">
+              <div>
+                <label className="block text-title-sm text-ink-600 mb-2">姓名</label>
+                {editable ? (
+                  <input value={setting.male_lead.name} onChange={(e) => updateField('male_lead.name', e.target.value)} className="input-ink" />
+                ) : (
+                  <div className="font-title-base text-vermilion-700 font-semibold">{setting.male_lead.name}</div>
+                )}
+              </div>
+              <div>
+                <label className="block text-title-sm text-ink-600 mb-2">身份</label>
+                {editable ? (
+                  <input value={setting.male_lead.identity} onChange={(e) => updateField('male_lead.identity', e.target.value)} className="input-ink" />
+                ) : (
+                  <div className="font-title-base text-ink-800">{setting.male_lead.identity}</div>
+                )}
+              </div>
+              <div>
+                <label className="block text-title-sm text-ink-600 mb-2">年龄</label>
+                {editable ? (
+                  <input type="number" value={setting.male_lead.age} onChange={(e) => updateField('male_lead.age', Number(e.target.value))} className="input-ink" />
+                ) : (
+                  <div className="font-title-base text-ink-800">{setting.male_lead.age}岁</div>
+                )}
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-title-sm text-ink-600 mb-2">外貌</label>
+              {editable ? (
+                <textarea value={setting.male_lead.appearance} onChange={(e) => updateField('male_lead.appearance', e.target.value)} className="input-ink" rows={2} />
+              ) : (
+                <div className="font-prose text-ink-700">{setting.male_lead.appearance}</div>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-title-sm text-ink-600 mb-2">性格</label>
+              <div className="flex gap-2">
+                {setting.male_lead.personality?.map((p, idx) => (
+                  <span key={idx} className="badge-vermilion">{p}</span>
+                ))}
+              </div>
+            </div>
+
+            {setting.male_lead.occupation && (
+              <div>
+                <label className="block text-title-sm text-ink-600 mb-2">职业</label>
+                <div className="font-prose text-ink-700">{setting.male_lead.occupation}</div>
+              </div>
+            )}
+          </div>
+        )}
+      </section>
+
+      {/* 女主角 */}
+      <section className="paper p-8">
+        <h2 className="font-title-lg text-ink-800 mb-6 flex items-center gap-3">
+          <div className="w-2 h-8 bg-rose-400 rounded-full" />
+          <span>女主角</span>
+          <span className="badge-indigo">女主</span>
+        </h2>
+
+        {setting.female_lead && (
+          <div className="space-y-4">
+            <div className="grid grid-cols-3 gap-6">
+              <div>
+                <label className="block text-title-sm text-ink-600 mb-2">姓名</label>
+                {editable ? (
+                  <input value={setting.female_lead.name} onChange={(e) => updateField('female_lead.name', e.target.value)} className="input-ink" />
+                ) : (
+                  <div className="font-title-base text-indigo-700 font-semibold">{setting.female_lead.name}</div>
+                )}
+              </div>
+              <div>
+                <label className="block text-title-sm text-ink-600 mb-2">身份</label>
+                {editable ? (
+                  <input value={setting.female_lead.identity} onChange={(e) => updateField('female_lead.identity', e.target.value)} className="input-ink" />
+                ) : (
+                  <div className="font-title-base text-ink-800">{setting.female_lead.identity}</div>
+                )}
+              </div>
+              <div>
+                <label className="block text-title-sm text-ink-600 mb-2">年龄</label>
+                {editable ? (
+                  <input type="number" value={setting.female_lead.age} onChange={(e) => updateField('female_lead.age', Number(e.target.value))} className="input-ink" />
+                ) : (
+                  <div className="font-title-base text-ink-800">{setting.female_lead.age}岁</div>
+                )}
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-title-sm text-ink-600 mb-2">外貌</label>
+              {editable ? (
+                <textarea value={setting.female_lead.appearance} onChange={(e) => updateField('female_lead.appearance', e.target.value)} className="input-ink" rows={2} />
+              ) : (
+                <div className="font-prose text-ink-700">{setting.female_lead.appearance}</div>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-title-sm text-ink-600 mb-2">性格</label>
+              <div className="flex gap-2">
+                {setting.female_lead.personality?.map((p, idx) => (
+                  <span key={idx} className="badge-indigo">{p}</span>
+                ))}
+              </div>
+            </div>
+
+            {setting.female_lead.occupation && (
+              <div>
+                <label className="block text-title-sm text-ink-600 mb-2">职业</label>
+                <div className="font-prose text-ink-700">{setting.female_lead.occupation}</div>
+              </div>
+            )}
+          </div>
+        )}
+      </section>
+
+      {/* 感情线 */}
+      {setting.emotion_arc && (
         <section className="paper p-8">
           <h2 className="font-title-lg text-ink-800 mb-6 flex items-center gap-3">
-            <div className="w-2 h-8 bg-vermilion-500 rounded-full" />
-            <span>{setting.power_system.name}</span>
-            <span className="badge-vermilion">体系</span>
+            <div className="w-2 h-8 bg-gold-500 rounded-full" />
+            <span>感情节奏</span>
+            <span className="badge-gold">感情线</span>
           </h2>
 
-          <div className="space-y-4">
-            {setting.power_system.levels.map((level) => (
-              <div key={level.rank} className="flex items-center gap-6 paper-flat p-4">
-                <div className="w-16 h-8 bg-vermilion-100 rounded-paper flex items-center justify-center font-title-xs text-vermilion-700 font-bold">
-                  Lv.{level.rank}
+          <div className="flex gap-4 overflow-x-auto pb-4">
+            {setting.emotion_arc.stages?.map((stage, idx) => (
+              <div key={idx} className="paper-flat p-4 min-w-[120px] text-center">
+                <div className="w-8 h-8 bg-gold-100 rounded-full flex items-center justify-center mx-auto mb-2 font-title-sm text-gold-700 font-bold">
+                  {idx + 1}
                 </div>
-                <div className="font-title-sm text-ink-800">{level.name}</div>
-                <div className="font-prose text-sm text-ink-600">{level.description}</div>
+                <div className="font-title-sm text-ink-800">{stage}</div>
               </div>
             ))}
-          </div>
-
-          <div className="mt-8 pt-6 border-t border-ink-200">
-            <h3 className="font-title-base text-ink-700 mb-4">核心规则</h3>
-            <ul className="space-y-2">
-              {setting.power_system.key_rules.map((rule, idx) => (
-                <li key={idx} className="flex items-start gap-2 font-prose text-ink-600">
-                  <span className="text-vermilion-500">•</span>
-                  {rule}
-                </li>
-              ))}
-            </ul>
           </div>
         </section>
       )}
 
       {/* 核心冲突 */}
-      <section className="paper p-8">
-        <h2 className="font-title-lg text-ink-800 mb-6 flex items-center gap-3">
-          <div className="w-2 h-8 bg-gold-500 rounded-full" />
-          <span>核心矛盾</span>
-          <span className="badge-gold">冲突</span>
-        </h2>
-
-        <div className="bg-gold-50 border border-gold-200 rounded-paper-md p-6">
-          <div className="flex items-center gap-2 mb-4">
-            <span className="badge bg-gold-200 text-gold-800">{setting.core_conflict.main_conflict.type}</span>
-          </div>
-          <div className="font-title-base text-ink-800 mb-2">{setting.core_conflict.main_conflict.description}</div>
-          <div className="font-prose text-sm text-ink-600">反派势力: {setting.core_conflict.main_conflict.antagonist}</div>
-        </div>
-
-        {setting.core_conflict.sub_conflicts.map((conflict, idx) => (
-          <div key={idx} className="mt-4 paper-flat p-4">
-            <span className="text-ink-500 font-title-xs">{conflict.type}:</span>
-            <span className="ml-2 font-prose text-ink-700">{conflict.description}</span>
-          </div>
-        ))}
-      </section>
-
-      {/* 特殊元素 */}
-      {setting.special_elements.length > 0 && (
+      {setting.main_conflict && (
         <section className="paper p-8">
           <h2 className="font-title-lg text-ink-800 mb-6 flex items-center gap-3">
-            <div className="w-2 h-8 bg-indigo-400 rounded-full" />
-            <span>特殊设定</span>
-            <span className="badge-indigo">元素</span>
+            <div className="w-2 h-8 bg-vermilion-400 rounded-full" />
+            <span>核心矛盾</span>
+            <span className="badge-vermilion">冲突</span>
+          </h2>
+
+          <div className="bg-vermilion-50 border border-vermilion-200 rounded-paper-md p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <span className="badge bg-vermilion-200 text-vermilion-800">{setting.main_conflict.type}</span>
+            </div>
+            <div className="font-title-base text-ink-800">{setting.main_conflict.description}</div>
+          </div>
+        </section>
+      )}
+
+      {/* 配角 */}
+      {setting.supporting_chars && setting.supporting_chars.length > 0 && (
+        <section className="paper p-8">
+          <h2 className="font-title-lg text-ink-800 mb-6 flex items-center gap-3">
+            <div className="w-2 h-8 bg-purple-500 rounded-full" />
+            <span>重要配角</span>
+            <span className="badge-indigo">{setting.supporting_chars.length} 人</span>
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {setting.special_elements.map((elem, idx) => (
+            {setting.supporting_chars.map((char, idx) => (
               <div key={idx} className="paper-flat p-4 float-paper">
-                <div className="font-title-sm text-ink-800">{elem.name}</div>
-                <div className="text-xs text-indigo-600 font-title-xs mt-1">{elem.type}</div>
-                <div className="font-prose text-sm text-ink-600 mt-2">{elem.description}</div>
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="badge-ink">{char.role}</span>
+                  <span className="font-title-sm text-ink-800">{char.name}</span>
+                </div>
+                <div className="text-title-xs text-ink-500">{char.identity}</div>
+                <div className="font-prose text-sm text-ink-600 mt-2">{char.relation_to_lead}</div>
               </div>
             ))}
           </div>
