@@ -159,11 +159,14 @@ async def get_world_setting(novel_id: str):
     from ..infrastructure.storage import FileStorage
 
     storage = FileStorage("data/novels")
+
+    # 检查小说是否存在
+    if not storage.load_json(novel_id, "meta.json"):
+        raise HTTPException(status_code=404, detail="Novel not found")
+
     world_setting = storage.load_json(novel_id, "world_setting.json")
 
-    if not world_setting:
-        raise HTTPException(status_code=404, detail="World setting not found")
-
+    # 世界观未生成时返回 null，而不是 404（这是正常状态）
     return {"success": True, "data": world_setting}
 
 
@@ -361,11 +364,14 @@ async def get_outline(novel_id: str):
     from ..infrastructure.storage import FileStorage
 
     storage = FileStorage("data/novels")
+
+    # 检查小说是否存在
+    if not storage.load_json(novel_id, "meta.json"):
+        raise HTTPException(status_code=404, detail="Novel not found")
+
     outline = storage.load_json(novel_id, "outline.json")
 
-    if not outline:
-        raise HTTPException(status_code=404, detail="Outline not found")
-
+    # 大纲未生成时返回 null，而不是 404（这是正常状态）
     return {"success": True, "data": outline}
 
 
