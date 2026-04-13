@@ -25,9 +25,9 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="灵笔 API",
-    description="AI主导的小说生成平台",
-    version="0.1.0",
+    title="灵笔 API - 都市言情小说生成器",
+    description="AI主导的都市言情小说生成平台",
+    version="0.2.0",
     lifespan=lifespan
 )
 
@@ -44,7 +44,7 @@ app.add_middleware(
 @app.get("/")
 async def root():
     """根路径"""
-    return {"message": "灵笔 API 运行中", "version": "0.1.0"}
+    return {"message": "灵笔 API - 都市言情小说生成器", "version": "0.2.0"}
 
 
 @app.get("/health")
@@ -53,11 +53,9 @@ async def health():
     return {"status": "healthy"}
 
 
-# 导入路由
+# 导入路由（都市言情简化版，移除状态追踪路由）
 from .api_novels import router as novels_router
 from .api_generation import router as generation_router
-from .api_state import router as state_router
 
 app.include_router(novels_router, prefix="/novels", tags=["novels"])
 app.include_router(generation_router, prefix="/generation", tags=["generation"])
-app.include_router(state_router, prefix="/state", tags=["state"])

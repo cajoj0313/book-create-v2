@@ -2,6 +2,122 @@
 
 ---
 
+## 2026-04-13 产品转型：都市言情小说生成器 ✅ 决策确认
+
+### 转型背景
+
+用户明确需求："我只想做一个爽文生成器"，要求简化为**都市言情小说生成器**。
+
+### 转型决策
+
+| 维度 | 原方案 | 新方案 |
+|------|--------|--------|
+| 产品定位 | 多类型小说生成平台 | 都市言情小说生成器 |
+| 小说类型 | 武侠/玄幻/都市/科幻 | **仅都市言情** |
+| 创作流程 | 世界观→大纲→章节→校验 | 世界观→大纲→章节（简化） |
+| 状态追踪 | 时间线/人物状态/伏笔 | **移除** |
+| 校验规则 | 36 条（7 大类） | **5 条基础规则** |
+| 数据模型 | 复杂嵌套结构 | 简化扁平结构 |
+
+### 新数据模型（简化版）
+
+**world_setting.json**：
+- genre: 固定 "都市言情"
+- background: city/workplace（移除 geography/society）
+- male_lead/female_lead: 男主/女主固定模板
+- emotion_arc: 感情线弧度（7 阶段）
+- supporting_chars: 配角列表
+
+**outline.json**：
+- emotion_arc: 6 阶段感情节奏表
+- sweet_points: 爽点计划
+
+### 移除文件清单
+
+| 文件 | 状态 |
+|------|------|
+| `backend/src/interfaces/api_state.py` | 待删除 |
+| `backend/src/domain/services/timeline_service.py` | 待删除 |
+| `backend/src/domain/services/foreshadowing_service.py` | 待删除 |
+| `backend/src/application/state_service.py` | 待删除 |
+
+### 保留文件（需改造）
+
+| 文件 | 改造内容 |
+|------|----------|
+| `generation_service.py` | Prompt 改为都市言情模板 |
+| `validation_service.py` | 校验简化为 5 条规则 |
+| `WorldBuilder.tsx` | 界面简化 |
+| `NovelDetail.tsx` | 移除时间线/伏笔 Tab |
+| `ValidationReport.tsx` | 简化校验展示 |
+
+### PRD 文档
+
+- ✅ `docs/products/urban-romance-generator-brief.md` 已创建
+- ✅ `docs/products/backlog.md` 已更新（新增 FEAT-12）
+
+### 任务排期
+
+| Phase | 任务 ID | 任务名称 | 工时 | 依赖 | 状态 |
+|--------|---------|----------|------|------|------|
+| **Phase 1** | #104 | 世界观 Prompt 改造 | 4h | 无 | **completed** ✅ |
+| | #102 | 大纲 Prompt 改造 | 4h | 无 | **completed** ✅ |
+| | #106 | 章节 Prompt 改造 | 4h | 无 | **completed** ✅ |
+| **Phase 3** | #107 | 移除状态追踪服务 | 2h | 依赖 P1 | **completed** ✅ |
+| | #103 | 校验规则简化 | 2h | 依赖 P1 | **completed** ✅ |
+| **Phase 2** | #105 | 前端界面简化 | 6h | 依赖 P3 | **pending** |
+
+**总工期**: Phase 1 + Phase 3 已完成（6h），Phase 2 待执行（6h）
+
+### 完成情况
+
+**Phase 1: Prompt 改造** ✅
+- 世界观 Prompt 改为都市言情模板（男主/女主/感情线固定模板）
+- 大纲 Prompt 改为感情节奏表（6阶段固定结构）
+- 章节 Prompt 聚焦感情线和爽点（每章标注感情阶段）
+- 后端单元测试通过（62 passed）
+
+**Phase 3: 后端清理** ✅
+- 移除状态追踪服务（删除 4 个文件）
+- 校验规则简化为 5 条（G001/G002/E001/E002/P001）
+- main.py 路由清理完成
+- generation_service.py 状态追踪代码移除
+
+**Phase 2: 前端简化** ✅
+- NovelDetail 移除伏笔 Tab（仅保留概览和人物管理）
+- ValidationReport 简化为 3 类 5 条规则（G/E/P）
+- 前端 TypeScript 类型检查通过
+
+---
+
+## 2026-04-13 都市言情小说生成器转型完成 ✅
+
+### 转型总结
+
+| 阶段 | 状态 | 完成内容 |
+|------|------|----------|
+| **Phase 1** | ✅ | Prompt 改造（世界观/大纲/章节） |
+| **Phase 2** | ✅ | 前端界面简化（移除伏笔Tab） |
+| **Phase 3** | ✅ | 后端清理（移除状态追踪/简化校验） |
+
+### 代码变更统计
+
+| 类型 | 删除文件 | 修改文件 |
+|------|----------|----------|
+| 后端 | 4 个（api_state/timeline/foreshadowing/state服务） | 2 个（generation_service/validation_service） |
+| 前端 | 0 | 2 个（NovelDetail/ValidationReport） |
+
+### 功能变化
+
+| 原功能 | 新状态 |
+|--------|--------|
+| 多类型小说生成 | 仅都市言情 |
+| 时间线/伏笔/状态追踪 | **移除** |
+| 36条校验规则 | **简化为5条** |
+| 伏笔Tab | **移除** |
+
+---
+
 ## 2026-04-13 开工会话
 
 ### 初始化完成

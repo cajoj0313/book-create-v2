@@ -65,7 +65,7 @@ class TestGenerationServiceWorldSetting:
 
     @pytest.mark.asyncio
     async def test_build_world_setting_prompt(self, mock_storage):
-        """测试构建世界观 Prompt"""
+        """测试构建世界观 Prompt（都市言情模板）"""
         storage, temp_dir = mock_storage
 
         with patch.dict(os.environ, {"DASHSCOPE_API_KEY": "test-key"}, clear=False):
@@ -76,10 +76,14 @@ class TestGenerationServiceWorldSetting:
 
                 prompt = service._build_world_setting_prompt("一个都市职场故事")
 
+                # 都市言情模板的必要字段
                 assert "都市职场故事" in prompt
                 assert "background" in prompt
-                assert "power_system" in prompt
-                assert "core_conflict" in prompt
+                assert "male_lead" in prompt
+                assert "female_lead" in prompt
+                assert "emotion_arc" in prompt
+                assert "main_conflict" in prompt
+                assert "都市言情" in prompt
                 assert "JSON" in prompt
 
     @pytest.mark.asyncio
@@ -248,35 +252,14 @@ class TestGenerationServiceOutline:
                 assert result is not None
                 assert result["novel_id"] == "test-novel-002"
 
-                foreshadowing = storage.load_json("test-novel-002", "state/foreshadowing.json")
-                assert foreshadowing is not None
-                assert len(foreshadowing["foreshadowings"]) == 1
+                # 都市言情简化版：移除伏笔状态初始化检查
+                # foreshadowing = storage.load_json("test-novel-002", "state/foreshadowing.json")
 
                 meta = storage.load_json("test-novel-002", "meta.json")
                 assert meta["current_phase"] == "chapter_writing"
 
-    def test_init_foreshadowing_state(self, mock_storage_with_world):
-        """测试初始化伏笔状态"""
-        storage, temp_dir = mock_storage_with_world
-
-        with patch.dict(os.environ, {"DASHSCOPE_API_KEY": "test-key"}, clear=False):
-            mock_provider = MockAIProvider("{}")
-            with patch('src.infrastructure.ai_provider.AIProviderFactory.create', return_value=mock_provider):
-                from src.application.generation_service import GenerationService
-                service = GenerationService(storage)
-
-                outline = {
-                    "foreshadowing_plan": [
-                        {"id": "fs-001", "hint": "伏笔1", "recycle_chapter": 10},
-                        {"id": "fs-002", "hint": "伏笔2", "recycle_chapter": 20}
-                    ]
-                }
-
-                service._init_foreshadowing_state("test-novel-002", outline)
-
-                fs_state = storage.load_json("test-novel-002", "state/foreshadowing.json")
-                assert fs_state is not None
-                assert fs_state["statistics"]["pending"] == 2
+    # 都市言情简化版：移除伏笔状态初始化测试
+    # 整个测试方法已移除（_init_foreshadowing_state 方法已删除）
 
 
 class TestGenerationServiceChapter:
@@ -338,7 +321,7 @@ class TestGenerationServiceChapter:
 
     @pytest.mark.asyncio
     async def test_load_chapter_context(self, mock_storage_with_outline):
-        """测试加载章节上下文"""
+        """测试加载章节上下文（都市言情简化版）"""
         storage, temp_dir = mock_storage_with_outline
 
         with patch.dict(os.environ, {"DASHSCOPE_API_KEY": "test-key"}, clear=False):
@@ -353,7 +336,7 @@ class TestGenerationServiceChapter:
                 assert context["characters"] is not None
                 assert context["outline"] is not None
                 assert context["current_chapter_outline"] is not None
-                assert context["timeline"] is not None
+                # 都市言情简化版：移除时间线/人物状态/伏笔检查
 
     @pytest.mark.asyncio
     async def test_generate_chapter_success(self, mock_storage_with_outline):
@@ -400,8 +383,7 @@ class TestGenerationServiceChapter:
                 assert meta["completed_chapters"] == 1
                 assert meta["word_count"] > 0
 
-                timeline = storage.load_json("test-novel-003", "state/timeline.json")
-                assert len(timeline["events"]) == 1
+                # 都市言情简化版：移除时间线状态检查
 
     def test_calculate_word_count(self, mock_storage_with_outline):
         """测试字数计算"""

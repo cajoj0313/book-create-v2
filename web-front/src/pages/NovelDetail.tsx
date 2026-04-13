@@ -1,23 +1,22 @@
 /**
- * 小说详情页面
+ * 小说详情页面（都市言情简化版）
  * 功能：
  * - 小说基本信息展示
  * - 创作进度面板
- * - 人物关系图谱可视化
- * - 伏笔状态面板显示
+ * - 人物管理（男主/女主/配角）
  */
 
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
-import { novelApi, getOutline, getForeshadowingState, updateForeshadowingState, addCharacter, updateCharacter, deleteCharacter } from '@services/api'
-import type { Novel, Character, Outline, ForeshadowingPlan, ForeshadowingItem, ForeshadowingState } from '@/types/novel'
+import { novelApi, addCharacter, updateCharacter, deleteCharacter } from '@services/api'
+import type { Novel, Character } from '@/types/novel'
 
 // 关系类型颜色映射
 const RELATION_COLORS: Record<string, string> = {
   love: '#ef4444',      // 红色 - 爱情
-  mentor: '#3b82f6',    // 蓝色 - 师徒
+  mentor: '#3b82f6',    // 蓝色 - 师徒/上下级
   friend: '#22c55e',    // 绿色 - 朋友
-  enemy: '#ef4444',     // 红色 - 敌人
+  enemy: '#ef4444',     // 红色 - 敌人/情敌
   family: '#f59e0b',    // 黄色 - 家人
   default: '#6b7280',   // 灰色 - 其他
 }
@@ -25,9 +24,9 @@ const RELATION_COLORS: Record<string, string> = {
 // 关系类型标签
 const RELATION_LABELS: Record<string, string> = {
   love: '恋人',
-  mentor: '师徒',
+  mentor: '上下级',
   friend: '朋友',
-  enemy: '敌人',
+  enemy: '情敌',
   family: '家人',
   default: '关系',
 }
@@ -37,30 +36,20 @@ export default function NovelDetail() {
   const navigate = useNavigate()
   const [novel, setNovel] = useState<Novel | null>(null)
   const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState<'overview' | 'characters' | 'foreshadowing'>('overview')
+  const [activeTab, setActiveTab] = useState<'overview' | 'characters'>('overview')
 
-  // 大纲详情（用于伏笔信息）
-  const [outline, setOutline] = useState<Outline | null>(null)
-
-  // 弹窗状态
+  // 弹窗状态（都市言情简化版：仅保留人物管理）
   const [characterModal, setCharacterModal] = useState<{
     open: boolean
     mode: 'add' | 'edit'
     character?: Character
   }>({ open: false, mode: 'add' })
-  const [foreshadowingModal, setForeshadowingModal] = useState<{
-    open: boolean
-    item?: ForeshadowingItem
-  }>({ open: false })
   const [deleteConfirm, setDeleteConfirm] = useState<{
     open: boolean
-    type: 'character' | 'foreshadowing'
+    type: 'character'
     id: string
     name: string
   }>({ open: false, type: 'character', id: '', name: '' })
-
-  // 伏笔状态数据
-  const [foreshadowingState, setForeshadowingState] = useState<ForeshadowingState | null>(null)
 
   useEffect(() => {
     if (novelId) {
@@ -72,21 +61,9 @@ export default function NovelDetail() {
     try {
       setLoading(true)
 
-      // 加载小说详情
+      // 加载小说详情（都市言情简化版：移除伏笔加载）
       const data = await novelApi.getNovel(id)
       setNovel(data)
-
-      // 加载大纲（用于伏笔信息）
-      const outlineRes = await getOutline(id)
-      if (outlineRes.success && outlineRes.data) {
-        setOutline(outlineRes.data)
-      }
-
-      // 加载伏笔状态
-      const fsStateRes = await getForeshadowingState(id)
-      if (fsStateRes.success && fsStateRes.data) {
-        setForeshadowingState(fsStateRes.data)
-      }
 
     } catch (err) {
       console.error('Failed to load novel:', err)
@@ -102,21 +79,7 @@ export default function NovelDetail() {
     setNovel(data)
   }
 
-  // 刷新伏笔状态数据
-  async function refreshForeshadowing() {
-    if (!novelId) return
-    const fsStateRes = await getForeshadowingState(novelId)
-    if (fsStateRes.success && fsStateRes.data) {
-      setForeshadowingState(fsStateRes.data)
-    }
-    // 同时刷新大纲（伏笔计划）
-    const outlineRes = await getOutline(novelId)
-    if (outlineRes.success && outlineRes.data) {
-      setOutline(outlineRes.data)
-    }
-  }
-
-  // 删除人物
+  // 删除人物（都市言情简化版）
   async function handleDeleteCharacter(charId: string) {
     if (!novelId) return
     try {
@@ -128,18 +91,7 @@ export default function NovelDetail() {
     }
   }
 
-  // 删除伏笔（标记为已回收或删除）
-  async function handleDeleteForeshadowing(fsId: string) {
-    if (!novelId) return
-    try {
-      // 将伏笔标记为已回收
-      await updateForeshadowingState(novelId, fsId, { status: 'recycled' })
-      await refreshForeshadowing()
-      setDeleteConfirm({ open: false, type: 'foreshadowing', id: '', name: '' })
-    } catch (err) {
-      console.error('Failed to update foreshadowing:', err)
-    }
-  }
+  // 都市言情简化版：移除 handleDeleteForeshadowing 函数
 
   if (loading) {
     return (
@@ -165,7 +117,7 @@ export default function NovelDetail() {
   const meta = novel.meta
   const characters = novel.characters?.characters || []
   const relationshipEdges = novel.characters?.relationship_graph?.edges || []
-  const foreshadowingPlan = outline?.foreshadowing_plan || []
+  // 都市言情简化版：移除 foreshadowingPlan
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -200,9 +152,9 @@ export default function NovelDetail() {
             </div>
           </div>
 
-          {/* Tab导航 */}
+          {/* Tab导航（都市言情简化版：移除伏笔Tab） */}
           <nav className="flex gap-2 mt-4">
-            {(['overview', 'characters', 'foreshadowing'] as const).map((tab) => (
+            {(['overview', 'characters'] as const).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -212,7 +164,7 @@ export default function NovelDetail() {
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
-                {tab === 'overview' ? '概览' : tab === 'characters' ? '人物关系' : '伏笔状态'}
+                {tab === 'overview' ? '概览' : '人物关系'}
               </button>
             ))}
           </nav>
@@ -241,17 +193,7 @@ export default function NovelDetail() {
           />
         )}
 
-        {/* 伏笔状态Tab */}
-        {activeTab === 'foreshadowing' && (
-          <ForeshadowingTab
-            foreshadowings={foreshadowingPlan}
-            foreshadowingState={foreshadowingState}
-            completedChapters={meta.completed_chapters ?? 0}
-            novelId={novelId!}
-            onEditForeshadowing={(item) => setForeshadowingModal({ open: true, item })}
-            onDeleteForeshadowing={(item) => setDeleteConfirm({ open: true, type: 'foreshadowing', id: item.id, name: item.hint })}
-          />
-        )}
+        {/* 都市言情简化版：移除伏笔Tab */}
       </main>
 
       {/* 人物编辑弹窗 */}
@@ -268,32 +210,14 @@ export default function NovelDetail() {
         />
       )}
 
-      {/* 伏笔编辑弹窗 */}
-      {foreshadowingModal.open && foreshadowingModal.item && (
-        <ForeshadowingModal
-          novelId={novelId!}
-          item={foreshadowingModal.item}
-          onClose={() => setForeshadowingModal({ open: false })}
-          onSuccess={() => {
-            setForeshadowingModal({ open: false })
-            refreshForeshadowing()
-          }}
-        />
-      )}
+      {/* 都市言情简化版：移除伏笔弹窗 */}
 
-      {/* 删除确认弹窗 */}
+      {/* 删除确认弹窗（都市言情简化版：仅人物） */}
       {deleteConfirm.open && (
         <DeleteConfirmModal
-          type={deleteConfirm.type}
           name={deleteConfirm.name}
           onCancel={() => setDeleteConfirm({ open: false, type: 'character', id: '', name: '' })}
-          onConfirm={() => {
-            if (deleteConfirm.type === 'character') {
-              handleDeleteCharacter(deleteConfirm.id)
-            } else {
-              handleDeleteForeshadowing(deleteConfirm.id)
-            }
-          }}
+          onConfirm={() => handleDeleteCharacter(deleteConfirm.id)}
         />
       )}
     </div>
@@ -674,189 +598,7 @@ function CharacterCard({
   )
 }
 
-// 伏笔状态Tab
-function ForeshadowingTab({
-  foreshadowings,
-  foreshadowingState,
-  completedChapters,
-  novelId: _novelId,
-  onEditForeshadowing,
-  onDeleteForeshadowing,
-}: {
-  foreshadowings: ForeshadowingPlan[]
-  foreshadowingState: ForeshadowingState | null
-  completedChapters: number
-  novelId: string
-  onEditForeshadowing: (item: ForeshadowingItem) => void
-  onDeleteForeshadowing: (item: ForeshadowingItem) => void
-}) {
-  // 分类统计
-  const planted = foreshadowings.filter(f => f.status === 'planted')
-  const pending = foreshadowings.filter(f => f.status === 'pending')
-  const recycled = foreshadowings.filter(f => f.status === 'recycled')
-
-  // 待回收的伏笔（已到达回收章节）
-  const dueForRecycle = planted.filter(f => f.recycle_chapter <= completedChapters)
-
-  // 合并伏笔状态数据（优先使用 state 数据）
-  const displayItems: ForeshadowingItem[] = foreshadowingState?.foreshadowings || foreshadowings.map(f => ({
-    id: f.id,
-    hint: f.hint,
-    planted_chapter: null,
-    planned_recycle_chapter: f.recycle_chapter,
-    recycle_chapter: null,
-    status: f.status,
-    significance: 'medium' as const,
-    resolution_hint: undefined,
-  }))
-
-  return (
-    <div className="space-y-6">
-      {/* 统计概览 */}
-      <div className="grid grid-cols-4 gap-4">
-        <StatCard label="总伏笔" value={foreshadowings.length} color="gray" />
-        <StatCard label="已埋下" value={planted.length} color="blue" />
-        <StatCard label="已回收" value={recycled.length} color="green" />
-        <StatCard label="待埋/待回收" value={pending.length + dueForRecycle.length} color="yellow" />
-      </div>
-
-      {/* 待回收提醒 */}
-      {dueForRecycle.length > 0 && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-          <h3 className="font-medium text-yellow-700 mb-2">
-            需要注意：以下伏笔已到达回收章节
-          </h3>
-          <div className="space-y-2">
-            {dueForRecycle.map((fs) => (
-              <div key={fs.id} className="bg-white p-3 rounded text-sm">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <span className="font-medium">ID: {fs.id}</span>
-                    <span className="ml-2 text-gray-600">{fs.hint}</span>
-                  </div>
-                  <span className="text-yellow-600">
-                    第{fs.recycle_chapter}章回收
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* 伏笔列表 */}
-      <div className="bg-white rounded-lg shadow-sm p-6">
-        <h2 className="font-semibold mb-4">伏笔清单</h2>
-
-        {displayItems.length > 0 ? (
-          <div className="space-y-3">
-            {displayItems.map((fs) => {
-              const statusColor =
-                fs.status === 'recycled' ? 'bg-green-100 text-green-700' :
-                fs.status === 'planted' ? 'bg-blue-100 text-blue-700' :
-                'bg-gray-100 text-gray-700'
-
-              const isDue = fs.status === 'planted' && fs.planned_recycle_chapter <= completedChapters
-
-              return (
-                <div key={fs.id} className={`p-4 rounded-lg border ${
-                  isDue ? 'bg-yellow-50 border-yellow-200' : 'bg-gray-50 border-gray-200'
-                }`}>
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono text-sm text-gray-500">{fs.id}</span>
-                      <span className={`px-2 py-0.5 rounded text-xs ${statusColor}`}>
-                        {fs.status === 'recycled' ? '已回收' :
-                         fs.status === 'planted' ? '已埋下' : '待埋'}
-                      </span>
-                      {fs.significance === 'high' && (
-                        <span className="px-2 py-0.5 rounded text-xs bg-red-100 text-red-700">重要</span>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="text-sm text-gray-500">
-                        回收章节: 第{fs.planned_recycle_chapter}章
-                      </div>
-
-                      {/* 操作按钮 */}
-                      <div className="flex items-center gap-1">
-                        <button
-                          onClick={() => onEditForeshadowing(fs)}
-                          className="p-1.5 text-gray-500 hover:text-blue-500 hover:bg-blue-50 rounded transition-colors"
-                          title="编辑"
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                          </svg>
-                        </button>
-                        {fs.status !== 'recycled' && (
-                          <button
-                            onClick={() => onDeleteForeshadowing(fs)}
-                            className="p-1.5 text-gray-500 hover:text-red-500 hover:bg-red-50 rounded transition-colors"
-                            title="标记已回收"
-                          >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                            </svg>
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="text-gray-700">
-                    {fs.hint}
-                  </div>
-
-                  {fs.resolution_hint && (
-                    <div className="mt-2 text-sm text-gray-500">
-                      解答提示: {fs.resolution_hint}
-                    </div>
-                  )}
-
-                  {isDue && (
-                    <div className="mt-2 text-sm text-yellow-600">
-                      当前已写到第{completedChapters}章，此伏笔需要回收
-                    </div>
-                  )}
-                </div>
-              )
-            })}
-          </div>
-        ) : (
-          <div className="text-center text-gray-500 py-8">
-            暂无伏笔规划
-          </div>
-        )}
-      </div>
-    </div>
-  )
-}
-
-// 统计卡片
-function StatCard({
-  label,
-  value,
-  color,
-}: {
-  label: string
-  value: number
-  color: 'gray' | 'blue' | 'green' | 'yellow'
-}) {
-  const colors = {
-    gray: 'bg-gray-100',
-    blue: 'bg-blue-100',
-    green: 'bg-green-100',
-    yellow: 'bg-yellow-100',
-  }
-
-  return (
-    <div className={`${colors[color]} rounded-lg p-4 text-center`}>
-      <div className="text-2xl font-bold">{value}</div>
-      <div className="text-sm text-gray-600">{label}</div>
-    </div>
-  )
-}
+// 都市言情简化版：移除 ForeshadowingTab 组件和 StatCard 组件
 
 // ==================== 弹窗组件 ====================
 
@@ -1084,225 +826,22 @@ function CharacterModal({
   )
 }
 
-// 伏笔编辑弹窗
-function ForeshadowingModal({
-  novelId,
-  item,
-  onClose,
-  onSuccess,
-}: {
-  novelId: string
-  item: ForeshadowingItem
-  onClose: () => void
-  onSuccess: () => void
-}) {
-  const [formData, setFormData] = useState<Partial<ForeshadowingItem>>({
-    id: item.id,
-    hint: item.hint,
-    planned_recycle_chapter: item.planned_recycle_chapter,
-    status: item.status,
-    significance: item.significance,
-    resolution_hint: item.resolution_hint || '',
-  })
-  const [loading, setLoading] = useState(false)
+// 都市言情简化版：移除 ForeshadowingModal 组件
 
-  async function handleSubmit() {
-    if (!formData.hint) {
-      alert('请填写伏笔提示内容')
-      return
-    }
-
-    try {
-      setLoading(true)
-      await updateForeshadowingState(novelId, item.id, formData)
-      onSuccess()
-    } catch (err) {
-      console.error('Failed to update foreshadowing:', err)
-      alert('保存失败，请重试')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  async function handleMarkPlanted() {
-    try {
-      setLoading(true)
-      await updateForeshadowingState(novelId, item.id, { status: 'planted' })
-      onSuccess()
-    } catch (err) {
-      console.error('Failed to mark as planted:', err)
-      alert('操作失败，请重试')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  async function handleMarkRecycled() {
-    try {
-      setLoading(true)
-      await updateForeshadowingState(novelId, item.id, { status: 'recycled' })
-      onSuccess()
-    } catch (err) {
-      console.error('Failed to mark as recycled:', err)
-      alert('操作失败，请重试')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  return (
-    <div className="dialog-overlay fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="dialog-paper bg-white rounded-lg shadow-xl w-full max-w-lg mx-4">
-        {/* 标题 */}
-        <div className="px-6 py-4 border-b flex items-center justify-between">
-          <h3 className="font-semibold text-lg">编辑伏笔</h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-
-        {/* 内容 */}
-        <div className="px-6 py-4 space-y-4">
-          {/* ID */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">伏笔ID</label>
-            <input
-              type="text"
-              value={formData.id}
-              disabled
-              className="w-full px-3 py-2 border rounded-md bg-gray-50 text-gray-500"
-            />
-          </div>
-
-          {/* 提示内容 */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">提示内容</label>
-            <textarea
-              value={formData.hint}
-              onChange={(e) => setFormData({ ...formData, hint: e.target.value })}
-              className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              rows={3}
-              placeholder="伏笔的具体提示"
-            />
-          </div>
-
-          {/* 回收章节 */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">计划回收章节</label>
-            <input
-              type="number"
-              value={formData.planned_recycle_chapter}
-              onChange={(e) => setFormData({ ...formData, planned_recycle_chapter: parseInt(e.target.value) || 0 })}
-              className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            />
-          </div>
-
-          {/* 重要性 */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">重要性</label>
-            <select
-              value={formData.significance}
-              onChange={(e) => setFormData({ ...formData, significance: e.target.value as 'high' | 'medium' | 'low' })}
-              className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="high">高</option>
-              <option value="medium">中</option>
-              <option value="low">低</option>
-            </select>
-          </div>
-
-          {/* 解答提示 */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">解答提示</label>
-            <textarea
-              value={formData.resolution_hint}
-              onChange={(e) => setFormData({ ...formData, resolution_hint: e.target.value })}
-              className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              rows={2}
-              placeholder="伏笔回收时的解答方向"
-            />
-          </div>
-
-          {/* 当前状态 */}
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-gray-700">当前状态:</span>
-            <span className={`px-2 py-0.5 rounded text-xs ${
-              formData.status === 'recycled' ? 'bg-green-100 text-green-700' :
-              formData.status === 'planted' ? 'bg-blue-100 text-blue-700' :
-              'bg-gray-100 text-gray-700'
-            }`}>
-              {formData.status === 'recycled' ? '已回收' :
-               formData.status === 'planted' ? '已埋下' : '待埋'}
-            </span>
-          </div>
-        </div>
-
-        {/* 操作按钮 */}
-        <div className="px-6 py-4 border-t flex items-center justify-between gap-3">
-          {/* 状态切换按钮 */}
-          <div className="flex items-center gap-2">
-            {formData.status === 'pending' && (
-              <button
-                onClick={handleMarkPlanted}
-                disabled={loading}
-                className="px-3 py-1.5 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition-colors disabled:opacity-50"
-              >
-                标记已埋
-              </button>
-            )}
-            {formData.status === 'planted' && (
-              <button
-                onClick={handleMarkRecycled}
-                disabled={loading}
-                className="px-3 py-1.5 bg-green-100 text-green-700 rounded-md hover:bg-green-200 transition-colors disabled:opacity-50"
-              >
-                标记已回收
-              </button>
-            )}
-          </div>
-
-          {/* 保存/取消 */}
-          <div className="flex items-center gap-3">
-            <button
-              onClick={onClose}
-              className="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
-            >
-              取消
-            </button>
-            <button
-              onClick={handleSubmit}
-              disabled={loading}
-              className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors disabled:opacity-50"
-            >
-              {loading ? '保存中...' : '保存'}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-// 删除确认弹窗
+// 删除确认弹窗（都市言情简化版：仅人物）
 function DeleteConfirmModal({
-  type,
   name,
   onCancel,
   onConfirm,
 }: {
-  type: 'character' | 'foreshadowing'
   name: string
   onCancel: () => void
   onConfirm: () => void
 }) {
-  const title = type === 'character' ? '删除人物' : '标记伏笔已回收'
-  const message = type === 'character'
-    ? `确定要删除人物「${name}」吗？此操作不可恢复。`
-    : `确定要将伏笔「${name.substring(0, 30)}...」标记为已回收吗？`
-  const confirmText = type === 'character' ? '删除' : '标记已回收'
-  const confirmClass = type === 'character' ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'
+  const title = '删除人物'
+  const message = `确定要删除人物「${name}」吗？此操作不可恢复。`
+  const confirmText = '删除'
+  const confirmClass = 'bg-red-500 hover:bg-red-600'
 
   return (
     <div className="dialog-overlay fixed inset-0 bg-black/50 flex items-center justify-center z-50">

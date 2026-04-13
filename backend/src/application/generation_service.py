@@ -88,51 +88,92 @@ class GenerationService:
             yield chunk
 
     def _build_world_setting_prompt(self, user_description: str) -> str:
-        """构建世界观生成Prompt
+        """构建都市言情小说世界观生成 Prompt
 
         Args:
             user_description: 用户简短描述
 
         Returns:
-            str: 完整Prompt
+            str: 完整 Prompt
         """
         prompt = f"""
-# 任务：生成小说世界观
+# 任务：生成都市言情小说世界观设定
 
 ## 用户输入
 {user_description}
 
+## 小说类型
+都市言情（专注于都市爱情故事，职场背景）
+
 ## 输出要求
-请生成完整的世界观设定，输出为 JSON 格式，包含以下字段：
+请生成完整的都市言情小说世界观设定，输出为 JSON 格式，包含以下字段：
+
+### genre（小说类型）
+- 固定值: "都市言情"
 
 ### background（背景设定）
-- era: 时代类型（古代架空/现代/未来/异世界）
-- era_name: 具体时代名称
-- geography: 地理设定，包含：
-  - world_name: 世界名称
-  - regions: 至少3个主要地区，每个包含 name, description
-- society: 社会设定，包含：
-  - power_structure: 权力结构描述
-  - social_classes: 社会阶层列表（至少3层）
-  - key_institutions: 关键机构（至少2个）
+- city: 城市名称（如上海、北京、深圳、杭州）
+- workplace: 工作场所类型（如大型企业、创业公司、律师事务所、医院、设计公司）
+- workplace_name: 具体公司/机构名称（虚构名称）
 
-### power_system（能力体系）
-- name: 体系名称
-- levels: 能力等级列表（至少4级），每个包含 name, rank, description
-- key_rules: 规则列表（至少3条核心规则）
+### male_lead（男主设定）⭐ 必须包含
+- name: 姓名（现代风格，如林晨、陆远、张皓）
+- identity: 身份类型，选择其一：
+  - "霸道总裁"：强势、富有、护短
+  - "暖男医生"：温和、细心、体贴
+  - "腹黑律师"：聪明、深沉、有城府
+  - "创业精英"：野心、魄力、年轻有为
+- age: 年龄（28-35岁）
+- appearance: 外貌描述（不超过30字，如"冷峻英俊，眉眼深邃"）
+- personality: 性格特点数组（3-5个，如["强势", "护短", "深情", "傲娇"]）
+- wealth: 财富背景（如"富二代"、"白手起家"、"家族企业继承人"）
+- occupation: 具体职业（如CEO、律师、医生、创始人）
 
-### core_conflict（核心冲突）
-- main_conflict: 主线冲突，包含 type, description, antagonist
-- sub_conflicts: 子冲突列表（至少2个）
+### female_lead（女主设定）⭐ 必须包含
+- name: 姓名（现代风格，如苏晴、林婉、陈瑶）
+- identity: 身份类型，选择其一：
+  - "职场新人"：刚入职、努力、单纯
+  - "小透明"：低调、善良、有潜力
+  - "白富美"：优雅、独立、有主见
+- age: 年龄（22-26岁）
+- appearance: 外貌描述（不超过30字，如"清秀甜美，气质温婉"）
+- personality: 性格特点数组（3-5个，如["善良", "坚韧", "独立", "有些迷糊"]）
+- background: 家庭背景（如"普通家庭"、"单亲家庭"、"富裕家庭"）
+- occupation: 具体职业（如助理、设计师、医生、律师助理）
 
-### special_elements（特殊元素）
-至少包含2个特殊元素（法宝、资源、组织等）
+### emotion_arc（感情线弧度）⭐ 核心
+- stages: 感情阶段数组，固定顺序：
+  1. "初遇" - 带有误会或冲突的第一次见面
+  2. "误会" - 因误解产生敌意或距离
+  3. "暧昧" - 感情萌芽，心动开始
+  4. "表白" - 一方主动表白
+  5. "甜蜜" - 恋人状态，甜蜜互动
+  6. "波折" - 出现情敌、误会、家庭阻力等
+  7. "和解" - 解决问题，感情升温
+  8. "结局" - 求婚/结婚/甜蜜收尾
 
-## 约束条件
-1. 所有设定必须自洽，不能存在内部矛盾
-2. 能力体系必须有明确的等级和晋升规则
-3. 核心冲突必须能支撑至少50章的故事发展
-4. 如果是都市职场题材，power_system应为职场等级体系
+### main_conflict（主线冲突）
+- type: 冲突类型，选择其一：
+  - "误会" - 因误解导致的感情波折
+  - "情敌" - 出现竞争者
+  - "家庭阻力" - 家庭背景差异导致的反对
+  - "职场竞争" - 工作上的竞争影响感情
+- description: 冲突描述（不超过50字）
+
+### supporting_chars（配角列表）
+至少包含 2 个配角，每个包含：
+- role: 角色类型（如"情敌"、"闺蜜"、"兄弟"、"上司"、"前女友"）
+- name: 姓名
+- identity: 身份描述（不超过20字）
+- relation_to_lead: 与男主/女主的关系
+
+## 约束条件（必须遵守）
+1. 男主必须有能力、有魅力、有感情弧度变化
+2. 女主必须有独立性格、不是单纯依附男主
+3. 感情线必须有完整的"误会→暧昧→甜蜜→波折→和解"弧度
+4. 冲突必须能通过感情发展解决，不能是无解矛盾
+5. 职场背景要真实可信，符合现代都市生活
+6. 配角要服务于感情线发展
 
 ## 输出格式
 输出严格遵循 JSON 结构，不要添加任何额外文字说明。
@@ -140,140 +181,130 @@ class GenerationService:
 
 ## 写作风格指南（强制遵守）
 
-### 信息密度控制
-1. 每句话不超过 2 个核心信息点
-2. 专业术语每段不超过 3 个，首次出现需有简短解释（不超过 15 字）
-3. 描述类内容：先总述（1句），再分述（每点1句）
+### 人物设定风格
+1. 男主姓名：现代感，2-3字，有气质
+2. 女主姓名：现代感，2-3字，有柔美感
+3. 外貌描述：简洁具体（≤30字），有画面感
+4. 性格描述：用具体词汇而非抽象概念（如"护短"而非"有责任感"）
 
-### 句子结构控制
-1. 单句长度不超过 40 字
-2. 长短句交替：每 2 个短句后可接 1 个中长句（不超过 60 字）
-3. 避免多层并列：并列结构不超过 3 层
-
-### 过渡衔接控制
-1. 因果关系必须明确过渡（如"因此"、"于是"、"这导致"）
-2. 时间顺序必须标注（如"随后"、"最终"、"在此期间"）
-3. 场景切换必须说明（如"与此同时"、"另一处"）
-
-### 术语处理规则
-1. 世界观术语首次出现需简短定义（不超过 15 字）
-2. 能力等级术语需用"→"标注晋升路径
-3. 地名/组织名需标注所属层级（如"中州·承天阙"）
-
-### 语言风格
-- 使用现代白话文风格
-- 保持统一，不要文言和白话混用
+### 情感弧度要求
+1. 每个阶段要明确，不能跳过关键阶段
+2. 阶段要有因果关系（如"误会"导致"暧昧"的试探）
+3. 波折要有明确原因（情敌/误会/家庭）
+4. 结局要甜蜜圆满
 
 ## 输出前自检（强制执行）
 
-生成内容后，请按以下规则自检：
-1. 【信息密度】每句话是否不超过 2 个核心信息点？若超标，请拆分为多句
-2. 【术语密度】每段是否不超过 3 个专业术语？若超标，请将术语分散到不同段落
-3. 【句子长度】单句是否不超过 40 字？若超标，请拆分或重新组织
-4. 【过渡衔接】因果关系是否有明确过渡词？若缺失，请添加"因此/于是/这导致"
-5. 【风格统一】是否全程保持一致的语言风格？若混用，请统一为现代白话
-6. 【段落过渡】每个新段落开头是否有衔接句？若缺失，请添加"与此同时/转眼间/随后"
-7. 【首次出场】地区/组织首次出场是否有简短描述（≤30字）？若缺失，请补充
+1. 【男主设定】姓名是否现代感？外貌是否简洁具体（≤30字）？
+2. 【女主设定】性格是否有独立性？不是单纯依附男主？
+3. 【感情弧度】是否包含全部8个阶段？顺序是否正确？
+4. 【冲突设计】冲突是否可通过感情发展解决？
+5. 【配角功能】配角是否服务于感情线发展？
+6. 【职场背景】是否符合现代都市生活逻辑？
 
 请确保以上检查全部通过后再输出。
 """
         return prompt
 
-    def _build_random_world_setting_prompt(self, genre: str = "都市职场") -> str:
-        """构建随机生成世界观 Prompt
+    def _build_random_world_setting_prompt(self, genre: str = "都市言情") -> str:
+        """构建随机生成都市言情小说世界观 Prompt
 
         Args:
-            genre: 小说类型，MVP 阶段固定为"都市职场"
+            genre: 小说类型，固定为"都市言情"
 
         Returns:
             str: 完整 Prompt
         """
         prompt = f"""
-# 任务：随机生成都市职场小说世界观
+# 任务：随机生成都市言情小说世界观设定
 
 ## 小说类型
 {genre}
 
 ## 输出要求
-请随机生成一个完整的都市职场小说世界观设定。
+请随机生成一个完整的都市言情小说世界观设定。
 
-### 主题选择（随机选择其一）
-- 职场晋升：主角从基层员工晋升为高管
-- 商业博弈：主角在商业竞争中突围
-- 创业奋斗：主角从零开始创业
-- 职场爱情：主角在职场中遇到爱情
+###男主类型选择（随机选择其一）
+- 霸道总裁：强势、富有、护短、冷峻外表下有深情
+- 暖男医生：温和、细心、体贴、治愈系
+- 腹黑律师：聪明、深沉、有城府、表面温和内心强势
+- 创业精英：野心、魄力、年轻有为、白手起家
+
+### 女主类型选择（随机选择其一）
+- 职场新人：刚入职、努力、单纯、有成长空间
+- 小透明：低调、善良、有潜力、默默付出
+- 白富美：优雅、独立、有主见、家境优越
+
+### 感情线类型选择（随机选择其一）
+- 误会型：初次相遇产生误会，后续消除误会产生感情
+- 情敌型：因情敌出现，两人关系从竞争到合作再到爱情
+- 职场型：上下级关系，从职场冲突到感情升温
+- 命运型：多次偶然相遇，命运牵引产生感情
+
+### genre（小说类型）
+- 固定值: "都市言情"
 
 ### background（背景设定）
-- era: "现代都市"
-- era_name: 具体时代名称（如"2024年上海"）
-- geography: 都市地理设定，包含：
-  - world_name: 城市名称
-  - regions: 至少3个主要区域（如商务区、住宅区、工业区），每个包含 name, description
-- society: 职场社会设定，包含：
-  - power_structure: 企业权力结构描述
-  - social_classes: 职场层级列表（至少3层，如高管、中层、基层）
-  - key_institutions: 关键企业/机构（至少2个）
+- city: 选择现代都市城市（上海/北京/深圳/杭州/广州）
+- workplace: 选择职场环境（大型企业/创业公司/律师事务所/医院/设计公司）
+- workplace_name: 虚构公司名称
 
-### power_system（能力体系 - 职场改编）
-- name: "职场等级体系"
-- levels: 职场等级列表（至少4级），每个包含 name, rank, description
-  - 示例：实习生→专员→主管→经理→总监→高管
-- key_rules: 晋升规则列表（至少3条核心规则）
+### male_lead（男主设定）⭐ 必须包含
+随机生成男主信息：
+- name: 现代风格姓名
+- identity: 从上述类型中选择
+- age: 28-35岁
+- appearance: 外貌描述（≤30字）
+- personality: 性格特点数组（3-5个）
+- wealth: 财富背景
+- occupation: 具体职业
 
-### core_conflict（核心冲突）
-- main_conflict: 职场主线冲突，包含 type, description, antagonist
-  - 类型示例：晋升竞争、商业博弈、职场阴谋
-- sub_conflicts: 子冲突列表（至少2个）
+### female_lead（女主设定）⭐ 必须包含
+随机生成女主信息：
+- name: 现代风格姓名
+- identity: 从上述类型中选择
+- age: 22-26岁
+- appearance: 外貌描述（≤30字）
+- personality: 性格特点数组（3-5个）
+- background: 家庭背景
+- occupation: 具体职业
 
-### special_elements（特殊元素）
-至少包含2个特殊元素（如关键项目、重要资源、特殊关系）
+### emotion_arc（感情线弧度）⭐ 核心
+- stages: 感情阶段数组，固定顺序：
+  ["初遇", "误会", "暧昧", "表白", "甜蜜", "波折", "和解", "结局"]
+- type: 从上述感情线类型中选择
 
-## 约束条件
-1. 设定必须符合都市职场现实逻辑
-2. 冲突必须能支撑至少50章的职场剧情发展
-3. 人物设定需要有明确的职业背景和目标
-4. 所有设定必须自洽，不能存在内部矛盾
+### main_conflict（主线冲突）
+随机选择冲突类型：
+- type: 选择其一（误会/情敌/家庭阻力/职场竞争）
+- description: 冲突描述（≤50字）
+
+### supporting_chars（配角列表）
+随机生成 2-3 个配角：
+- role: 角色类型（情敌/闺蜜/兄弟/上司/前女友）
+- name: 姓名
+- identity: 身份描述（≤20字）
+- relation_to_lead: 与男主/女主关系
+
+## 约束条件（必须遵守）
+1. 男主必须有魅力、有能力、有感情变化
+2. 女主必须有独立性格，不是依附男主
+3. 感情线必须完整（8 个阶段）
+4. 冲突必须可通过感情发展解决
+5. 职场背景真实可信
 
 ## 输出格式
 输出严格遵循 JSON 结构，不要添加任何额外文字说明。
 只输出JSON对象，不要包含markdown代码块标记。
 
-## 写作风格指南（强制遵守）
-
-### 信息密度控制
-1. 每句话不超过 2 个核心信息点
-2. 专业术语每段不超过 3 个，首次出现需有简短解释（不超过 15 字）
-3. 描述类内容：先总述（1句），再分述（每点1句）
-
-### 句子结构控制
-1. 单句长度不超过 40 字
-2. 长短句交替：每 2 个短句后可接 1 个中长句（不超过 60 字）
-3. 避免多层并列：并列结构不超过 3 层
-
-### 过渡衔接控制
-1. 因果关系必须明确过渡（如"因此"、"于是"、"这导致"）
-2. 时间顺序必须标注（如"随后"、"最终"、"在此期间"）
-3. 场景切换必须说明（如"与此同时"、"另一处"）
-
-### 术语处理规则
-1. 世界观术语首次出现需简短定义（不超过 15 字）
-2. 能力等级术语需用"→"标注晋升路径
-3. 地名/组织名需标注所属层级（如"中州·承天阙"）
-
-### 语言风格
-- 使用现代白话文风格
-- 保持统一，不要文言和白话混用
-
 ## 输出前自检（强制执行）
 
-生成内容后，请按以下规则自检：
-1. 【信息密度】每句话是否不超过 2 个核心信息点？若超标，请拆分为多句
-2. 【术语密度】每段是否不超过 3 个专业术语？若超标，请将术语分散到不同段落
-3. 【句子长度】单句是否不超过 40 字？若超标，请拆分或重新组织
-4. 【过渡衔接】因果关系是否有明确过渡词？若缺失，请添加"因此/于是/这导致"
-5. 【风格统一】是否全程保持一致的语言风格？若混用，请统一为现代白话
-6. 【段落过渡】每个新段落开头是否有衔接句？若缺失，请添加"与此同时/转眼间/随后"
-7. 【首次出场】地区/组织首次出场是否有简短描述（≤30字）？若缺失，请补充
+1. 【男主设定】姓名是否现代？外貌是否简洁（≤30字）？
+2. 【女主设定】性格是否独立？
+3. 【感情弧度】是否包含全部 8 个阶段？
+4. 【冲突设计】冲突是否可解决？
+5. 【配角功能】配角是否服务于感情线？
+6. 【职场背景】是否符合都市生活？
 
 请确保以上检查全部通过后再输出。
 """
@@ -371,10 +402,7 @@ class GenerationService:
             # 保存到文件
             self.storage.save_json(novel_id, "outline.json", outline)
 
-            # 初始化伏笔状态文件
-            self._init_foreshadowing_state(novel_id, outline)
-
-            # 更新meta状态
+            # 更新meta状态（都市言情简化版，移除伏笔状态初始化）
             meta = self.storage.load_json(novel_id, "meta.json")
             if meta:
                 meta["current_phase"] = "chapter_writing"
@@ -428,25 +456,29 @@ class GenerationService:
         story_preference: str,
         pacing_preference: str
     ) -> str:
-        """构建大纲生成Prompt
+        """构建都市言情小说大纲 Prompt（感情节奏表）
 
         Args:
-            world_setting: 世界观设定
+            world_setting: 世界观设定（都市言情模板）
             characters: 人物库（可选）
             target_chapters: 目标章节数
             story_preference: 故事走向偏好
             pacing_preference: 节奏偏好
 
         Returns:
-            str: 完整Prompt
+            str: 完整 Prompt
         """
         world_setting_str = json.dumps(world_setting, ensure_ascii=False, indent=2)
         characters_str = ""
         if characters:
             characters_str = json.dumps(characters, ensure_ascii=False, indent=2)
 
+        # 计算每个感情阶段的章节数
+        # 标准都市言情：50章 = 8阶段，每阶段约6章
+        stage_chapters = target_chapters // 8
+
         prompt = f"""
-# 任务：生成小说大纲
+# 任务：生成都市言情小说大纲（感情节奏表）
 
 ## 输入上下文
 
@@ -454,7 +486,7 @@ class GenerationService:
 {world_setting_str}
 
 ### 人物库
-{characters_str if characters_str else "（暂无人物设定）"}
+{characters_str if characters_str else "（暂无人物设定，请从世界观设定中获取男主/女主信息）"}
 
 ### 用户期望
 - 目标章节数: {target_chapters}
@@ -462,117 +494,95 @@ class GenerationService:
 - 节奏偏好: {pacing_preference}
 
 ## 输出要求
-请生成完整的大纲，输出为 JSON 格式，包含以下字段：
+请生成完整的感情节奏表大纲，输出为 JSON 格式，包含以下字段：
 
-### volumes（卷划分）
-根据章节总数划分卷，每卷包含：
-- volume_id: 卷ID（如 "vol-001"）
-- name: 卷名称（如 "第一卷：少年崛起"）
-- chapters_range: 章节范围，包含 start, end
-- theme: 主题
-- arc_summary: 故事弧线概述
+### genre（小说类型）
+- 固定值: "都市言情"
+
+### emotion_arc（感情节奏表）⭐ 核心
+感情节奏表，将目标章节数按 6 个感情阶段划分：
+
+| 阶段 | 章节范围 | 感情阶段 | 情绪状态 | 爽点类型 |
+|------|----------|----------|----------|----------|
+| stage_1 | 1-{stage_chapters}章 | 初遇/误会 | 冷淡/敌视 | 打脸/冲突 |
+| stage_2 | {stage_chapters+1}-{stage_chapters*2}章 | 暧昧/试探 | 好感萌芽 | 偶遇救场 |
+| stage_3 | {stage_chapters*2+1}-{stage_chapters*3}章 | 升温/表白 | 甜蜜暧昧 | 表白/亲吻 |
+| stage_4 | {stage_chapters*3+1}-{stage_chapters*4}章 | 甜蜜/互动 | 恋人状态 | 约会/送礼 |
+| stage_5 | {stage_chapters*4+1}-{stage_chapters*6}章 | 波折/分离 | 矛盾冲突 | 挽留/解释 |
+| stage_6 | {stage_chapters*6+1}-{target_chapters}章 | 和解/结局 | 甜蜜结局 | 求婚/婚礼 |
+
+每个阶段包含：
+- range: 章节范围（如"1-6"）
+- stage: 感情阶段名称
+- emotion: 情绪状态描述
+- description: 该阶段的感情发展概述（≤100字）
+
+### sweet_points（爽点计划）⭐ 必须包含
+定义关键爽点，每 5 章至少 1 个爽点：
+
+| 章节 | 爽点类型 | 详细描述 |
+|------|----------|----------|
+| 第5章左右 | 偶遇救场 | 男主替女主解围，女主开始心动 |
+| 第15章左右 | 表白/亲吻 | 男主表白或亲吻女主，感情突破 |
+| 第25章左右 | 约会/甜蜜 | 重要约会场景，甜蜜互动 |
+| 第35章左右 | 挽留/解释 | 波折后男主挽留女主，感情加深 |
+| 第45章左右 | 求婚/结局 | 男主求婚或大团圆结局 |
+
+每个爽点包含：
+- chapter: 章节号
+- type: 爽点类型（偶遇救场/表白/约会/挽留/求婚）
+- detail: 详细描述（≤50字）
+- emotion_level: 感情强度等级（1-10）
 
 ### chapters（章节规划）
-为前20章生成详细规划（后续章节可简化），每章包含：
+为前 20 章生成详细规划，每章包含：
 - chapter_num: 章节号
-- title: 章节标题
-- volume_id: 所属卷ID
-- key_events: 核心事件列表（每章至少2个）
-- turning_points: 转折点列表（重要章节必须包含），每个包含 event, type, impact
-- character_growth: 人物成长变化，每个包含 character_id, change
-- foreshadowing: 需要埋下的伏笔，每个包含 id, hint, recycle_chapter
+- title: 章节标题（≤15字，有画面感）
+- emotion_stage: 本章感情阶段（对应 emotion_arc）
+- key_events: 核心事件列表（每章 1-2 个，≤20字）
+- emotion_progress: 感情进展描述（≤30字）
+- sweet_point: 是否为爽点章节（true/false）
 
-### character_growth_curve（人物成长曲线）
-定义主要人物在各阶段的变化，每个包含：
-- chapter_range: 章节范围（如 "1-10"）
-- character_id: 人物ID
-- growth: 成长描述
+### main_conflict（主线冲突详情）
+从世界观中获取冲突信息并扩展：
+- type: 冲突类型
+- description: 冲突描述
+- resolve_chapter: 冲突解决章节（在 stage_5 或 stage_6）
 
-### foreshadowing_plan（伏笔计划）
-列出主要伏笔及其回收时机，每个包含：
-- id: 伏笔ID（如 "fs-001"）
-- hint: 伏笔提示
-- recycle_chapter: 计划回收章节
-- status: 状态（默认 "pending"）
-
-## 约束条件
-1. 禁止与世界观设定冲突
-2. 每卷必须有明确的主题和故事弧线
-3. 伏笔回收时机必须在合理范围内（不超过50章间隔）
-4. 主线冲突必须在大纲中逐步推进
-5. 章节标题要吸引人，能引起读者兴趣
+## 约束条件（红线规则，必须遵守）
+1. 感情节奏必须严格遵循 6 阶段划分
+2. 爽点密度：每 5 章至少 1 个爽点
+3. 章节标题必须有画面感（如"雨夜相遇"而非"第一章"）
+4. 感情进展必须有因果关系（如误会消除→暧昧开始）
+5. 波折必须有明确原因（情敌/误会/家庭阻力）
+6. 结局必须甜蜜圆满
+7. 每章感情阶段必须明确标注
 
 ## 输出格式
 输出严格遵循 JSON 结构，不要添加任何额外文字说明。
 只输出JSON对象，不要包含markdown代码块标记。
 
-## 写作风格指南（强制遵守）
-
-### arc_summary 概述要求
-1. 字数限制：每卷概述不超过 150 字
-2. 结构要求：起因（1句）→ 发展（2句）→ 结局（1句）
-3. 事件密度：每句最多 1 个核心事件
-4. 术语限制：每卷概述最多 3 个术语
-
-### 章节规划要求
-1. key_events：每章最多 3 个事件，每个事件不超过 20 字
-2. turning_points：每个转折点需包含 event + impact（各不超过 20 字）
-3. 标题要求：章节标题不超过 15 字，需有画面感
-
-### 伏笔计划要求
-1. hint：伏笔提示不超过 30 字，需有具体画面
-2. 回收时机：间隔不超过 50 章
-
-### 语言风格
-- 使用现代白话文风格
-- 保持统一，不要文言和白话混用
+## 章节标题示例（参考）
+- 初遇阶段：雨夜相遇、电梯惊魂、咖啡厅误会
+- 暧昧阶段：深夜加班、意外拥抱、共进晚餐
+- 表白阶段：月光告白、医院守护、醉酒真心
+- 甜蜜阶段：周末约会、海边度假、生日惊喜
+- 波折阶段：情敌出现、误会加深、家庭阻力
+- 和解阶段：真相大白、机场挽留、求婚时刻
 
 ## 输出前自检（强制执行）
 
-生成内容后，请按以下规则自检：
-1. 【arc_summary】是否不超过 150 字且每句只有 1 个事件？
-2. 【章节标题】是否不超过 15 字且有画面感？
-3. 【伏笔提示】是否不超过 30 字且有具体画面？
-4. 【风格统一】是否全程保持现代白话风格？
-5. 【段落过渡】每个新段落开头是否有衔接句？若缺失，请添加"与此同时/转眼间/随后"
-6. 【事件描述】每个 key_events 是否简洁（≤20字）且有画面感？
+1. 【感情节奏】是否包含全部 6 个阶段？每个阶段章节数是否合理？
+2. 【爽点密度】是否每 5 竂至少 1 个爽点？
+3. 【章节标题】是否全部有画面感（≤15字）？
+4. 【感情进展】是否有因果关系？不能跳跃式进展
+5. 【波折原因】是否有明确的波折触发原因？
+6. 【结局设置】是否为甜蜜圆满结局？
+7. 【感情标注】每章是否标注了感情阶段？
 
 请确保以上检查全部通过后再输出。
 """
         return prompt
-
-    def _init_foreshadowing_state(self, novel_id: str, outline: Dict[str, Any]):
-        """初始化伏笔状态文件
-
-        Args:
-            novel_id: 小说ID
-            outline: 大纲数据
-        """
-        foreshadowing_plan = outline.get("foreshadowing_plan", [])
-        foreshadowings = []
-
-        for fp in foreshadowing_plan:
-            foreshadowings.append({
-                "id": fp.get("id", ""),
-                "hint": fp.get("hint", ""),
-                "planted_chapter": None,  # 尚未埋下
-                "planned_recycle_chapter": fp.get("recycle_chapter", 0),
-                "recycle_chapter": None,
-                "status": "planned",  # 已计划但未埋下
-                "significance": "medium"
-            })
-
-        state_data = {
-            "novel_id": novel_id,
-            "foreshadowings": foreshadowings,
-            "statistics": {
-                "total_planted": 0,
-                "recycled": 0,
-                "pending": len(foreshadowings)
-            }
-        }
-
-        self.storage.save_json(novel_id, "state/foreshadowing.json", state_data)
 
     # ==================== 章节续写 ====================
 
@@ -626,10 +636,7 @@ class GenerationService:
                 chapter
             )
 
-            # 更新状态追踪
-            self._update_states_after_chapter(novel_id, chapter_num, chapter)
-
-            # 更新meta
+            # 更新meta（都市言情简化版，移除状态追踪）
             self._update_meta_after_chapter(novel_id, chapter_num, chapter.get("word_count", 0))
 
         return chapter
@@ -660,7 +667,7 @@ class GenerationService:
             yield chunk
 
     def _load_chapter_context(self, novel_id: str, chapter_num: int) -> Dict[str, Any]:
-        """加载章节生成所需的所有上下文
+        """加载章节生成所需的上下文（都市言情简化版）
 
         Args:
             novel_id: 小说ID
@@ -671,13 +678,13 @@ class GenerationService:
         """
         context = {}
 
-        # 1. 世界观设定
+        # 1. 世界观设定（男主/女主/感情线）
         context["world_setting"] = self.storage.load_json(novel_id, "world_setting.json")
 
         # 2. 人物库
         context["characters"] = self.storage.load_json(novel_id, "characters.json")
 
-        # 3. 大纲（当前章节）
+        # 3. 大纲（感情节奏表 + 当前章节）
         outline = self.storage.load_json(novel_id, "outline.json")
         context["outline"] = outline
         if outline:
@@ -686,21 +693,14 @@ class GenerationService:
                     context["current_chapter_outline"] = ch
                     break
 
-        # 4. 时间线状态
-        context["timeline"] = self.storage.load_json(novel_id, "state/timeline.json")
-
-        # 5. 人物当前状态
-        context["character_states"] = self.storage.load_json(novel_id, "state/character_states.json")
-
-        # 6. 伏笔状态
-        context["foreshadowing"] = self.storage.load_json(novel_id, "state/foreshadowing.json")
-
-        # 7. 上一章内容（如有）
+        # 4. 上一章内容（如有）
         if chapter_num > 1:
             context["previous_chapter"] = self.storage.load_json(
                 novel_id,
                 f"chapters/chapter_{chapter_num - 1:03d}.json"
             )
+
+        # 都市言情简化版：移除时间线/人物状态/伏笔加载
 
         return context
 
@@ -710,7 +710,7 @@ class GenerationService:
         chapter_num: int,
         user_special_request: Optional[str] = None
     ) -> str:
-        """构建章节续写Prompt
+        """构建都市言情小说章节续写 Prompt（聚焦感情线和爽点）
 
         Args:
             context: 上下文数据
@@ -718,15 +718,20 @@ class GenerationService:
             user_special_request: 用户特别要求
 
         Returns:
-            str: 完整Prompt
+            str: 完整 Prompt
         """
         # 序列化上下文
         world_setting_str = json.dumps(context.get("world_setting", {}), ensure_ascii=False, indent=2)
         characters_str = json.dumps(context.get("characters", {}), ensure_ascii=False, indent=2)
         current_outline_str = json.dumps(context.get("current_chapter_outline", {}), ensure_ascii=False, indent=2)
-        timeline_str = json.dumps(context.get("timeline", {}), ensure_ascii=False, indent=2)
-        character_states_str = json.dumps(context.get("character_states", {}), ensure_ascii=False, indent=2)
-        foreshadowing_str = json.dumps(context.get("foreshadowing", {}), ensure_ascii=False, indent=2)
+
+        # 获取感情阶段和爽点信息
+        emotion_stage = ""
+        is_sweet_point = False
+        current_outline = context.get("current_chapter_outline", {})
+        if current_outline:
+            emotion_stage = current_outline.get("emotion_stage", "未知阶段")
+            is_sweet_point = current_outline.get("sweet_point", False)
 
         previous_chapter_str = ""
         prev_chapter = context.get("previous_chapter")
@@ -737,33 +742,48 @@ class GenerationService:
             previous_chapter_str = json.dumps({
                 "summary": prev_summary,
                 "content_preview": prev_content_preview,
+                "emotion_stage": prev_chapter.get("emotion_stage", ""),
                 "word_count": prev_chapter.get("word_count", 0)
             }, ensure_ascii=False, indent=2)
 
-        user_request_str = user_special_request if user_special_request else "无特别要求"
+        user_request_str = user_special_request if user_special_request else "无特别要求，按大纲生成即可"
+
+        # 判断爽点类型提示
+        sweet_point_hint = ""
+        if is_sweet_point:
+            sweet_point_hint = """
+⚠️ 【本章是爽点章节】必须包含明确的爽点场景！
+
+爽点场景要求：
+1. 必须有强烈的情感冲击（心动/心动/甜蜜/心动/心动）
+2. 必须有具体的互动描写（对话+动作+神态）
+3. 爽点场景篇幅占比不低于30%
+
+爽点类型参考：
+- 偶遇救场：男主替女主解围，女主心动
+- 表白/亲吻：男主表白或亲吻女主，感情突破
+- 约会/甜蜜：约会场景，甜蜜互动
+- 挽留/解释：波折后挽留，感情加深
+- 求婚/结局：求婚场景，大团圆
+"""
 
         prompt = f"""
-# 任务：续写小说章节
+# 任务：续写都市言情小说章节
 
-## 输入上下文（必须校验一致性）
+## 输入上下文
 
-### 世界观设定
+### 世界观设定（男主/女主/感情线）
 {world_setting_str}
 
 ### 人物库
 {characters_str}
 
-### 当前章节大纲
+### 当前章节大纲（感情节奏表）
 {current_outline_str}
 
-### 时间线状态
-{timeline_str}
+**当前感情阶段**: {emotion_stage}
 
-### 人物当前状态
-{character_states_str}
-
-### 伏笔状态
-{foreshadowing_str}
+{sweet_point_hint}
 
 ### 上一章内容（如有）
 {previous_chapter_str if previous_chapter_str else "这是第一章，无上一章内容"}
@@ -774,261 +794,95 @@ class GenerationService:
 ## 输出要求
 请续写第 {chapter_num} 章，输出为 JSON 格式，包含以下字段：
 
-### content（正文内容）
-- 完整的叙事内容，约3000-5000字
-- 必须符合章节大纲中的 key_events
-- 语言风格与已有章节一致（如有）
-- 情节连贯，叙事流畅
+### content（正文内容）⭐ 核心
+- 完整的叙事内容，约 2000-3000 字
+- 必须聚焦感情线发展
+- 必须符合当前感情阶段（{emotion_stage}）
+- 必须有男主和女主的互动场景
+- 语言风格：现代都市言情风格
+
+### 感情线描写要求（强制遵守）
+1. **感情阶段明确**：本章必须属于"{emotion_stage}"阶段
+2. **感情进展**：必须有感情变化描写（心动/心动/心动/心动）
+3. **互动场景**：男主和女主必须有对话或互动场景
+4. **情感描写**：用动作/神态/心理表现，禁止直接说"她心动了"
+
+{f"5. **爽点场景**：本章是爽点章节，必须有明确的爽点场景（篇幅≥30%）" if is_sweet_point else ""}
 
 ### summary（章节摘要）
-- key_events: 本章核心事件列表（至少2个）
+- key_events: 本章核心事件列表（1-2个）
+- emotion_stage: 本章感情阶段
+- emotion_progress: 感情进展描述（≤30字）
+- sweet_point: 是否为爽点章节
 - emotional_tone: 本章情感基调
 
-### character_updates（人物状态更新）
-本章中发生变化的人物，每个包含：
-- character_id: 人物ID
-- location_change: 位置变化（如有），包含 from_location, to_location
-- emotional_change: 情绪变化（如有），包含 from_emotion, to_emotion
-- ability_change: 能力变化（如有）
-- relationship_changes: 关系变化列表（如有）
-
-### timeline_additions（时间线新增）
-本章新增的时间节点事件，每个包含：
-- event: 事件描述
-- time: 时间点描述
-
-### foreshadowing_updates（伏笔状态更新）
-本章埋下或回收的伏笔，每个包含：
-- id: 伏笔ID
-- action: 操作类型（planted/recycled）
-- detail: 详细描述
+### chapter_info（章节信息）
+- chapter_num: 章节号
+- title: 章节标题（≤15字，有画面感）
+- emotion_stage: 感情阶段
+- word_count: 字数（自动计算）
 
 ## 约束条件（红线规则，必须遵守）
-1. 禁止与时间线状态矛盾（时间必须连续）
-2. 禁止与人物位置状态矛盾（人物位置变化必须有描述）
-3. 禁止与人物能力等级矛盾（能力表现不能越级）
-4. 禁止与世界观设定矛盾
-5. 必须覆盖大纲中的所有 key_events
-6. 伏笔操作必须与 foreshadowing.json 一致
-7. 禁止改变已有人物的设定和性格
+1. **感情线优先**：每章必须有感情进展描写，不能只写职场/日常
+2. **互动必须有**：男主和女主必须有对话或互动场景
+3. **感情连续**：感情变化必须有因果关系，不能跳跃式进展
+4. **爽点必写**：爽点章节必须有明确的爽点场景（篇幅≥30%）
+5. **风格统一**：现代都市言情风格，禁止文言/网络用语混用
+6. **称呼一致**：男主/女主称呼固定，不能随意变化
 
-## 写作风格指南
-- 叙事视角: 第三人称
-- 语言风格: 符合小说题材（都市职场/武侠/玄幻等）
-- 情感基调: 根据章节大纲的情节决定
+## 写作风格指南（都市言情专属）
+
+### 对话+动作描写（强制遵守）
+每段对话必须配有动作或神态描写：
+
+示例格式：
+```
+"你怎么来了？"她有些惊讶，手里的文件差点掉落。
+"路过，顺便来看看。"他靠在门边，目光在她身上停留了一秒。
+```
+
+禁止格式（连续对话无动作）：
+```
+"你怎么来了？"
+"路过，顺便来看看。"
+"哦，那你好忙。"
+"嗯，刚下班。"
+```
+
+### 感情描写规则
+1. 心动描写：用心跳加速、脸红、不敢直视等表现
+2. 甜蜜描写：用牵手、拥抱、亲吻等具体动作表现
+3. 暧昧描写：用试探、暗示、眼神交流等表现
+4. 禁止直接描述：不说"她心动了"，说"她的心跳莫名加快了"
+
+### 场景描写规则
+1. 职场场景：不超过 50 字的环境描写
+2. 约会场景：不超过 100 字的环境描写
+3. 重点场景（爽点）：可详细描写，营造氛围
+
+### 段落结构规则
+1. 段落长度：100-200 字
+2. 段落过渡：每段开头有衔接词（转眼间/随后/与此同时）
+3. 段落节奏：感情描写为主，职场描写为辅
 
 ## 输出格式
 输出严格遵循 JSON 结构，不要添加任何额外文字说明。
 只输出JSON对象，不要包含markdown代码块标记。
 
-## 写作风格指南（强制遵守）
-
-### 正文叙事要求
-1. 段落长度：每段 100-200 字，最多不超过 300 字
-2. 句子节奏：短句（10-20字）占 60%，中句（20-40字）占 30%，长句（40-60字）占 10%
-3. 信息密度：每段最多 3 个核心信息点
-
-### 对话描写要求
-1. 对话占比：不超过正文 30%
-2. 对话长度：单句对话不超过 50 字
-3. 对话+动作：每段对话需配 1 句动作或神态描写
-   - 示例格式："他说。"[动作/神态描写]"她说。"[动作/神态描写]
-   - 禁止连续对话无动作（如：他说。她说。他又说。）
-   - 动作描写需具体（如"她握紧拳头"而非"她很紧张")
-
-### 场景描写要求
-1. 首次出场场景：不超过 100 字的环境描写
-2. 已有场景：不超过 50 字的过渡描写
-3. 战斗场景：不超过 200 字，分 2-3 段
-
-### 情感描写要求
-1. 情感铺垫：重大情感转折前需有 1-2 段铺垫
-2. 情感表达：避免直接说"他很愤怒"，用动作/神态/心理活动表现
-3. 情感过渡：情感变化需有触发事件说明
-
-### 语言风格
-- 使用现代白话文风格
-- 叙事视角：第三人称
-- 保持统一，不要文言和白话混用
-
 ## 输出前自检（强制执行）
 
-生成内容后，请按以下规则自检：
-1. 【段落长度】每段是否在 100-200 字范围内？
-2. 【句子节奏】短句是否占主导（约60%）？
-3. 【对话占比】对话是否不超过正文 30%？
-4. 【对话+动作】每段对话是否配有动作或神态描写？若缺失，请补充
-5. 【情感表达】是否用动作/神态表现而非直接描述（如"他很愤怒"）？
-6. 【风格统一】是否全程保持第三人称现代白话风格？
-7. 【段落过渡】每个新段落开头是否有衔接句？若缺失，请添加"与此同时/转眼间/随后"
-8. 【人物出场】首次出场人物是否有简短外貌描写（≤30字）？
-9. 【信息密度】每段是否不超过 3 个核心信息点？
+1. 【感情阶段】是否明确标注了感情阶段？
+2. 【感情进展】是否有感情变化描写？
+3. 【互动场景】是否有男主女主的对话/互动？
+4. 【对话+动作】每段对话是否配有动作描写？
+5. 【感情描写】是否用动作表现而非直接描述？
+6. 【爽点场景】（如为爽点章节）是否有明确的爽点场景？
+7. 【称呼一致】男主女主称呼是否固定？
+8. 【段落过渡】每段开头是否有衔接词？
 
 请确保以上检查全部通过后再输出。
 """
         return prompt
-
-    def _update_states_after_chapter(
-        self,
-        novel_id: str,
-        chapter_num: int,
-        chapter: Dict[str, Any]
-    ):
-        """章节生成后更新状态追踪
-
-        Args:
-            novel_id: 小说ID
-            chapter_num: 章节号
-            chapter: 章节数据
-        """
-        # 1. 更新时间线
-        self._update_timeline(novel_id, chapter_num, chapter)
-
-        # 2. 更新人物状态
-        self._update_character_states(novel_id, chapter_num, chapter)
-
-        # 3. 更新伏笔状态
-        self._update_foreshadowing_state(novel_id, chapter_num, chapter)
-
-    def _update_timeline(
-        self,
-        novel_id: str,
-        chapter_num: int,
-        chapter: Dict[str, Any]
-    ):
-        """更新时间线状态
-
-        Args:
-            novel_id: 小说ID
-            chapter_num: 章节号
-            chapter: 章节数据
-        """
-        timeline = self.storage.load_json(novel_id, "state/timeline.json") or {
-            "novel_id": novel_id,
-            "events": [],
-            "time_scale": {"unit": "天", "current_time": "", "total_duration": ""}
-        }
-
-        # 获取当前最大order
-        max_order = max([e.get("order", 0) for e in timeline.get("events", [])], default=0)
-
-        # 添加新时间线事件
-        timeline_additions = chapter.get("timeline_additions", [])
-        for event in timeline_additions:
-            timeline["events"].append({
-                "order": max_order + 1,
-                "chapter": chapter_num,
-                "time": event.get("time", ""),
-                "event": event.get("event", ""),
-                "participants": [],
-                "location": "",
-                "significance": "medium"
-            })
-            max_order += 1
-
-        # 更新当前时间
-        if timeline_additions:
-            last_event = timeline_additions[-1]
-            timeline["time_scale"]["current_time"] = last_event.get("time", "")
-
-        timeline["last_updated"] = self._get_current_time()
-        self.storage.save_json(novel_id, "state/timeline.json", timeline)
-
-    def _update_character_states(
-        self,
-        novel_id: str,
-        chapter_num: int,
-        chapter: Dict[str, Any]
-    ):
-        """更新人物状态
-
-        Args:
-            novel_id: 小说ID
-            chapter_num: 章节号
-            chapter: 章节数据
-        """
-        character_states = self.storage.load_json(novel_id, "state/character_states.json") or {
-            "novel_id": novel_id,
-            "last_updated_chapter": 0,
-            "states": []
-        }
-
-        character_updates = chapter.get("character_updates", [])
-
-        for update in character_updates:
-            char_id = update.get("character_id")
-
-            # 查找现有状态
-            existing_state = None
-            for state in character_states.get("states", []):
-                if state.get("character_id") == char_id:
-                    existing_state = state
-                    break
-
-            if existing_state:
-                # 更新现有状态
-                if update.get("location_change"):
-                    existing_state["current_location"] = update["location_change"].get("to_location", "")
-
-                if update.get("emotional_change"):
-                    existing_state["emotional_state"] = update["emotional_change"].get("to_emotion", "")
-
-                if update.get("ability_change"):
-                    existing_state["cultivation_level"] = update["ability_change"].get("new_level", "")
-            else:
-                # 创建新状态
-                new_state = {
-                    "character_id": char_id,
-                    "current_location": update.get("location_change", {}).get("to_location", "") if update.get("location_change") else "",
-                    "emotional_state": update.get("emotional_change", {}).get("to_emotion", "") if update.get("emotional_change") else "",
-                    "cultivation_level": "",
-                    "physical_health": "健康",
-                    "relationships_current": []
-                }
-                character_states["states"].append(new_state)
-
-        character_states["last_updated_chapter"] = chapter_num
-        self.storage.save_json(novel_id, "state/character_states.json", character_states)
-
-    def _update_foreshadowing_state(
-        self,
-        novel_id: str,
-        chapter_num: int,
-        chapter: Dict[str, Any]
-    ):
-        """更新伏笔状态
-
-        Args:
-            novel_id: 小说ID
-            chapter_num: 章节号
-            chapter: 章节数据
-        """
-        foreshadowing = self.storage.load_json(novel_id, "state/foreshadowing.json") or {
-            "novel_id": novel_id,
-            "foreshadowings": [],
-            "statistics": {"total_planted": 0, "recycled": 0, "pending": 0}
-        }
-
-        foreshadowing_updates = chapter.get("foreshadowing_updates", [])
-
-        for update in foreshadowing_updates:
-            fs_id = update.get("id")
-            action = update.get("action")
-
-            for fs in foreshadowing.get("foreshadowings", []):
-                if fs.get("id") == fs_id:
-                    if action == "planted":
-                        fs["planted_chapter"] = chapter_num
-                        fs["status"] = "planted"
-                        foreshadowing["statistics"]["total_planted"] += 1
-                    elif action == "recycled":
-                        fs["recycle_chapter"] = chapter_num
-                        fs["status"] = "recycled"
-                        foreshadowing["statistics"]["recycled"] += 1
-                        foreshadowing["statistics"]["pending"] -= 1
-                    break
-
-        self.storage.save_json(novel_id, "state/foreshadowing.json", foreshadowing)
 
     def _update_meta_after_chapter(
         self,

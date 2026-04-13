@@ -1,11 +1,10 @@
 /**
- * 校验报告页面 - 墨韵书香风格
+ * 校验报告页面（都市言情简化版）
  * 功能：
- * - 规则分类展示（L/G/S/P/F/B/E 七大类）
- * - 问题列表展示（严重度、置信度、位置、建议）
+ * - 规则分类展示（G/E/P 三大类，5条规则）
+ * - 问题列表展示
  * - 自动修复功能
  * - 章节选择器
- * - 执行校验交互
  */
 
 import { useEffect, useState, useCallback } from 'react'
@@ -16,15 +15,11 @@ import type { ValidationIssue, ValidationReport, Chapter } from '@/types/novel'
 // 校验类型
 type ValidationType = 'single_chapter' | 'full_novel'
 
-// 规则分类定义
+// 规则分类定义（都市言情简化版：3类5条规则）
 const RULE_CATEGORIES = {
-  'L': { name: '逻辑一致性', color: 'vermilion', count: 5 },
-  'G': { name: '语法规范', color: 'indigo', count: 5 },
-  'S': { name: '风格一致性', color: 'gold', count: 3 },
-  'P': { name: '人物一致性', color: 'purple', count: 4 },
-  'F': { name: '伏笔一致性', color: 'cyan', count: 3 },
-  'B': { name: '商业逻辑', color: 'amber', count: 8 },
-  'E': { name: '感情线', color: 'rose', count: 8 },
+  'G': { name: '语法规范', color: 'indigo', count: 2 },
+  'E': { name: '感情线', color: 'rose', count: 2 },
+  'P': { name: '人物一致性', color: 'purple', count: 1 },
 }
 
 // 严重度颜色映射
