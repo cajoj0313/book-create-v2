@@ -2,6 +2,91 @@
 
 ---
 
+## 2026-04-15 前端 Playwright 测试配置 + PM 边界规则更新 ✅
+
+### PM 边界规则更新
+
+用户要求新增边界规则：**PM 不能修改任意目录，只能分配任务**。
+
+**修改文件**：
+- `.claude/team/README.md` - 文件所有权矩阵 PM 列改为 🔍 只读
+- `.claude/TEAM-SETUP-SUMMARY.md` - 权限总览更新
+- `.claude/team/QUICK-REFERENCE.md` - 快速参考更新
+- `.claude/team/project-manager/SKILL.md` - 权限边界说明更新
+
+**Git 提交**: 未提交（Claude 配置保留本地）
+
+---
+
+### 前端 Playwright 测试配置
+
+**用户需求**: 前端需要有浏览器测试
+
+**需求澄清**：
+- 位置：移到前端目录 `web-front/e2e/`
+- 范围：页面渲染、用户交互、SSE流式生成、异常处理
+
+**技术方案选择**: 方案 A - 仅 Playwright（统一测试框架）
+
+#### 完成内容
+
+| 任务 | 内容 | 状态 |
+|------|------|------|
+| T-2 | Playwright 安装与配置 | ✅ |
+| T-3 | playwright.config.ts 创建 | ✅ |
+| T-4 | 现有测试迁移（Python → TypeScript） | ✅ |
+| T-5 | 用户交互测试编写 | ✅ |
+| T-1 | 页面渲染测试编写 | ✅ |
+
+#### 测试文件
+
+| 文件 | 测试数 | 内容 |
+|------|--------|------|
+| `pages.spec.ts` | 4 | 页面元素探测 |
+| `flow.spec.ts` | 1 | 创建小说流程 |
+| `generation.spec.ts` | 1 | 生成流程 |
+| `interaction.spec.ts` | 15 | 用户交互测试 |
+| `render.spec.ts` | 6 | 页面渲染测试 |
+| **总计** | **27** | 5 个文件 |
+
+#### Git 提交
+
+- `55c03cb` - feat: 前端 Playwright 测试配置与测试用例
+
+---
+
+### 代码审查结果
+
+**审查状态**: ⚠️ 需要改进后重新审查
+
+**P1 问题**：
+1. `pages.spec.ts` 缺少实质性断言
+2. 多处 `waitForTimeout` 应改用状态等待
+3. CSS 类名依赖应改为语义化定位器
+
+**P2 问题**：
+1. 移除调试 console.log
+2. 拆分 mockApiRoutes 函数
+
+**正在进行**: 修复 P1 问题
+
+---
+
+### 项目协作文档管理
+
+**新建文件**: `docs/planning/task_plan.md`
+
+**三文件管理完整**：
+- `task_plan.md` - 任务计划与阶段追踪 ✅
+- `findings.md` - 研究发现与技术笔记 ✅
+- `progress.md` - 进度日志与会话记录 ✅
+
+**Git 提交**: `cc6fdfc` - docs: 创建 task_plan.md 项目任务计划
+
+**.gitignore 更新**: 添加 `.claude/` 目录（配置保留本地）
+
+---
+
 ## 2026-04-13 产品转型：都市言情小说生成器 ✅ 决策确认
 
 ### 转型背景
@@ -972,4 +1057,46 @@ client.connect(
 
 ---
 
-*最后更新: 2026-04-14*
+## 2026-04-15 E2E 用户交互测试编写 ✅
+
+### 任务信息
+
+- Task ID: #5
+- Owner: frontend-dev
+- 依赖: Task #2, #3（已完成）
+
+### 完成内容
+
+**interaction.spec.ts 创建**:
+- ✅ NovelList 页面交互测试（创建小说、点击跳转、删除按钮）
+- ✅ WorldBuilder 页面交互测试（输入描述、开始生成、确认按钮）
+- ✅ OutlineEditor 页面交互测试（编辑大纲、下一步按钮）
+- ✅ ChapterWriter 页面交互测试（切换章节、AI续写、保存按钮）
+
+### 测试覆盖
+
+| 页面 | 测试场景 | 覆盖元素 |
+|------|----------|----------|
+| NovelList | 3 个测试 | 输入框、创建按钮、小说卡片、删除按钮（悬停显示） |
+| WorldBuilder | 3 个测试 | 描述输入框、开始生成按钮、确认使用按钮、继续下一步 |
+| OutlineEditor | 3 个测试 | 编辑按钮、生成大纲按钮、开始写作按钮 |
+| ChapterWriter | 6 个测试 | 章节切换、AI续写按钮、保存按钮、导航按钮、审核弹窗、删除按钮 |
+
+### 验收状态
+
+- [x] 4 个页面交互测试已编写
+- [x] 测试覆盖主要按钮和表单
+- [x] TypeScript 无语法错误（type-check 通过）
+- [x] 使用 Playwright route mock API 响应
+
+### 文件路径
+
+- `web-front/e2e/interaction.spec.ts`（+400 行）
+
+### Git 提交
+
+- commit: 待提交
+
+---
+
+*最后更新: 2026-04-15*

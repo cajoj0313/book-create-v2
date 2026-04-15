@@ -303,49 +303,54 @@ test.describe('NovelList 页面交互', () => {
   })
 
   test('点击小说卡片跳转到详情页', async ({ page }) => {
-    // 等待小说列表加载
-    await page.waitForTimeout(500)
+    // 等待页面加载完成
+    await page.waitForLoadState('networkidle')
 
-    // 找到小说卡片
-    const novelCard = page.locator('.paper-hover').filter({ hasText: '测试小说' })
-    await expect(novelCard).toBeVisible()
+    // 找到小说卡片 - 使用语义化定位器
+    const novelCard = page.getByRole('article').filter({ hasText: '测试小说' })
+    // 如果 article role 不存在，尝试使用文本定位
+    const cardAlternative = novelCard.or(page.locator('[data-testid="novel-card"]').filter({ hasText: '测试小说' }))
+    await expect(cardAlternative).toBeVisible()
 
     // 点击卡片
-    await novelCard.click()
+    await cardAlternative.click()
 
     // 验证跳转到小说详情页
     await expect(page).toHaveURL(/\/novels\/test-novel-001/)
   })
 
   test('删除小说按钮（悬停显示）', async ({ page }) => {
-    // 等待小说列表加载
-    await page.waitForTimeout(500)
+    // 等待页面加载完成
+    await page.waitForLoadState('networkidle')
 
-    // 找到小说卡片
-    const novelCard = page.locator('.paper-hover').filter({ hasText: '测试小说' })
-    await expect(novelCard).toBeVisible()
+    // 找到小说卡片 - 使用语义化定位器
+    const novelCard = page.getByRole('article').filter({ hasText: '测试小说' })
+    const cardAlternative = novelCard.or(page.locator('[data-testid="novel-card"]').filter({ hasText: '测试小说' }))
+    await expect(cardAlternative).toBeVisible()
 
     // 悬停在卡片上（触发删除按钮显示）
-    await novelCard.hover()
+    await cardAlternative.hover()
 
     // 删除按钮应该在悬停后可见
-    const deleteButton = novelCard.locator('button[title="删除小说"]')
-    await expect(deleteButton).toBeVisible()
+    const deleteButton = cardAlternative.locator('button[title="删除小说"]')
+    // 等待删除按钮可见
+    await expect(deleteButton).toBeVisible({ timeout: 3000 })
 
     // 点击删除按钮
     await deleteButton.click()
 
     // 确认删除弹窗应该出现
-    const confirmDialog = page.locator('.dialog-overlay')
-    await expect(confirmDialog).toBeVisible()
-    await expect(confirmDialog).toContainText('确认删除')
+    const confirmDialog = page.locator('[data-testid="dialog-overlay"]')
+    const dialogAlternative = confirmDialog.or(page.getByRole('dialog'))
+    await expect(dialogAlternative).toBeVisible()
+    await expect(dialogAlternative).toContainText('确认删除')
 
     // 点击确认删除
     const confirmButton = page.getByRole('button', { name: '确认删除' })
     await confirmButton.click()
 
     // 弹窗应该消失
-    await expect(confirmDialog).not.toBeVisible()
+    await expect(dialogAlternative).not.toBeVisible()
   })
 })
 
@@ -359,10 +364,9 @@ test.describe('WorldBuilder 页面交互', () => {
   test('输入描述并点击开始生成', async ({ page }) => {
     // 导航到世界观页面（使用已存在的小说）
     await page.goto('/novels/test-novel-001/world-builder')
-    await page.waitForTimeout(500)
+    await page.waitForLoadState('networkidle')
 
-    // 如果已有世界观，页面可能不同。我们先测试无世界观的场景
-    // 清除已有数据，模拟无世界观状态
+    // Mock 无世界观状态
     await page.route('**/api/novels/*/world-setting', async (route) => {
       if (route.request().method() === 'GET') {
         await route.fulfill({
@@ -375,7 +379,7 @@ test.describe('WorldBuilder 页面交互', () => {
 
     // 重新加载页面
     await page.reload()
-    await page.waitForTimeout(500)
+    await page.waitForLoadState('networkidle')
 
     // 找到描述输入框
     const textarea = page.locator('textarea[placeholder*="武侠世界的修仙故事"]')
@@ -391,20 +395,16 @@ test.describe('WorldBuilder 页面交互', () => {
     // 点击生成按钮
     await generateButton.click()
 
-    // 等待生成状态变化
-    await page.waitForTimeout(1000)
-
-    // 验证生成状态显示
-    await expect(page.locator('text=生成完成')).toBeVisible()
+    // 等待生成完成状态出现
+    await expect(page.locator('text=生成完成')).toBeVisible({ timeout: 5000 })
   })
 
   test('点击确认按钮（生成后出现）', async ({ page }) => {
     // 导航到世界观页面
     await page.goto('/novels/test-novel-001/world-builder')
-    await page.waitForTimeout(500)
+    await page.waitForLoadState('networkidle')
 
-    // 模拟生成完成状态（直接显示确认对话框）
-    // 通过点击生成按钮触发
+    // Mock 无世界观状态
     await page.route('**/api/novels/*/world-setting', async (route) => {
       if (route.request().method() === 'GET') {
         await route.fulfill({
@@ -416,31 +416,34 @@ test.describe('WorldBuilder 页面交互', () => {
     })
 
     await page.reload()
-    await page.waitForTimeout(500)
+    await page.waitForLoadState('networkidle')
 
     // 输入描述并生成
     const textarea = page.locator('textarea[placeholder*="武侠世界的修仙故事"]')
     await textarea.fill('测试描述')
     await page.getByRole('button', { name: '开始生成' }).click()
-    await page.waitForTimeout(1000)
+
+    // 等待生成完成状态
+    await expect(page.locator('text=生成完成')).toBeVisible({ timeout: 5000 })
 
     // 确认对话框应该出现
-    const confirmDialog = page.locator('.dialog-overlay')
-    await expect(confirmDialog).toBeVisible()
+    const confirmDialog = page.locator('[data-testid="dialog-overlay"]')
+    const dialogAlternative = confirmDialog.or(page.getByRole('dialog'))
+    await expect(dialogAlternative).toBeVisible()
 
     // 点击确认使用按钮
     const confirmButton = page.getByRole('button', { name: '确认使用' })
     await expect(confirmButton).toBeVisible()
     await confirmButton.click()
 
-    // 弹窗应该消失或变成成功提示
-    await page.waitForTimeout(500)
+    // 等待对话框消失
+    await expect(dialogAlternative).not.toBeVisible({ timeout: 3000 })
   })
 
   test('继续下一步按钮跳转到大纲', async ({ page }) => {
     // 导航到已有世界观页面
     await page.goto('/novels/test-novel-001/world-builder')
-    await page.waitForTimeout(500)
+    await page.waitForLoadState('networkidle')
 
     // 如果有世界观，应该有继续下一步按钮
     const nextButton = page.getByRole('button', { name: '继续下一步' })
@@ -448,8 +451,9 @@ test.describe('WorldBuilder 页面交互', () => {
       await nextButton.click()
 
       // 确认对话框
-      const confirmDialog = page.locator('.dialog-overlay')
-      await expect(confirmDialog).toBeVisible()
+      const confirmDialog = page.locator('[data-testid="dialog-overlay"]')
+      const dialogAlternative = confirmDialog.or(page.getByRole('dialog'))
+      await expect(dialogAlternative).toBeVisible()
 
       // 点击继续
       await page.getByRole('button', { name: '继续' }).click()
@@ -470,7 +474,7 @@ test.describe('OutlineEditor 页面交互', () => {
   test('编辑大纲内容', async ({ page }) => {
     // 导航到大纲页面
     await page.goto('/novels/test-novel-001/outline')
-    await page.waitForTimeout(500)
+    await page.waitForLoadState('networkidle')
 
     // 等待大纲加载
     await expect(page.locator('text=大纲生成')).toBeVisible()
@@ -496,7 +500,7 @@ test.describe('OutlineEditor 页面交互', () => {
   test('点击下一步按钮', async ({ page }) => {
     // 导航到大纲页面
     await page.goto('/novels/test-novel-001/outline')
-    await page.waitForTimeout(500)
+    await page.waitForLoadState('networkidle')
 
     // 等待大纲加载
     await expect(page.locator('text=大纲生成')).toBeVisible()
@@ -507,8 +511,9 @@ test.describe('OutlineEditor 页面交互', () => {
       await nextButton.click()
 
       // 确认对话框应该出现
-      const confirmDialog = page.locator('.dialog-overlay')
-      await expect(confirmDialog).toBeVisible()
+      const confirmDialog = page.locator('[data-testid="dialog-overlay"]')
+      const dialogAlternative = confirmDialog.or(page.getByRole('dialog'))
+      await expect(dialogAlternative).toBeVisible()
 
       // 点击开始写作
       await page.getByRole('button', { name: '开始写作', exact: false }).click()
@@ -532,7 +537,7 @@ test.describe('OutlineEditor 页面交互', () => {
 
     // 导航到大纲页面
     await page.goto('/novels/test-novel-001/outline')
-    await page.waitForTimeout(500)
+    await page.waitForLoadState('networkidle')
 
     // 应该显示生成配置面板
     await expect(page.locator('text=大纲生成配置')).toBeVisible()
@@ -546,7 +551,7 @@ test.describe('OutlineEditor 页面交互', () => {
     await generateButton.click()
 
     // 等待生成状态
-    await page.waitForTimeout(1000)
+    await expect(page.locator('text=生成中')).toBeVisible({ timeout: 3000 })
   })
 })
 
@@ -560,16 +565,16 @@ test.describe('ChapterWriter 页面交互', () => {
   test('切换章节', async ({ page }) => {
     // 导航到章节写作页面
     await page.goto('/novels/test-novel-001/chapters/1')
-    await page.waitForTimeout(500)
+    await page.waitForLoadState('networkidle')
 
     // 等待页面加载
     await expect(page.locator('text=第 1 章')).toBeVisible()
 
-    // 找到左侧大纲面板中的章节列表
-    const chapterList = page.locator('.paper').filter({ has: page.locator('text=章节大纲') })
+    // 找到左侧大纲面板中的章节列表 - 使用语义化定位器
+    const chapterList = page.locator('[data-testid="chapter-list"]').or(page.getByRole('list', { name: '章节大纲' }))
 
     // 如果有第2章的卡片，点击切换
-    const chapter2Card = chapterList.locator('.paper-flat').filter({ hasText: '误会' })
+    const chapter2Card = chapterList.locator('button').filter({ hasText: '误会' })
     if (await chapter2Card.isVisible()) {
       await chapter2Card.click()
 
@@ -581,7 +586,7 @@ test.describe('ChapterWriter 页面交互', () => {
   test('点击AI续写按钮', async ({ page }) => {
     // 导航到章节写作页面
     await page.goto('/novels/test-novel-001/chapters/1')
-    await page.waitForTimeout(500)
+    await page.waitForLoadState('networkidle')
 
     // 等待页面加载
     await expect(page.locator('text=第 1 章')).toBeVisible()
@@ -594,23 +599,20 @@ test.describe('ChapterWriter 页面交互', () => {
     // 点击AI续写
     await aiButton.click()
 
-    // 等待生成状态
-    await page.waitForTimeout(500)
-
-    // 应该显示连接中或生成中状态
-    await expect(page.locator('text=连接中').or(page.locator('text=生成中'))).toBeVisible()
+    // 等待生成状态 - 使用状态等待
+    await expect(page.locator('text=连接中').or(page.locator('text=生成中'))).toBeVisible({ timeout: 5000 })
   })
 
   test('点击保存按钮', async ({ page }) => {
     // 导航到章节写作页面
     await page.goto('/novels/test-novel-001/chapters/1')
-    await page.waitForTimeout(500)
+    await page.waitForLoadState('networkidle')
 
     // 等待页面加载
     await expect(page.locator('text=第 1 章')).toBeVisible()
 
-    // 找到内容编辑区并输入内容
-    const textarea = page.locator('textarea.textarea-writing')
+    // 找到内容编辑区并输入内容 - 使用语义化定位器
+    const textarea = page.locator('[data-testid="chapter-content-editor"]').or(page.getByRole('textbox', { name: '章节内容' }))
     if (await textarea.isVisible()) {
       await textarea.fill('测试内容，这是一段测试文字。')
     }
@@ -622,17 +624,14 @@ test.describe('ChapterWriter 页面交互', () => {
     // 点击保存
     await saveButton.click()
 
-    // 等待保存完成
-    await page.waitForTimeout(500)
-
-    // 应该显示保存成功的提示
-    await expect(page.locator('.toast-success').or(page.locator('text=已保存'))).toBeVisible()
+    // 等待保存完成 - 使用状态等待
+    await expect(page.locator('.toast-success').or(page.locator('text=已保存'))).toBeVisible({ timeout: 5000 })
   })
 
   test('上一章/下一章导航按钮', async ({ page }) => {
     // 导航到第2章
     await page.goto('/novels/test-novel-001/chapters/2')
-    await page.waitForTimeout(500)
+    await page.waitForLoadState('networkidle')
 
     // 等待页面加载
     await expect(page.locator('text=第 2 章')).toBeVisible()
@@ -655,20 +654,22 @@ test.describe('ChapterWriter 页面交互', () => {
   test('审核弹窗操作', async ({ page }) => {
     // 导航到章节写作页面
     await page.goto('/novels/test-novel-001/chapters/1')
-    await page.waitForTimeout(500)
+    await page.waitForLoadState('networkidle')
 
     // 等待页面加载
     await expect(page.locator('text=第 1 章')).toBeVisible()
 
     // 点击AI续写触发生成
     await page.getByRole('button', { name: 'AI 续写' }).click()
-    await page.waitForTimeout(1500)
 
-    // 生成完成后审核弹窗应该出现
-    const reviewModal = page.locator('.dialog-overlay')
-    if (await reviewModal.isVisible()) {
+    // 等待生成完成后的审核弹窗
+    const reviewModal = page.locator('[data-testid="dialog-overlay"]')
+    const dialogAlternative = reviewModal.or(page.getByRole('dialog'))
+
+    // 等待弹窗出现
+    if (await dialogAlternative.isVisible({ timeout: 5000 })) {
       // 验证审核弹窗内容
-      await expect(reviewModal.locator('text=章节审核')).toBeVisible()
+      await expect(dialogAlternative.locator('text=章节审核')).toBeVisible()
 
       // 测试使用此内容按钮
       const useButton = page.getByRole('button', { name: '使用此内容' })
@@ -683,7 +684,7 @@ test.describe('ChapterWriter 页面交互', () => {
   test('删除章节按钮', async ({ page }) => {
     // 导航到章节写作页面
     await page.goto('/novels/test-novel-001/chapters/1')
-    await page.waitForTimeout(500)
+    await page.waitForLoadState('networkidle')
 
     // 等待页面加载
     await expect(page.locator('text=第 1 章')).toBeVisible()
@@ -696,14 +697,15 @@ test.describe('ChapterWriter 页面交互', () => {
     await deleteButton.click()
 
     // 确认删除弹窗应该出现
-    const confirmDialog = page.locator('.dialog-overlay')
-    await expect(confirmDialog).toBeVisible()
-    await expect(confirmDialog).toContainText('确认删除章节')
+    const confirmDialog = page.locator('[data-testid="dialog-overlay"]')
+    const dialogAlternative = confirmDialog.or(page.getByRole('dialog'))
+    await expect(dialogAlternative).toBeVisible()
+    await expect(dialogAlternative).toContainText('确认删除章节')
 
     // 点击取消
     await page.getByRole('button', { name: '取消' }).click()
 
     // 弹窗应该消失
-    await expect(confirmDialog).not.toBeVisible()
+    await expect(dialogAlternative).not.toBeVisible()
   })
 })
