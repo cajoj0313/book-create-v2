@@ -62,3 +62,6 @@ data/novels/*/validation_reports/
 
 # Claude Code tasks (session-only)
 tasks/
+
+# Claude Code 配置（本地保留，不提交）
+.claude/
