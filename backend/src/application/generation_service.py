@@ -66,7 +66,9 @@ class GenerationService:
         novel_id: str,
         user_description: str = "",
         random_generate: bool = False,
-        genre: str = "都市职场"
+        genre: str = "都市职场",
+        male_lead_type: str = "random",
+        female_lead_type: str = "random"
     ) -> AsyncGenerator[str, None]:
         """流式生成世界观设定
 
@@ -75,12 +77,14 @@ class GenerationService:
             user_description: 用户简短描述（随机生成时可忽略）
             random_generate: 是否随机生成
             genre: 小说类型（随机生成时使用，MVP 固定为"都市职场"）
+            male_lead_type: 男主类型（random/霸道总裁/暖男医生/腹黑律师/创业精英）
+            female_lead_type: 女主类型（random/职场新人/小透明/白富美）
 
         Yields:
             str: 生成的内容片段
         """
         if random_generate:
-            prompt = self._build_random_world_setting_prompt(genre)
+            prompt = self._build_random_world_setting_prompt(genre, male_lead_type, female_lead_type)
         else:
             prompt = self._build_world_setting_prompt(user_description)
 
@@ -116,48 +120,30 @@ class GenerationService:
 - workplace: 工作场所类型（如大型企业、创业公司、律师事务所、医院、设计公司）
 - workplace_name: 具体公司/机构名称（虚构名称）
 
-### male_lead（男主设定）⭐ 必须包含
+### male_lead（男主设定）⭐ 自由创意生成
 - name: 姓名（现代风格，如林晨、陆远、张皓）
-- identity: 身份类型，选择其一：
-  - "霸道总裁"：强势、富有、护短
-  - "暖男医生"：温和、细心、体贴
-  - "腹黑律师"：聪明、深沉、有城府
-  - "创业精英"：野心、魄力、年轻有为
+- identity: 自由定义的身份类型（可以是任何职业/身份，不限预设类型）
 - age: 年龄（28-35岁）
 - appearance: 外貌描述（不超过30字，如"冷峻英俊，眉眼深邃"）
 - personality: 性格特点数组（3-5个，如["强势", "护短", "深情", "傲娇"]）
-- wealth: 财富背景（如"富二代"、"白手起家"、"家族企业继承人"）
-- occupation: 具体职业（如CEO、律师、医生、创始人）
+- wealth: 财富背景（自由定义）
+- occupation: 具体职业
 
-### female_lead（女主设定）⭐ 必须包含
+### female_lead（女主设定）⭐ 自由创意生成
 - name: 姓名（现代风格，如苏晴、林婉、陈瑶）
-- identity: 身份类型，选择其一：
-  - "职场新人"：刚入职、努力、单纯
-  - "小透明"：低调、善良、有潜力
-  - "白富美"：优雅、独立、有主见
+- identity: 自由定义的身份类型（可以是任何职业/身份，不限预设类型）
 - age: 年龄（22-26岁）
 - appearance: 外貌描述（不超过30字，如"清秀甜美，气质温婉"）
 - personality: 性格特点数组（3-5个，如["善良", "坚韧", "独立", "有些迷糊"]）
-- background: 家庭背景（如"普通家庭"、"单亲家庭"、"富裕家庭"）
-- occupation: 具体职业（如助理、设计师、医生、律师助理）
+- background: 家庭背景（自由定义）
+- occupation: 具体职业
 
-### emotion_arc（感情线弧度）⭐ 核心
-- stages: 感情阶段数组，固定顺序：
-  1. "初遇" - 带有误会或冲突的第一次见面
-  2. "误会" - 因误解产生敌意或距离
-  3. "暧昧" - 感情萌芽，心动开始
-  4. "表白" - 一方主动表白
-  5. "甜蜜" - 恋人状态，甜蜜互动
-  6. "波折" - 出现情敌、误会、家庭阻力等
-  7. "和解" - 解决问题，感情升温
-  8. "结局" - 求婚/结婚/甜蜜收尾
+### emotion_arc（感情线弧度）⭐ 自由创意设计
+- stages: 感情阶段数组，请自由创意设计感情发展的完整路径（至少包含8个阶段）
+- 建议：感情发展应有因果关系，从初遇到结局形成完整弧度
 
-### main_conflict（主线冲突）
-- type: 冲突类型，选择其一：
-  - "误会" - 因误解导致的感情波折
-  - "情敌" - 出现竞争者
-  - "家庭阻力" - 家庭背景差异导致的反对
-  - "职场竞争" - 工作上的竞争影响感情
+### main_conflict（主线冲突）⭐ 自由创意设计
+- type: 自由定义的冲突类型（不限预设类型）
 - description: 冲突描述（不超过50字）
 
 ### supporting_chars（配角列表）
@@ -193,6 +179,27 @@ class GenerationService:
 3. 波折要有明确原因（情敌/误会/家庭）
 4. 结局要甜蜜圆满
 
+## 示例对比（强制参考）⭐
+
+### ✅ 好示例：男主设定
+- name: "陆远"
+- appearance: "冷峻英俊，眉眼深邃"（20字，简洁具体）
+- personality: ["强势", "护短", "深情", "傲娇"]（具体词汇）
+
+【分析】
+- 外貌：20 字，简洁有画面感 ✅
+- 性格：用"护短"而非"有责任感"，具体 ✅
+
+### ❌ 坏示例：男主设定
+- name: "陆远轩辰浩宇"
+- appearance: "身材高大威猛，面容英俊潇洒，眼神深邃迷人，气质冷峻非凡，皮肤白皙如玉，五官精致完美"
+- personality: ["有责任感", "有担当", "有能力", "有魅力", "有魄力"]
+
+【分析】
+- 姓名：过长，不符合现代感 ❌
+- 外貌：超过 30 字，信息堆砌 ❌
+- 性格：抽象概念，不具体 ❌
+
 ## 输出前自检（强制执行）
 
 1. 【男主设定】姓名是否现代感？外貌是否简洁具体（≤30字）？
@@ -206,82 +213,85 @@ class GenerationService:
 """
         return prompt
 
-    def _build_random_world_setting_prompt(self, genre: str = "都市言情") -> str:
+    def _build_random_world_setting_prompt(self, genre: str = "都市言情", male_lead_type: str = "random", female_lead_type: str = "random") -> str:
         """构建随机生成都市言情小说世界观 Prompt
 
         Args:
             genre: 小说类型，固定为"都市言情"
+            male_lead_type: 男主类型（random 或具体类型，具体类型时强制使用）
+            female_lead_type: 女主类型（random 或具体类型，具体类型时强制使用）
 
         Returns:
             str: 完整 Prompt
         """
+        # 构建男主类型提示
+        male_lead_hint = ""
+        if male_lead_type != "random":
+            male_lead_hint = f"""
+
+⚠️ 【强制要求】男主类型已指定为 "{male_lead_type}"，必须使用此类型！"""
+
+        # 构建女主类型提示
+        female_lead_hint = ""
+        if female_lead_type != "random":
+            female_lead_hint = f"""
+
+⚠️ 【强制要求】女主类型已指定为 "{female_lead_type}"，必须使用此类型！"""
+
         prompt = f"""
 # 任务：随机生成都市言情小说世界观设定
 
 ## 小说类型
 {genre}
 
+{male_lead_hint}
+{female_lead_hint}
+
 ## 输出要求
-请随机生成一个完整的都市言情小说世界观设定。
-
-###男主类型选择（随机选择其一）
-- 霸道总裁：强势、富有、护短、冷峻外表下有深情
-- 暖男医生：温和、细心、体贴、治愈系
-- 腹黑律师：聪明、深沉、有城府、表面温和内心强势
-- 创业精英：野心、魄力、年轻有为、白手起家
-
-### 女主类型选择（随机选择其一）
-- 职场新人：刚入职、努力、单纯、有成长空间
-- 小透明：低调、善良、有潜力、默默付出
-- 白富美：优雅、独立、有主见、家境优越
-
-### 感情线类型选择（随机选择其一）
-- 误会型：初次相遇产生误会，后续消除误会产生感情
-- 情敌型：因情敌出现，两人关系从竞争到合作再到爱情
-- 职场型：上下级关系，从职场冲突到感情升温
-- 命运型：多次偶然相遇，命运牵引产生感情
+请自由创意生成一个完整的都市言情小说世界观设定。
 
 ### genre（小说类型）
 - 固定值: "都市言情"
 
-### background（背景设定）
-- city: 选择现代都市城市（上海/北京/深圳/杭州/广州）
-- workplace: 选择职场环境（大型企业/创业公司/律师事务所/医院/设计公司）
-- workplace_name: 虚构公司名称
+### background（背景设定）⭐ 自由创意生成
+请自由创意生成背景设定：
+- city: 自由选择现代都市城市（可以是国内外任何城市）
+- workplace: 自由定义职场环境类型（可以是任何行业/机构类型）
+- workplace_name: 虚构公司/机构名称
 
-### male_lead（男主设定）⭐ 必须包含
-随机生成男主信息：
-- name: 现代风格姓名
-- identity: 从上述类型中选择
+### male_lead（男主设定）⭐ 自由创意生成
+请自由创意生成男主设定：
+- name: 现代风格姓名（2-3字）
+- identity: 自由定义的身份类型（可以是任何职业/身份，不限预设类型）
 - age: 28-35岁
-- appearance: 外貌描述（≤30字）
-- personality: 性格特点数组（3-5个）
-- wealth: 财富背景
+- appearance: 外貌描述（≤30字，简洁具体）
+- personality: 性格特点数组（3-5个，用具体词汇而非抽象概念）
+- wealth: 财富背景（自由定义）
 - occupation: 具体职业
 
-### female_lead（女主设定）⭐ 必须包含
-随机生成女主信息：
-- name: 现代风格姓名
-- identity: 从上述类型中选择
+### female_lead（女主设定）⭐ 自由创意生成
+请自由创意生成女主设定：
+- name: 现代风格姓名（2-3字）
+- identity: 自由定义的身份类型（可以是任何职业/身份，不限预设类型）
 - age: 22-26岁
-- appearance: 外貌描述（≤30字）
-- personality: 性格特点数组（3-5个）
-- background: 家庭背景
+- appearance: 外貌描述（≤30字，简洁具体）
+- personality: 性格特点数组（3-5个，用具体词汇而非抽象概念）
+- background: 家庭背景（自由定义）
 - occupation: 具体职业
 
-### emotion_arc（感情线弧度）⭐ 核心
-- stages: 感情阶段数组，固定顺序：
-  ["初遇", "误会", "暧昧", "表白", "甜蜜", "波折", "和解", "结局"]
-- type: 从上述感情线类型中选择
+### emotion_arc（感情线弧度）⭐ 自由创意生成
+请自由创意设计感情线：
+- stages: 感情阶段数组，请自由设计感情发展的完整路径（至少包含8个阶段）
+- type: 自由定义的感情线类型（不限预设类型）
 
-### main_conflict（主线冲突）
-随机选择冲突类型：
-- type: 选择其一（误会/情敌/家庭阻力/职场竞争）
+### main_conflict（主线冲突）⭐ 自由创意生成
+请自由创意设计主线冲突：
+- type: 自由定义的冲突类型（不限预设类型）
 - description: 冲突描述（≤50字）
 
-### supporting_chars（配角列表）
-随机生成 2-3 个配角：
-- role: 角色类型（情敌/闺蜜/兄弟/上司/前女友）
+### supporting_chars（配角列表）⭐ 自由创意生成
+自由创意生成 2-3 个配角：
+- role: 自由定义的角色类型
 - name: 姓名
 - identity: 身份描述（≤20字）
 - relation_to_lead: 与男主/女主关系
@@ -289,7 +299,7 @@ class GenerationService:
 ## 约束条件（必须遵守）
 1. 男主必须有魅力、有能力、有感情变化
 2. 女主必须有独立性格，不是依附男主
-3. 感情线必须完整（8 个阶段）
+3. 感情线必须完整（包含从初遇到结局的完整路径）
 4. 冲突必须可通过感情发展解决
 5. 职场背景真实可信
 
@@ -301,7 +311,7 @@ class GenerationService:
 
 1. 【男主设定】姓名是否现代？外貌是否简洁（≤30字）？
 2. 【女主设定】性格是否独立？
-3. 【感情弧度】是否包含全部 8 个阶段？
+3. 【感情弧度】是否包含完整的感情发展路径？
 4. 【冲突设计】冲突是否可解决？
 5. 【配角功能】配角是否服务于感情线？
 6. 【职场背景】是否符合都市生活？
@@ -499,39 +509,33 @@ class GenerationService:
 ### genre（小说类型）
 - 固定值: "都市言情"
 
-### emotion_arc（感情节奏表）⭐ 核心
-感情节奏表，将目标章节数按 6 个感情阶段划分：
+### emotion_arc（感情节奏表）⭐ 自由创意设计
+感情节奏表，将目标章节数按 6 个感情阶段划分（参考框架）：
 
-| 阶段 | 章节范围 | 感情阶段 | 情绪状态 | 爽点类型 |
-|------|----------|----------|----------|----------|
-| stage_1 | 1-{stage_chapters}章 | 初遇/误会 | 冷淡/敌视 | 打脸/冲突 |
-| stage_2 | {stage_chapters+1}-{stage_chapters*2}章 | 暧昧/试探 | 好感萌芽 | 偶遇救场 |
-| stage_3 | {stage_chapters*2+1}-{stage_chapters*3}章 | 升温/表白 | 甜蜜暧昧 | 表白/亲吻 |
-| stage_4 | {stage_chapters*3+1}-{stage_chapters*4}章 | 甜蜜/互动 | 恋人状态 | 约会/送礼 |
-| stage_5 | {stage_chapters*4+1}-{stage_chapters*6}章 | 波折/分离 | 矛盾冲突 | 挽留/解释 |
-| stage_6 | {stage_chapters*6+1}-{target_chapters}章 | 和解/结局 | 甜蜜结局 | 求婚/婚礼 |
+| 阶段 | 章节范围参考 | 感情阶段参考 | 说明 |
+|------|----------|----------|----------|
+| stage_1 | 1-{stage_chapters}章 | 初遇阶段 | 主角首次相遇，建立关系起点 |
+| stage_2 | {stage_chapters+1}-{stage_chapters*2}章 | 暧昧阶段 | 感情萌芽，试探与互动 |
+| stage_3 | {stage_chapters*2+1}-{stage_chapters*3}章 | 升温阶段 | 感情加深，关键时刻 |
+| stage_4 | {stage_chapters*3+1}-{stage_chapters*4}章 | 甜蜜阶段 | 关系确立，甜蜜互动 |
+| stage_5 | {stage_chapters*4+1}-{stage_chapters*6}章 | 波折阶段 | 遇到阻碍，感情考验 |
+| stage_6 | {stage_chapters*6+1}-{target_chapters}章 | 结局阶段 | 解决问题，圆满收尾 |
+
+⚠️ 以上表格仅为参考框架，请自由创意设计每个阶段的具体内容：
 
 每个阶段包含：
 - range: 章节范围（如"1-6"）
-- stage: 感情阶段名称
-- emotion: 情绪状态描述
-- description: 该阶段的感情发展概述（≤100字）
+- stage: 自由定义的感情阶段名称
+- emotion: 自由定义的情绪状态描述
+- description: 自由创意撰写该阶段的感情发展概述（≤100字）
 
-### sweet_points（爽点计划）⭐ 必须包含
-定义关键爽点，每 5 章至少 1 个爽点：
-
-| 章节 | 爽点类型 | 详细描述 |
-|------|----------|----------|
-| 第5章左右 | 偶遇救场 | 男主替女主解围，女主开始心动 |
-| 第15章左右 | 表白/亲吻 | 男主表白或亲吻女主，感情突破 |
-| 第25章左右 | 约会/甜蜜 | 重要约会场景，甜蜜互动 |
-| 第35章左右 | 挽留/解释 | 波折后男主挽留女主，感情加深 |
-| 第45章左右 | 求婚/结局 | 男主求婚或大团圆结局 |
+### sweet_points（爽点计划）⭐ 自由创意设计
+请自由创意设计关键爽点，建议每 5 章安排 1 个爽点：
 
 每个爽点包含：
 - chapter: 章节号
-- type: 爽点类型（偶遇救场/表白/约会/挽留/求婚）
-- detail: 详细描述（≤50字）
+- type: 自由定义的爽点类型
+- detail: 自由创意撰写详细描述（≤50字）
 - emotion_level: 感情强度等级（1-10）
 
 ### chapters（章节规划）
@@ -550,19 +554,19 @@ class GenerationService:
 - resolve_chapter: 冲突解决章节（在 stage_5 或 stage_6）
 
 ## 约束条件（红线规则，必须遵守）
-1. 感情节奏必须严格遵循 6 阶段划分
-2. 爽点密度：每 5 章至少 1 个爽点
+1. 感情节奏必须包含完整的感情发展路径（至少 6 个阶段）
+2. 爽点密度：建议每 5 竂至少 1 个爽点
 3. 章节标题必须有画面感（如"雨夜相遇"而非"第一章"）
-4. 感情进展必须有因果关系（如误会消除→暧昧开始）
-5. 波折必须有明确原因（情敌/误会/家庭阻力）
-6. 结局必须甜蜜圆满
+4. 感情进展必须有因果关系，不能跳跃式进展
+5. 波折必须有明确原因
+6. 结局必须圆满
 7. 每章感情阶段必须明确标注
 
 ## 输出格式
 输出严格遵循 JSON 结构，不要添加任何额外文字说明。
 只输出JSON对象，不要包含markdown代码块标记。
 
-## 章节标题示例（参考）
+## 章节标题示例（仅供参考）
 - 初遇阶段：雨夜相遇、电梯惊魂、咖啡厅误会
 - 暧昧阶段：深夜加班、意外拥抱、共进晚餐
 - 表白阶段：月光告白、医院守护、醉酒真心
@@ -570,14 +574,36 @@ class GenerationService:
 - 波折阶段：情敌出现、误会加深、家庭阻力
 - 和解阶段：真相大白、机场挽留、求婚时刻
 
+## 章节标题示例对比（强制参考）⭐
+
+### ✅ 好示例：章节标题
+- 第1章："雨夜相遇"（4字，有画面感）
+- 第5章："深夜加班"（4字，有场景）
+- 第15章："月光告白"（4字，有氛围）
+
+【分析】
+- 每个标题 ≤15 字 ✅
+- 有具体画面/场景 ✅
+- 感情阶段可见 ✅
+
+### ❌ 坏示例：章节标题
+- 第1章："第一章：男主女主第一次见面产生误会"
+- 第5章："第五章：两人因为工作原因加班到深夜"
+- 第15章："第十五章：男主在月光下向女主表白"
+
+【分析】
+- 标题过长（>15字） ❌
+- 无画面感，只是事件描述 ❌
+- 格式重复 ❌
+
 ## 输出前自检（强制执行）
 
-1. 【感情节奏】是否包含全部 6 个阶段？每个阶段章节数是否合理？
+1. 【感情节奏】是否包含完整的感情发展路径？每个阶段章节数是否合理？
 2. 【爽点密度】是否每 5 竂至少 1 个爽点？
 3. 【章节标题】是否全部有画面感（≤15字）？
 4. 【感情进展】是否有因果关系？不能跳跃式进展
 5. 【波折原因】是否有明确的波折触发原因？
-6. 【结局设置】是否为甜蜜圆满结局？
+6. 【结局设置】是否为圆满结局？
 7. 【感情标注】每章是否标注了感情阶段？
 
 请确保以上检查全部通过后再输出。
@@ -645,7 +671,8 @@ class GenerationService:
         self,
         novel_id: str,
         chapter_num: int,
-        user_special_request: Optional[str] = None
+        user_special_request: Optional[str] = None,
+        outline_context: Optional[Dict[str, Any]] = None
     ) -> AsyncGenerator[str, None]:
         """流式生成章节内容
 
@@ -653,6 +680,7 @@ class GenerationService:
             novel_id: 小说ID
             chapter_num: 章节号
             user_special_request: 用户特别要求（可选）
+            outline_context: 大纲上下文（前端传递，可选）
 
         Yields:
             str: 生成的内容片段
@@ -660,8 +688,13 @@ class GenerationService:
         # 加载所有上下文
         context = self._load_chapter_context(novel_id, chapter_num)
 
-        # 构建Prompt
-        prompt = self._build_chapter_prompt(context, chapter_num, user_special_request)
+        # 构建Prompt（传递 outline_context）
+        prompt = self._build_chapter_prompt(
+            context,
+            chapter_num,
+            user_special_request,
+            outline_context  # 传递大纲上下文给 _build_chapter_prompt
+        )
 
         async for chunk in self.ai_provider.stream_generate(prompt):
             yield chunk
@@ -708,7 +741,8 @@ class GenerationService:
         self,
         context: Dict[str, Any],
         chapter_num: int,
-        user_special_request: Optional[str] = None
+        user_special_request: Optional[str] = None,
+        outline_context: Optional[Dict[str, Any]] = None
     ) -> str:
         """构建都市言情小说章节续写 Prompt（聚焦感情线和爽点）
 
@@ -716,22 +750,58 @@ class GenerationService:
             context: 上下文数据
             chapter_num: 章节号
             user_special_request: 用户特别要求
+            outline_context: 大纲上下文（前端传递，包含当前章节的大纲信息）
 
         Returns:
             str: 完整 Prompt
         """
+        # 处理大纲上下文（前端传递的 outline_context 优先）
+        # outline_context 格式：{title, key_events, emotion_stage, emotion_progress}
+        if outline_context:
+            # 前端传递的大纲上下文，直接使用
+            current_outline = outline_context
+            context["current_chapter_outline"] = outline_context
+        else:
+            # 从 context 中获取当前章节大纲
+            current_outline = context.get("current_chapter_outline", {})
+
         # 序列化上下文
         world_setting_str = json.dumps(context.get("world_setting", {}), ensure_ascii=False, indent=2)
         characters_str = json.dumps(context.get("characters", {}), ensure_ascii=False, indent=2)
-        current_outline_str = json.dumps(context.get("current_chapter_outline", {}), ensure_ascii=False, indent=2)
+        current_outline_str = json.dumps(current_outline, ensure_ascii=False, indent=2)
 
         # 获取感情阶段和爽点信息
-        emotion_stage = ""
-        is_sweet_point = False
-        current_outline = context.get("current_chapter_outline", {})
-        if current_outline:
-            emotion_stage = current_outline.get("emotion_stage", "未知阶段")
-            is_sweet_point = current_outline.get("sweet_point", False)
+        emotion_stage = current_outline.get("emotion_stage", "未知阶段")
+        is_sweet_point = current_outline.get("sweet_point", False)
+
+        # 构建大纲注入部分（强制参考）⭐
+        outline_injection = ""
+        if outline_context:
+            # 格式化核心事件列表
+            key_events = outline_context.get("key_events", [])
+            events_formatted = ""
+            if key_events:
+                for i, event in enumerate(key_events, 1):
+                    events_formatted += f"  {i}. {event}\n"
+            else:
+                events_formatted = "  （未设定）\n"
+
+            outline_injection = f"""
+## 当前章节大纲（强制参考）⭐
+
+### 章节标题
+{outline_context.get('title', '未设定')}
+
+### 核心事件（必须覆盖60%以上）
+{events_formatted}
+### 感情阶段
+{outline_context.get('emotion_stage', '未设定')}
+
+### 感情进度描述
+{outline_context.get('emotion_progress', '未设定')}
+
+【红线】生成内容必须体现上述事件和感情阶段设定。
+"""
 
         previous_chapter_str = ""
         prev_chapter = context.get("previous_chapter")
@@ -784,6 +854,8 @@ class GenerationService:
 **当前感情阶段**: {emotion_stage}
 
 {sweet_point_hint}
+
+{outline_injection}
 
 ### 上一章内容（如有）
 {previous_chapter_str if previous_chapter_str else "这是第一章，无上一章内容"}
@@ -864,6 +936,32 @@ class GenerationService:
 1. 段落长度：100-200 字
 2. 段落过渡：每段开头有衔接词（转眼间/随后/与此同时）
 3. 段落节奏：感情描写为主，职场描写为辅
+
+## 示例对比（强制参考）⭐⭐⭐ 最重要
+
+### ✅ 好示例：段落描写
+
+她抬头看他，心跳莫名加快了。办公室里只剩下他们两个人，空调的嗡嗡声在安静中格外清晰。
+
+"文件整理好了？"他问，目光在她脸上停留了一秒。
+
+"嗯，都在桌上。"她把文件夹递过去，手指碰到他的手背，触感冰凉。
+
+【分析】
+- 信息密度：每句 1-2 信息点 ✅
+- 句子长度：15-25 字 ✅
+- 对话+动作：每句对话配动作描写 ✅
+- 情感描写：用"心跳加快"表现心动，不直接说 ✅
+
+### ❌ 坏示例：段落描写
+
+她整理完文件后心跳加速地走到他面前，将文件夹递给他后手指碰到他的手背感到冰凉的触感，办公室只剩下他们两个人空调嗡嗡声格外清晰，她抬头看他心跳莫名加快了他问文件整理好了吗目光在她脸上停留了一秒她嗯都在桌上把文件夹递过去。
+
+【分析】
+- 信息密度：一句话 6 个信息点 ❌
+- 句子长度：超过 80 字 ❌
+- 对话+动作：对话无动作描写 ❌
+- 情感描写：直接说"心跳加速"，缺乏文学性 ❌
 
 ## 输出格式
 输出严格遵循 JSON 结构，不要添加任何额外文字说明。

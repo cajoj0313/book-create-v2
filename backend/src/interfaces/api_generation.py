@@ -17,6 +17,8 @@ class GenerateWorldSettingRequest(BaseModel):
     user_description: str = ""  # 随机生成时可忽略
     random_generate: bool = False  # 是否随机生成
     genre: str = "都市职场"  # 小说类型（MVP 固定为都市职场）
+    male_lead_type: str = "random"  # 男主类型
+    female_lead_type: str = "random"  # 女主类型
 
 
 class WorldSettingResponse(BaseModel):
@@ -114,7 +116,9 @@ async def stream_generate_world_setting(request: GenerateWorldSettingRequest):
                 request.novel_id,
                 request.user_description,
                 request.random_generate,
-                request.genre
+                request.genre,
+                request.male_lead_type,
+                request.female_lead_type
             ):
                 full_content += chunk
                 # 发送内容片段
@@ -293,6 +297,7 @@ class GenerateChapterRequest(BaseModel):
     novel_id: str
     chapter_num: int
     user_special_request: Optional[str] = None
+    outline_context: Optional[dict] = None  # 大纲上下文（前端传递）
 
 
 class ChapterResponse(BaseModel):
@@ -392,7 +397,8 @@ async def stream_generate_chapter(request: GenerateChapterRequest):
             async for chunk in service.stream_generate_chapter(
                 request.novel_id,
                 request.chapter_num,
-                request.user_special_request
+                request.user_special_request,
+                request.outline_context
             ):
                 full_content += chunk
                 # 发送内容片段

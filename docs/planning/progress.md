@@ -2,6 +2,92 @@
 
 ---
 
+## 2026-04-15 前端测试 P1 问题修复 - data-testid + mock API ✅
+
+### 任务信息
+
+- Task ID: 前端测试修复
+- Owner: frontend-dev
+- 问题来源: 代码审查 P1 问题
+
+### 问题分析
+
+**问题 1：小说卡片选择器**
+- 原因：测试使用 `.or()` 组合选择器导致匹配多个元素
+- 同时前端 div 没有 `data-testid` 属性
+
+**问题 2：mock API 路由不匹配**
+- 原因：axios 拦截器去掉 URL 尾随斜杠
+- mock 路由 `**/api/novels/` 无法匹配实际请求 `/api/novels`
+
+### 完成内容
+
+**NovelList.tsx 修改**:
+- ✅ 输入框添加 `data-testid="title-input"`（第 109 行）
+- ✅ 创建按钮添加 `data-testid="create-button"`（第 114 行）
+- ✅ 小说卡片添加 `data-testid="novel-card"`（第 151 行）
+- ✅ 删除弹窗添加 `data-testid="dialog-overlay"`（第 230 行）
+
+**interaction.spec.ts 修改**:
+- ✅ mock API 路由改为 `**/api/novels`（去掉尾随斜杠）
+- ✅ 小说卡片选择器改为 `page.getByTestId('novel-card')` 单一选择器
+
+### 测试结果
+
+**NovelList 相关测试（5 个全部通过）**:
+- ✅ 输入标题创建小说
+- ✅ 点击小说卡片跳转到详情页
+- ✅ 删除小说按钮（悬停显示）
+- ✅ NovelList 页面加载和元素验证
+- ✅ NovelList 页面渲染
+
+### 代码变更
+
+| 文件 | 变更 | 行数 |
+|------|------|------|
+| `web-front/src/pages/NovelList.tsx` | 添加 4 个 data-testid 属性 | +4 行 |
+| `web-front/e2e/interaction.spec.ts` | 修正选择器逻辑 + mock 路由 | ~20 行 |
+
+### Git 提交
+
+- commit: 待提交
+
+---
+
+## 2026-04-15 创建小说后不跳转问题修复 ✅
+
+### 问题背景
+
+测试文件 `web-front/e2e/generation.spec.ts` 失败：
+- 测试期望：创建成功后 URL 不再是根路径
+- 实际结果：创建后 URL 仍是 `http://localhost:3000/`
+
+### 问题根因分析
+
+| 问题点 | 分析结果 |
+|--------|----------|
+| Mock API 缺失 | `generation.spec.ts` 没有 mock API，依赖真实后端运行 |
+| 断言方式错误 | 使用 `expect(currentUrl).not.toBe(...)` 不等待 URL 变化 |
+| 世界观 mock 状态 | 返回已存在状态，导致页面不显示输入框 |
+
+### 修复内容
+
+| 修复项 | 文件 | 内容 |
+|--------|------|------|
+| Mock API | `generation.spec.ts` | 新增 `mockApiRoutes(page)` 函数，mock 小说创建、世界观等 API |
+| 断言方式 | `generation.spec.ts` | 使用 `await expect(page).toHaveURL(/\/novels\/.*\/world-setting/)` |
+| 世界观状态 | `generation.spec.ts` | GET 世界观返回 `{ success: false }` 触发输入框显示 |
+
+### 测试结果
+
+- **1 passed** ✅
+
+### Git 提交
+
+- 待提交
+
+---
+
 ## 2026-04-15 前端 Playwright 测试配置 + PM 边界规则更新 ✅
 
 ### PM 边界规则更新
@@ -1099,4 +1185,928 @@ client.connect(
 
 ---
 
-*最后更新: 2026-04-15*
+## 2026-04-15 前端测试 P1 问题修复 - data-testid 添加 ✅
+
+### 任务信息
+
+- Task ID: 前端测试修复
+- Owner: frontend-dev
+- 依赖: 无
+
+### 问题分析
+
+**问题 1：小说卡片选择器**
+- 当前代码：`<div className="paper-hover...">` 无语义化属性
+- 测试选择器：`page.getByRole('article')` 或 `page.locator('[data-testid="novel-card"]')`
+- 解决方案：添加 `data-testid="novel-card"` 属性
+
+**问题 2：创建按钮 disabled 条件**
+- 代码逻辑：`disabled={creating || !newTitle.trim()}`（正确）
+- 测试流程：先输入标题 → 检查按钮 enabled → 点击
+- 逻辑正确，无需修改
+
+### 完成内容
+
+**NovelList.tsx 修改**:
+- ✅ 给输入框添加 `data-testid="title-input"`（第 109 行）
+- ✅ 给创建按钮添加 `data-testid="create-button"`（第 114 行）
+- ✅ 给小说卡片 div 添加 `data-testid="novel-card"`（第 151 行）
+
+### 代码变更
+
+| 文件 | 变更 | 行数 |
+|------|------|------|
+| `web-front/src/pages/NovelList.tsx` | 添加 3 个 data-testid 属性 | +3 行 |
+
+### 验收结果
+
+- TypeScript 检查: ✅ 通过
+- 测试选择器现在可以正确匹配元素
+
+### Git 提交
+
+- commit: 待提交
+
+---
+
+## 2026-04-16 世界观 Prompt 示例对比验证 ✅
+
+### 任务信息
+
+- Task ID: 示例对比检查
+- Owner: backend-dev
+- 文件: `backend/src/application/generation_service.py`
+
+### 任务内容
+
+为 `_build_world_setting_prompt()` 方法添加"好示例 vs 坏示例"对比。
+
+### 发现结果
+
+**示例对比内容已存在**（第196-215行）：
+
+```python
+## 示例对比（强制参考）⭐
+
+### ✅ 好示例：男主设定
+- name: "陆远"
+- appearance: "冷峻英俊，眉眼深邃"（20字，简洁具体）
+- personality: ["强势", "护短", "深情", "傲娇"]（具体词汇）
+
+【分析】
+- 外貌：20 字，简洁有画面感 ✅
+- 性格：用"护短"而非"有责任感"，具体 ✅
+
+### ❌ 坏示例：男主设定
+- name: "陆远轩辰浩宇"
+- appearance: "身材高大威猛，面容英俊潇洒，眼神深邃迷人，气质冷峻非凡，皮肤白皙如玉，五官精致完美"
+- personality: ["有责任感", "有担当", "有能力", "有魅力", "有魄力"]
+
+【分析】
+- 姓名：过长，不符合现代感 ❌
+- 外貌：超过 30 字，信息堆砌 ❌
+- 性格：抽象概念，不具体 ❌
+```
+
+位置正确：在"写作风格指南"之后、"输出前自检"之前。
+
+### 测试结果
+
+- **13 passed** ✅
+
+### 验收状态
+
+- [x] 示例包含 ✅好示例 + 分析
+- [x] 示例包含 ❌坏示例 + 分析
+- [x] 示例位置正确（"写作风格指南"之后、"输出前自检"之前）
+- [x] pytest 测试通过
+- [x] progress.md 已更新
+
+---
+
+## 2026-04-16 大纲 Prompt 章节标题示例对比优化 ✅
+
+### 任务信息
+
+- Task ID: T-2
+- Owner: backend-dev
+- 文件: `backend/src/application/generation_service.py`
+
+### 完成内容
+
+**_build_outline_prompt() 方法修改**:
+- ✅ 标题区域名称改为"章节标题示例对比（强制参考）"
+- ✅ 好示例新增第15章："月光告白"（4字，有氛围）
+- ✅ 好示例分析新增"感情阶段可见"规则
+- ✅ 坏示例新增第5章和第15章示例
+- ✅ 坏示例分析新增"格式重复"问题
+
+### 修改对比
+
+| 修改项 | 原内容 | 新内容 |
+|--------|--------|--------|
+| 区域标题 | "示例对比" | "章节标题示例对比" |
+| 好示例数量 | 2个 | 3个 |
+| 好示例分析 | 2条规则 | 3条规则 |
+| 坏示例数量 | 1个 | 3个 |
+| 坏示例分析 | 2条规则 | 3条规则 |
+
+### 测试结果
+
+- pytest: **13 passed, 1 warning** ✅
+
+### Git 提交
+
+- commit: 待提交
+
+---
+
+## 2026-04-16 章节 Prompt 示例对比修改 ✅
+
+### 任务信息
+
+- Task ID: T-3
+- Owner: backend-dev
+- 文件: `backend/src/application/generation_service.py`
+- 优先级: P0（最重要）
+
+### 完成内容
+
+**_build_chapter_prompt() 方法修改**:
+- ✅ 好示例约 100 字（段落描写 + 对话 + 分析）
+- ✅ 好示例分析 4 条（信息密度/句子长度/对话+动作/情感描写）
+- ✅ 坏示例约 80 字（段落堆砌 + 分析）
+- ✅ 坏示例分析 4 条（信息密度/句子长度/对话+动作/情感描写）
+- ✅ 删除多余内容（原文件的"对话描写示例"部分）
+- ✅ 标题使用 ⭐⭐⭐ 标注为重点
+
+### 修改对比
+
+| 修改项 | 原内容 | 新内容 |
+|--------|--------|--------|
+| 好示例字数 | 约 100 字 | 约 100 字（保持） |
+| 好示例分析 | 4 条 | 4 条（保持） |
+| 坏示例字数 | 约 80 字 | 约 80 字（增加完整对话） |
+| 坏示例分析 | 3 条 | 4 条（新增"情感描写：直接说'心跳加速'，缺乏文学性 ❌"） |
+| 额外内容 | 有"对话描写示例" | 删除（仅保留段落描写示例） |
+| 标题星号 | ⭐⭐⭐ | ⭐⭐⭐（保持） |
+
+### 测试结果
+
+- pytest: **13 passed, 1 warning** ✅
+
+### 验收状态
+
+- [x] 示例包含完整的 ✅好示例（含分析）
+- [x] 示例包含完整的 ❌坏示例（含分析）
+- [x] 好示例约 100 字，坏示例约 80 字
+- [x] 分析部分逐条标注 ✅/❌
+- [x] 示例在"写作风格指南"之后、"输出前自检"之前
+- [x] 使用 ⭐⭐⭐ 标注为重点
+- [x] pytest 测试通过
+- [x] progress.md 已更新
+
+### Git 提交
+
+- commit: 待提交
+
+---
+
+## 2026-04-16 前端 axios 拦截器尾随斜杠检查 ✅
+
+### 任务信息
+
+- Task ID: 拦截器检查
+- Owner: frontend-dev
+- 文件: `web-front/src/services/api.ts`
+
+### 检查内容
+
+检查 axios 请求拦截器（43-46行）中的尾随斜杠处理逻辑。
+
+### 分析结果
+
+**拦截器逻辑**:
+```typescript
+if (config.url && config.url.endsWith('/') && config.url.length > 1) {
+  config.url = config.url.slice(0, -1)
+}
+```
+
+**对比分析**:
+
+| 前端调用 | 原URL | 拦截器处理后 | 后端路由 |
+|----------|-------|--------------|----------|
+| getNovelList | `/novels/` | `/novels` | `@router.get("")` → `/novels` ✅ |
+| createNovel | `/novels/` | `/novels` | `@router.post("")` → `/novels` ✅ |
+| novelApi.deleteNovel | `/novels/${id}/` | `/novels/{id}` | `@router.delete("/{id}")` ✅ |
+| novelApi.deleteCharacter | `/novels/${id}/characters/${charId}/` | `/novels/{id}/characters/{charId}` | `@router.delete("/{id}/characters/{charId}")` ✅ |
+
+### 结论
+
+**无需修改**。
+
+- 拦截器逻辑正确：去掉尾随斜杠，避免 FastAPI 307 重定向
+- `length > 1` 条件正确：防止去掉根路径 `/`（去掉后变成空字符串）
+- 所有 API 调用与后端路由匹配
+
+### 验收状态
+
+- [x] 拦截器逻辑正确
+- [x] 前端 API 调用与后端路由匹配
+- [x] 无需修改代码
+- [x] progress.md 已更新
+
+---
+
+## 2026-04-16 后端 API 尾随斜杠修复 ✅
+
+### 任务信息
+
+- Task ID: Bug-1
+- Owner: backend-dev
+- 文件: `backend/src/interfaces/api_novels.py`
+
+### 问题背景
+
+- 后端路由定义为 `@router.get("/")` → 实际路径 `/novels/`（带尾随斜杠）
+- 前端 axios 拦截器去掉尾随斜杠 → `/novels`（不带尾随斜杠）
+- FastAPI 自动 307 Redirect → 绕过 Vite proxy，导致请求失败
+
+### 修复内容
+
+**api_novels.py 修改**:
+- ✅ `@router.post("/")` → `@router.post("")`（line 26）
+- ✅ `@router.get("/")` → `@router.get("")`（line 63）
+
+**api_generation.py 分析**:
+- 所有路由已不带尾随斜杠，无需修改
+
+### 测试结果
+
+- pytest: **92 passed, 4 skipped** ✅
+- curl `/novels`: HTTP 200（非 307）✅
+
+### 验收状态
+
+- [x] api_novels.py 所有路由修改完成
+- [x] api_generation.py 无需修改
+- [x] pytest 测试通过（92 passed）
+- [x] curl 测试 `/novels` 不返回 307 redirect
+- [x] progress.md 已更新
+
+### Git 提交
+
+- commit: 待提交
+
+---
+
+---
+
+## 2026-04-16 章节大纲数据源检查 ✅
+
+### 任务信息
+
+- Task ID: Bug-4
+- Owner: frontend-dev
+- 文件: `web-front/src/pages/ChapterWriter.tsx`
+
+### 问题描述
+
+用户反馈：点击章节时，章节大纲应该从大纲生成 API 获取数据，移除所有 mock 数据。
+
+### 检查内容
+
+| 检查项 | 结果 | 说明 |
+|--------|------|------|
+| `loadChapterData` 函数 | ✅ 正确 | 调用 `getOutline(id)` API（第128-131行） |
+| `api.ts` `getOutline` | ✅ 正确 | 调用 `/novels/${novelId}/outline`（第231-234行） |
+| 左侧大纲列表 | ✅ 正确 | 使用 `fullOutline?.chapters || []`（第330行） |
+| mock 数据搜索 | ✅ 无 | 全项目 grep 搜索无 mock 数据 |
+| TypeScript type-check | ✅ 通过 | 无类型错误 |
+
+### 分析结论
+
+**代码已正确实现，无需修改**。
+
+- `loadChapterData` 在加载章节时正确调用 `getOutline(id)` API 获取大纲数据
+- 大纲数据存储在 `fullOutline` state，用于左侧章节列表展示
+- 无任何 mock 数据或硬编码测试数据
+
+### 验收状态
+
+- [x] loadChapterData 正确调用 getOutline API
+- [x] 无 mock 数据或硬编码测试数据
+- [x] 左侧正确展示大纲章节列表
+- [x] 当前章节正确高亮
+- [x] npm run type-check 通过
+- [x] progress.md 更新
+
+---
+
+*最后更新: 2026-04-16*
+
+---
+
+## 2026-04-16 后端 API 新增男主女主类型参数 ✅
+
+### 任务信息
+
+- Task ID: FEAT-15-T2
+- Owner: backend-dev
+- 文件: `backend/src/interfaces/api_generation.py`, `backend/src/application/generation_service.py`
+
+### 完成内容
+
+**api_generation.py 修改**:
+- ✅ `GenerateWorldSettingRequest` 新增 `male_lead_type: str = "random"` 参数
+- ✅ `GenerateWorldSettingRequest` 新增 `female_lead_type: str = "random"` 参数
+- ✅ `stream_generate_world_setting` 路由传递新参数到 generation_service
+
+**generation_service.py 修改**:
+- ✅ `stream_generate_world_setting` 方法签名新增 `male_lead_type` 和 `female_lead_type` 参数
+- ✅ `_build_random_world_setting_prompt` 方法签名新增参数
+- ✅ Prompt 根据 `male_lead_type` 和 `female_lead_type` 添加强制类型约束提示
+
+### 参数说明
+
+| 参数 | 类型 | 默认值 | 说明 |
+|------|------|--------|------|
+| male_lead_type | str | "random" | 男主类型：random/霸道总裁/暖男医生/腹黑律师/创业精英 |
+| female_lead_type | str | "random" | 女主类型：random/职场新人/小透明/白富美 |
+
+### 测试结果
+
+- pytest: **13 passed, 1 warning** ✅
+
+### 验收状态
+
+- [x] GenerateWorldSettingRequest 新增两个参数
+- [x] 参数默认值为 "random"
+- [x] 参数正确传递到 generation_service
+- [x] _build_random_world_setting_prompt 支持新参数
+- [x] pytest 测试通过
+- [x] progress.md 更新
+
+### Git 提交
+
+- commit: 待提交
+
+---
+
+## 2026-04-16 前端 WorldBuilder 类型选择下拉框 ✅
+
+### 任务信息
+
+- Task ID: FEAT-15-T1
+- Owner: frontend-dev
+- 文件: `web-front/src/pages/WorldBuilder.tsx`
+
+### 完成内容
+
+**WorldBuilder.tsx 修改**:
+- ✅ 新增状态变量 `maleLeadType` 和 `femaleLeadType`（初始值 'random'）
+- ✅ 新增类型选项定义 `maleLeadOptions`（5 个选项）和 `femaleLeadOptions`（4 个选项）
+- ✅ 在"AI 随机生成"按钮上方添加类型选择下拉框 UI
+- ✅ 修改 `handleRandomGenerate` 函数，添加参数传递 `male_lead_type` 和 `female_lead_type`
+- ✅ 更新 useCallback 依赖数组
+
+### 类型选项
+
+**男主类型（5 个）**:
+- 随机
+- 霸道总裁
+- 暖男医生
+- 腹黑律师
+- 创业精英
+
+**女主类型（4 个）**:
+- 随机
+- 职场新人
+- 小透明
+- 白富美
+
+### UI 布局
+
+```
+[男主类型下拉框]  [女主类型下拉框]
+   ↓                ↓
+[开始生成] (vermilion)  [AI 机生成] (indigo)
+```
+
+- 下拉框使用 `input-ink` 样式（墨韵书香风格）
+- streaming 状态下下拉框 disabled
+
+### 测试结果
+
+- TypeScript 检查: ✅ 通过（npm run type-check）
+
+### 验收状态
+
+- [x] 男主类型下拉框正确显示（5 个选项）
+- [x] 女主类型下拉框正确显示（4 个选项）
+- [x] 下拉框样式符合墨韵书香风格（input-ink）
+- [x] 参数正确传递到 API（male_lead_type, female_lead_type）
+- [x] npm run type-check 通过
+- [x] progress.md 更新
+
+### Git 提交
+
+- commit: 待提交
+
+---
+
+## 2026-04-16 ChapterWriter 错误处理改进 ✅
+
+### 任务信息
+
+- Task ID: Bug-5
+- Owner: frontend-dev
+- 文件: `web-front/src/pages/ChapterWriter.tsx`
+
+### 问题分析
+
+原代码（第 139-140 行）使用空 catch，错误提示不明确：
+- 用户不知道是小说不存在还是章节不存在
+- 没有区分不同的错误类型
+
+### 完成内容
+
+**loadChapterData 函数重构**:
+- ✅ 先检查小说是否存在（通过 getOutline API）
+- ✅ 小说不存在时显示"小说不存在，请返回首页重新创建"
+- ✅ 章节不存在时显示"章节尚未生成，点击 AI 续写开始创作"
+- ✅ 网络错误时显示具体错误信息（error.message）
+
+### 代码变更
+
+| 修改项 | 原代码 | 新代码 |
+|--------|--------|--------|
+| 错误检查顺序 | 先加载章节，再加载大纲 | 先检查小说存在，再加载章节 |
+| 小说不存在 | 无提示 | 显示明确错误信息并 return |
+| 网络错误 | "加载章节数据失败" | 显示具体 error.message |
+
+### 测试结果
+
+- TypeScript 检查: ✅ 通过（npm run type-check）
+
+### 验收状态
+
+- [x] 小说不存在时显示"小说不存在，请返回首页重新创建"
+- [x] 章节不存在时显示"章节尚未生成，点击 AI 续写开始创作"
+- [x] 网络错误时显示具体错误信息
+- [x] npm run type-check 通过
+- [x] progress.md 更新
+
+### Git 提交
+
+- commit: 待提交
+
+---
+
+## 2026-04-16 ChapterWriter 保存按钮支持生成内容 ✅
+
+### 任务信息
+
+- Task ID: Bug-6
+- Owner: frontend-dev
+- 文件: `web-front/src/pages/ChapterWriter.tsx`
+
+### 问题背景
+
+用户反馈：页面点击保存未调用接口。
+
+### 问题分析
+
+| 场景 | 原代码行为 | 问题 |
+|------|-----------|------|
+| AI生成后点击保存 | `handleSave` 检查 `!editedContent` → return | `generatedContent` 不在检查范围内 |
+| 保存按钮 disabled | `disabled={saving || !editedContent}` | `generatedContent` 不在条件内 |
+
+AI 生成的内容存储在 `generatedContent` state，但 `handleSave` 只检查 `editedContent`，导致用户生成内容后点击保存按钮无法调用 API。
+
+### 修复内容
+
+**handleSave 函数修改**:
+- ✅ 改为检查 `editedContent || generatedContent`
+- ✅ 保存成功后同步 `editedContent`（如果保存的是生成内容）
+- ✅ 使用 `contentToSave` 变量统一处理
+
+**保存按钮修改**:
+- ✅ `disabled` 条件改为 `saving || (!editedContent && !generatedContent)`
+- ✅ 按钮在有生成内容时也可用
+
+### 代码变更
+
+| 修改项 | 原代码 | 新代码 |
+|--------|--------|--------|
+| handleSave 检查条件 | `if (!novelId || !editedContent) return` | `const contentToSave = editedContent || generatedContent; if (!novelId || !contentToSave) return` |
+| handleSave 保存内容 | `updateChapter(novelId, currentChapterNum, editedContent)` | `updateChapter(novelId, currentChapterNum, contentToSave)` |
+| 同步 editedContent | 无 | `if (!editedContent && generatedContent) setEditedContent(generatedContent)` |
+| 保存按钮 disabled | `disabled={saving || !editedContent}` | `disabled={saving || (!editedContent && !generatedContent)}` |
+
+### 测试结果
+
+- TypeScript 检查: ✅ 通过（npm run type-check）
+
+### 验收状态
+
+- [x] handleSave 支持保存 generatedContent
+- [x] 保存按钮在有生成内容时可用
+- [x] 保存成功后同步 editedContent
+- [x] npm run type-check 通过
+- [x] progress.md 更新
+
+### Git 提交
+
+- commit: 待提交
+
+---
+
+## 2026-04-16 FEAT-17: 章节大纲关联与空白状态优化需求分析 ✅
+
+### 任务信息
+
+- Task ID: 需求分析
+- Owner: Product Manager Agent
+- 来源: 用户反馈两个问题
+
+### 用户需求
+
+**需求1**: 章节大纲和AI生成的故事内容没有关联关系
+**需求2**: 章节编写页面前端需要优化，如果没有内容展示空白页面就行，不要提示404或者其他报错
+
+### 需求澄清对话
+
+**澄清问题**（4 个）:
+1. "没有关联关系"具体是指哪种情况？
+2. 您期望的"关联效果"是什么？
+3. 空白页面是否需要提示？
+4. 哪些场景需要静默显示空白页？
+
+**用户回答**:
+- 关联问题：以上都有（内容偏离大纲 + 前端展示无关 + 技术未传入）
+- 期望效果：AI参考大纲 + 用户可灵活调整
+- 空白提示：简洁提示（去掉warning样式）
+- 静默场景：章节未生成（小说不存在和网络错误保留提示）
+
+### 需求复述确认
+
+**需求1**:
+- 问题：AI生成内容偏离大纲、前端大纲面板无互动、后端未传入大纲上下文
+- 目标用户：小说创作者
+- 期望效果：AI参考大纲生成、用户可灵活调整
+
+**需求2**:
+- 问题：章节未生成时显示warning toast
+- 目标用户：小说创作者
+- 期望效果：静默空白页 + 简洁提示，保留小说不存在/网络错误提示
+
+用户确认理解正确。
+
+### 完成内容
+
+**PRD 文档创建**:
+- ✅ 创建 `docs/products/chapter-outline-link-brief.md`
+- ✅ 定义 8 条验收标准（大纲注入 + 空白状态）
+- ✅ 定义 MVP 范围（3个必须项）
+- ✅ RICE 优先级评分（Priority Score 128，P1）
+- ✅ 技术方案分析（后端API模型 + Prompt注入 + 前端样式）
+- ✅ 任务分解（6个任务，总工期 4h）
+
+**需求池更新**:
+- ✅ 新增 FEAT-17 到 `docs/products/backlog.md`
+
+**技术分析发现**:
+- 前端已传递 `outline_context` 参数
+- 后端 `GenerateChapterRequest` 模型缺少此参数定义
+- 导致数据被丢弃，AI不知道大纲内容
+
+### 验收状态
+
+- [x] 需求澄清对话完成（4个问题）
+- [x] 需求复述确认
+- [x] PRD 文档创建
+- [x] 需求池更新
+- [x] progress.md 更新
+
+### 下一步
+
+告知用户如何进入开发阶段。
+
+---
+
+## 2026-04-16 FEAT-16: 移除预配置数据需求分析 ✅
+
+### 任务信息
+
+- Task ID: 需求分析
+- Owner: Product Manager Agent
+
+### 用户需求
+
+用户明确强调：**不要有预生成的配置数据，所有的小说内容，均需要从大模型中获取。**
+
+### 问题分析
+
+**问题定位**: 当前 Prompt 中包含大量"预配置选项列表"，限制了 AI 的创意自由度。
+
+| 问题类型 | 具体位置 | 预配置内容 | 影响 |
+|----------|----------|------------|------|
+| 男主类型固定 | `_build_random_world_setting_prompt()` 第 271-275 行 | 霸道总裁/暖男医生/腹黑律师/创业精英（4 种） | AI 只能从 4 种中选择 |
+| 女主类型固定 | 同上第 277-280 行 | 职场新人/小透明/白富美（3 种） | AI 只能从 3 种中选择 |
+| 感情线类型固定 | 同上第 282-286 行 | 误会型/情敌型/职场型/命运型（4 种） | 情节模式被限定 |
+| 城市选择固定 | 同上第 291-293 行 | 上海/北京/深圳/杭州/广州（5 个） | 场景缺乏新意 |
+| 工作场所固定 | 同上第 294 行 | 大型企业/创业公司/律师事务所/医院/设计公司 | 背景单一 |
+
+### 完成内容
+
+**PRD 文档创建**:
+- ✅ 创建 `docs/products/pure-ai-random-generation-brief.md`
+- ✅ 定义 9 条验收标准（Prompt 改造 + 功能验收 + 质量验收）
+- ✅ 定义 MVP 范围（移除预配置列表 + 保留质量控制）
+- ✅ RICE 优先级评分（Priority Score 250，P0 最高优先级）
+- ✅ 列出需要移除的预配置数据清单（10 项）
+- ✅ 定义技术方案（Prompt 改造示例）
+- ✅ 任务分解（7 个任务，总工期 6h）
+
+**需求池更新**:
+- ✅ 新增 FEAT-16 到 `docs/products/backlog.md`
+- ✅ 更新 FEAT-15 状态为"已完成，被 FEAT-16 覆盖"
+
+### 与 FEAT-15 的关系
+
+| 需求 | FEAT-15 | FEAT-16 |
+|------|---------|---------|
+| 男主类型 | 用户选择（下拉框） | **移除选择，AI 自由生成** |
+| 女主类型 | 用户选择（下拉框） | **移除选择，AI 自由生成** |
+| 数据来源 | Prompt 预配置选项 | **AI 完全创意生成** |
+| 多样性 | 受限于预配置数量 | **无限可能** |
+
+**决策**: FEAT-16 覆盖 FEAT-15，前端类型选择功能改为可选或移除。
+
+### 验收状态
+
+- [x] 需求分析完成
+- [x] PRD 文档创建
+- [x] 需求池更新
+- [x] 与 FEAT-15 关系明确
+- [x] progress.md 更新
+
+### 下一步
+
+- 移交 PM 进行任务分配和开发
+
+---
+
+## 2026-04-16 FEAT-16: 移除预配置数据实现纯 AI 生成 ✅
+
+### 任务信息
+
+- Task ID: FEAT-16
+- Owner: PM + backend-dev + frontend-dev
+- 优先级: P0（最高优先级）
+
+### 任务执行
+
+**并行批次1**（2h）:
+| Agent | 任务 | 状态 |
+|-------|------|------|
+| backend-dev | T-1: `_build_random_world_setting_prompt()` 移除预配置列表 | ✅ 完成 |
+| backend-dev | T-2: `_build_world_setting_prompt()` 移除预配置列表 | ✅ 完成 |
+| backend-dev | T-3: `_build_outline_prompt()` 优化感情节奏描述 | ✅ 完成 |
+| frontend-dev | T-5: WorldBuilder.tsx 移除类型选择下拉框 | ✅ 完成 |
+
+**并行批次2**（0.5h）:
+| 任务 | 状态 |
+|------|------|
+| T-4: pytest 测试验证 | ✅ 61 passed, 1 skipped |
+| T-6: npm type-check 验证 | ✅ 无错误 |
+
+### 后端修改内容
+
+**generation_service.py 修改**:
+
+| 方法 | 移除的预配置内容 | 改造方式 |
+|------|------------------|----------|
+| `_build_random_world_setting_prompt()` | 男主类型（4种）、女主类型（3种）、感情线类型（4种）、城市（5个）、工作场所（5种） | 改为"自由创意生成"指令 |
+| `_build_world_setting_prompt()` | 男主identity类型、女主identity类型、冲突类型 | 改为"自由定义"指令 |
+| `_build_outline_prompt()` | 固定感情阶段描述、爽点类型、冲突原因 | 保留框架，改为自由创意设计 |
+
+**保留内容**:
+- JSON 输出格式定义
+- 写作风格指南
+- 示例对比（好示例 vs 坏示例）
+- 约束条件（感情线完整性、结局圆满等）
+
+### 前端修改内容
+
+**WorldBuilder.tsx 修改**:
+- 移除 `maleLeadType` 和 `femaleLeadType` 状态变量
+- 移除 `maleLeadOptions` 和 `femaleLeadOptions` 选项数组
+- 移除类型选择下拉框 UI
+- 修改 `handleRandomGenerate` 移除类型参数传递
+
+**改造后 UI 布局**:
+```
+[开始生成] (vermilion)  [AI 随机生成] (indigo)
+```
+
+### 测试结果
+
+| 测试类型 | 结果 |
+|---------|------|
+| pytest | ✅ 61 passed, 1 skipped, 1 warning |
+| npm type-check | ✅ 无错误 |
+
+### 验收状态
+
+- [x] `_build_random_world_setting_prompt()` 移除所有类型选择列表
+- [x] `_build_world_setting_prompt()` 移除所有类型选择列表
+- [x] 所有"选择其一"指令改为"自由创意生成"
+- [x] 保留 JSON 输出格式定义
+- [x] 保留写作风格指南和示例对比
+- [x] pytest 测试通过
+- [x] 前端移除类型选择下拉框
+- [x] npm type-check 通过
+- [x] 产品验收通过（无需人工验证）
+
+### Git 提交
+
+- commit: 待提交
+
+### 产品验收报告
+
+- 验收文档：`docs/delivery/feat-16-acceptance-report.md`
+- 验收状态：✅ 通过
+- 验收人：Product Manager Agent
+- 验收日期：2026-04-16
+
+---
+
+## 2026-04-16 ChapterWriter 空白状态样式调整 ✅
+
+### 任务信息
+
+- Task ID: FEAT-17-T4
+- Owner: frontend-dev
+- 文件: `web-front/src/pages/ChapterWriter.tsx`
+
+### 问题背景
+
+用户反馈：章节未生成时显示 warning toast（黄色），期望去掉 warning 样式。
+
+### 修改内容
+
+**ChapterWriter.tsx 修改**:
+- 移除第 134 行 warning toast：`setToast({ type: 'warning', message: '章节尚未生成，点击 AI 续写开始创作' })`
+- 空章节提示通过下方提示卡片显示（第 625-639 行已存在）
+
+### 保留内容
+
+| 场景 | 提示 | 状态 |
+|------|------|------|
+| 小说不存在 | error toast（第 110 行） | ✅ 保留 |
+| 网络错误 | error toast（第 154 行） | ✅ 保留 |
+| 空章节提示卡片 | 第 625-639 行 | ✅ 保留 |
+
+### 测试结果
+
+- TypeScript 检查: ✅ 通过（npm run type-check）
+
+### 验收状态
+
+- [x] 章节未生成时不再显示 warning toast
+- [x] 保留现有的空章节提示卡片（第 625-639 行）
+- [x] 小说不存在时保留错误提示（第 110 行）
+- [x] 网络错误时保留错误提示（第 154 行）
+- [x] npm run type-check 通过
+- [x] progress.md 更新
+
+### Git 提交
+
+- commit: 待提交
+
+---
+
+*最后更新: 2026-04-16*
+
+---
+
+## 2026-04-16 FEAT-17: 后端 API 模型新增 outline_context 参数 ✅
+
+### 任务信息
+
+- Task ID: FEAT-17-T5
+- Owner: backend-dev
+- 文件: `backend/src/interfaces/api_generation.py`, `backend/src/application/generation_service.py`
+
+### 问题背景
+
+前端已传递 `outline_context` 参数，但后端 `GenerateChapterRequest` 模型缺少此参数定义，导致数据被丢弃，AI 不知道大纲内容。
+
+### 修改内容
+
+**api_generation.py 修改**:
+- ✅ `GenerateChapterRequest` 新增 `outline_context: Optional[dict] = None` 参数
+- ✅ `stream_generate_chapter` 路由传递 `request.outline_context` 到 service
+
+**generation_service.py 修改**:
+- ✅ `stream_generate_chapter` 方法签名新增 `outline_context` 参数
+- ✅ 如果前端传递了大纲上下文，合并到 context 中
+- ✅ 从 `outline_context.chapters` 中找到当前章节的大纲信息
+
+### 测试结果
+
+- pytest: **92 passed, 4 skipped** ✅
+
+### 验收状态
+
+- [x] GenerateChapterRequest 新增 outline_context 参数
+- [x] stream_generate_chapter 路由正确传递参数
+- [x] generation_service.stream_generate_chapter 接收参数
+- [x] 大纲上下文正确合并到生成 context
+- [x] pytest 测试通过
+- [x] progress.md 更新
+
+### Git 提交
+
+- commit: 待提交
+
+---
+
+## 2026-04-16 FEAT-17: 后端 _build_chapter_prompt 注入大纲上下文 ✅
+
+### 任务信息
+
+- Task ID: FEAT-17-T6
+- Owner: backend-dev
+- 文件: `backend/src/application/generation_service.py`
+- 依赖: T-5（API 模型新增 outline_context 参数）
+
+### 问题背景
+
+T-5 已完成 API 模型新增 `outline_context` 参数，但 `_build_chapter_prompt()` 方法未使用该参数将大纲信息注入到 AI Prompt，导致 AI 不知道大纲内容。
+
+### 修改内容
+
+**generation_service.py 修改**:
+
+1. `_build_chapter_prompt()` 方法签名修改:
+   - 新增 `outline_context: Optional[Dict[str, Any]] = None` 参数
+
+2. 大纲上下文处理逻辑:
+   - `outline_context` 优先于 `context` 中的 `current_chapter_outline`
+   - 如果 `outline_context` 存在，直接作为 `current_outline` 使用
+
+3. Prompt 注入格式:
+   - 构建章节标题注入：`outline_context.get('title', '未设定')`
+   - 构建核心事件注入：`key_events` 列表格式化（编号列表）
+   - 构建感情阶段注入：`outline_context.get('emotion_stage', '未设定')`
+   - 构建感情进度注入：`outline_context.get('emotion_progress', '')`
+   - 添加红线约束：【红线】生成内容必须体现上述事件和感情阶段设定。
+
+4. `stream_generate_chapter` 调用修改:
+   - 简化逻辑，直接传递 `outline_context` 给 `_build_chapter_prompt`
+   - 移除原有的 chapters 查找逻辑（前端已传递当前章节的大纲信息）
+
+### 注入格式示例
+
+```
+## 当前章节大纲（强制参考）⭐
+
+### 章节标题
+雨夜相遇
+
+### 核心事件（必须覆盖60%以上）
+  1. 男主女主首次相遇
+  2. 因误会产生冲突
+
+### 感情阶段
+初遇阶段
+
+### 感情进度描述
+两人因雨夜偶遇，男主对女主产生初步印象
+
+【红线】生成内容必须体现上述事件和感情阶段设定。
+```
+
+### 测试结果
+
+- pytest: **92 passed, 4 skipped** ✅
+
+### 验收状态
+
+- [x] _build_chapter_prompt 方法新增 outline_context 参数
+- [x] Prompt 中注入大纲上下文（标题、事件、感情阶段）
+- [x] stream_generate_chapter 调用时传递参数
+- [x] pytest 测试通过
+- [x] progress.md 更新
+
+### Git 提交
+
+- commit: 待提交
+
+---
+
+*最后更新: 2026-04-16*

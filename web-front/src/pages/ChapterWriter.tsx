@@ -101,14 +101,25 @@ export default function ChapterWriter() {
 
   async function loadChapterData(id: string, num: number) {
     try {
-      // 加载章节内容
+      // 1. 先检查小说是否存在（通过获取大纲）
+      const outlineRes = await getOutline(id)
+      console.log('[ChapterWriter] outlineRes:', outlineRes)
+      console.log('[ChapterWriter] outlineRes.data.chapters:', outlineRes.data?.chapters?.length)
+      if (!outlineRes.success && outlineRes.error) {
+        // 小说不存在
+        setToast({ type: 'error', message: '小说不存在，请返回首页重新创建' })
+        return
+      }
+
+      // 2. 加载章节内容
       const chapterRes = await getChapter(id, num)
+      console.log('[ChapterWriter] chapterRes:', chapterRes)
       if (chapterRes.success && chapterRes.data) {
         setChapter(chapterRes.data)
         setEditedContent(chapterRes.data.content)
         setGeneratedContent('')
       } else {
-        // 章节不存在，创建空章节（用户可点击 AI 续写生成）
+        // 章节不存在，创建空章节
         const emptyChapter: Chapter = {
           novel_id: id,
           chapter_num: num,
@@ -120,24 +131,27 @@ export default function ChapterWriter() {
         }
         setChapter(emptyChapter)
         setEditedContent('')
-        // 提示用户章节尚未生成（友好提示）
-        setToast({ type: 'warning', message: '章节尚未生成，点击 AI 续写开始创作' })
+        // 空章节提示通过下方提示卡片显示，不再显示 warning toast
       }
 
-      // 加载大纲
-      const outlineRes = await getOutline(id)
+      // 3. 加载大纲（已在前面验证）
       if (outlineRes.success && outlineRes.data) {
+        console.log('[ChapterWriter] Setting fullOutline with chapters:', outlineRes.data.chapters?.length)
         setFullOutline(outlineRes.data)
+      } else {
+        console.log('[ChapterWriter] Not setting fullOutline:', outlineRes.success, outlineRes.data)
       }
 
-      // 加载人物
+      // 4. 加载人物
       const charactersRes = await getCharacters(id)
       if (charactersRes.success && charactersRes.data) {
         setCharacters(charactersRes.data.characters || [])
       }
 
-    } catch {
-      setToast({ type: 'error', message: '加载章节数据失败' })
+    } catch (error) {
+      // 网络或其他错误
+      const errorMessage = error instanceof Error ? error.message : '加载失败，请稍后重试'
+      setToast({ type: 'error', message: errorMessage })
     }
   }
 
@@ -207,15 +221,21 @@ export default function ChapterWriter() {
     setGenerateStatus('idle')
   }, [])
 
-  // 保存章节
+  // 保存章节（支持保存生成内容）
   async function handleSave(silent = false) {
-    if (!novelId || !editedContent) return
+    // 优先保存编辑内容，若无则保存生成内容
+    const contentToSave = editedContent || generatedContent
+    if (!novelId || !contentToSave) return
 
     try {
       setSaving(true)
-      const response = await updateChapter(novelId, currentChapterNum, editedContent)
+      const response = await updateChapter(novelId, currentChapterNum, contentToSave)
       if (response.success && response.data) {
         setChapter(response.data)
+        // 如果保存的是生成内容，同步到编辑内容
+        if (!editedContent && generatedContent) {
+          setEditedContent(generatedContent)
+        }
         setLastSavedAt(new Date().toLocaleTimeString())
         if (!silent) {
           setToast({ type: 'success', message: '章节已保存' })
@@ -402,7 +422,7 @@ export default function ChapterWriter() {
 
               <button
                 onClick={() => handleSave(false)}
-                disabled={saving || !editedContent}
+                disabled={saving || (!editedContent && !generatedContent)}
                 className="btn-indigo"
               >
                 {saving ? '保存中...' : '保存'}
