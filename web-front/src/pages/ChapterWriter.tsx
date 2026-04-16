@@ -100,6 +100,12 @@ export default function ChapterWriter() {
   }, [])
 
   async function loadChapterData(id: string, num: number) {
+    // 切换章节时清除生成状态，避免显示问题
+    setGenerateStatus('idle')
+    setGeneratedContent('')
+    setGenerateError(null)
+    setReviewStatus('pending')
+
     try {
       // 1. 先检查小说是否存在（通过获取大纲）
       const outlineRes = await getOutline(id)
@@ -117,7 +123,6 @@ export default function ChapterWriter() {
       if (chapterRes.success && chapterRes.data) {
         setChapter(chapterRes.data)
         setEditedContent(chapterRes.data.content)
-        setGeneratedContent('')
       } else {
         // 章节不存在，创建空章节
         const emptyChapter: Chapter = {
