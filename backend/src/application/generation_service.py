@@ -3,15 +3,31 @@ import os
 from typing import Dict, Any, Optional, AsyncGenerator, List
 import json
 
+from sqlalchemy.ext.asyncio import AsyncSession
 from ..infrastructure.ai_provider import QwenProvider, AIProviderFactory
 from ..infrastructure.storage import FileStorage
+from ..infrastructure.database.repositories import (
+    NovelRepository, WorldSettingRepository, OutlineRepository,
+    OutlineVolumeRepository, OutlineChapterRepository, ChapterRepository,
+    StorySynopsisRepository, CharacterRepository
+)
+from ..infrastructure.database.models import Novel, WorldSetting, Outline, OutlineVolume, OutlineChapter, Chapter, StorySynopsis
 
 
 class GenerationService:
     """AI 内容生成服务"""
 
-    def __init__(self, storage: FileStorage):
-        self.storage = storage
+    def __init__(self, session: AsyncSession, storage: Optional[FileStorage] = None):
+        self.session = session
+        self.storage = storage  # 保留 storage 用于向后兼容，优先使用 repository
+        self.novel_repo = NovelRepository(session)
+        self.world_setting_repo = WorldSettingRepository(session)
+        self.outline_repo = OutlineRepository(session)
+        self.outline_volume_repo = OutlineVolumeRepository(session)
+        self.outline_chapter_repo = OutlineChapterRepository(session)
+        self.chapter_repo = ChapterRepository(session)
+        self.synopsis_repo = StorySynopsisRepository(session)
+        self.character_repo = CharacterRepository(session)
         # 从环境变量获取 API 密钥
         api_key = os.getenv("DASHSCOPE_API_KEY", "")
         if not api_key:
@@ -49,15 +65,29 @@ class GenerationService:
             world_setting["novel_id"] = novel_id
             world_setting["version"] = 1
 
-            # 保存到文件
-            self.storage.save_json(novel_id, "world_setting.json", world_setting)
+            # 保存到 MySQL
+            ws = WorldSetting(
+                novel_id=novel_id,
+                version=1,
+                background=world_setting.get("background", {}),
+                male_lead=world_setting.get("male_lead", {}),
+                female_lead=world_setting.get("female_lead", {}),
+                emotion_arc=world_setting.get("emotion_arc", {}),
+                theme=world_setting.get("theme", {}),
+                main_conflict=world_setting.get("main_conflict", {}),
+                supporting_chars=world_setting.get("supporting_chars", []),
+                power_system=world_setting.get("power_system", {}),
+                special_elements=world_setting.get("special_elements", [])
+            )
+            await self.world_setting_repo.create(ws)
 
             # 更新 meta 状态
-            meta = self.storage.load_json(novel_id, "meta.json")
-            if meta:
-                meta["current_phase"] = "outline_generation"
-                meta["updated_at"] = self._get_current_time()
-                self.storage.save_json(novel_id, "meta.json", meta)
+            novel = await self.novel_repo.get(novel_id)
+            if novel:
+                novel.current_phase = "outline_generation"
+                from datetime import datetime
+                novel.updated_at = datetime.utcnow()
+                await self.novel_repo.update(novel)
 
         return world_setting
 
@@ -416,12 +446,14 @@ class GenerationService:
             Dict: 大纲数据
         """
         # 加载世界观作为上下文
-        world_setting = self.storage.load_json(novel_id, "world_setting.json")
-        if not world_setting:
+        ws = await self.world_setting_repo.get_by_novel(novel_id)
+        if not ws:
             raise ValueError("World setting not found. Please generate world setting first.")
 
+        world_setting = ws.to_dict()
+
         # 加载人物库（可选）
-        characters = self.storage.load_json(novel_id, "characters.json")
+        characters = await self.character_repo.get_by_novel(novel_id)
 
         # 构建 Prompt
         prompt = self._build_outline_prompt(
@@ -439,19 +471,62 @@ class GenerationService:
         outline = self._parse_json_result(result)
 
         if outline:
-            # 添加 novel_id 和 version
-            outline["novel_id"] = novel_id
-            outline["version"] = 1
+            # 保存到 MySQL
+            ol = Outline(
+                novel_id=novel_id,
+                version=1,
+                genre=outline.get("genre"),
+                main_conflict=outline.get("main_conflict", {}),
+                character_growth_curve=outline.get("character_growth_curve", []),
+                foreshadowing_plan=outline.get("foreshadowing_plan", [])
+            )
+            await self.outline_repo.create(ol)
+            await self.session.flush()  # 获取 outline ID
 
-            # 保存到文件
-            self.storage.save_json(novel_id, "outline.json", outline)
+            # 保存大纲卷
+            volumes = outline.get("volumes", [])
+            import uuid
+            for vol in volumes:
+                vol_id = vol.get("volume_id") or str(uuid.uuid4())
+                ov = OutlineVolume(
+                    novel_id=novel_id,
+                    outline_id=ol.id,
+                    volume_id=vol_id,
+                    name=vol.get("name", ""),
+                    chapters_range_start=vol.get("chapters_range", {}).get("start"),
+                    chapters_range_end=vol.get("chapters_range", {}).get("end"),
+                    theme=vol.get("theme", ""),
+                    arc_summary=vol.get("arc_summary", ""),
+                    sort_order=vol.get("sort_order", 0)
+                )
+                await self.outline_volume_repo.create(ov)
 
-            # 更新 meta 状态（都市言情简化版，移除伏笔状态初始化）
-            meta = self.storage.load_json(novel_id, "meta.json")
-            if meta:
-                meta["current_phase"] = "chapter_writing"
-                meta["updated_at"] = self._get_current_time()
-                self.storage.save_json(novel_id, "meta.json", meta)
+            # 保存大纲章节
+            chapters = outline.get("chapters", [])
+            for ch in chapters:
+                oc = OutlineChapter(
+                    novel_id=novel_id,
+                    outline_id=ol.id,
+                    chapter_num=ch.get("chapter_num", 0),
+                    title=ch.get("title", ""),
+                    volume_id=ch.get("volume_id"),
+                    key_events=ch.get("key_events", []),
+                    turning_points=ch.get("turning_points", []),
+                    character_growth=ch.get("character_growth", []),
+                    foreshadowing=ch.get("foreshadowing", []),
+                    emotion_stage=ch.get("emotion_stage"),
+                    emotion_progress=ch.get("emotion_progress", {}),
+                    sort_order=ch.get("sort_order", 0)
+                )
+                await self.outline_chapter_repo.create(oc)
+
+            # 更新 meta 状态
+            novel = await self.novel_repo.get(novel_id)
+            if novel:
+                novel.current_phase = "chapter_writing"
+                from datetime import datetime
+                novel.updated_at = datetime.utcnow()
+                await self.novel_repo.update(novel)
 
         return outline
 

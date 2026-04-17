@@ -1,10 +1,23 @@
 """小说管理 API"""
-from typing import List, Optional
+from typing import List, Optional, AsyncGenerator
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from infrastructure.database.models import Novel
+from infrastructure.database.repositories import NovelRepository
 
 router = APIRouter()
 
+
+# ==================== 依赖注入 ====================
+
+async def get_novel_repo(session: AsyncSession = Depends()) -> NovelRepository:
+    """获取 NovelRepository 依赖"""
+    return NovelRepository(session)
+
+
+# ==================== 请求/响应模型 ====================
 
 class CreateNovelRequest(BaseModel):
     """创建小说请求"""
@@ -24,31 +37,29 @@ class NovelResponse(BaseModel):
 
 
 @router.post("", response_model=dict)
-async def create_novel(request: CreateNovelRequest):
-    """创建新小说"""
-    from ..infrastructure.storage import FileStorage
+async def create_novel(
+    request: CreateNovelRequest,
+    repo: NovelRepository = Depends(get_novel_repo)
+) -> dict:
+    """创建新小说（MySQL 版）"""
     import uuid
     from datetime import datetime
 
     novel_id = f"novel-{uuid.uuid4().hex[:8]}"
-    storage = FileStorage("data/novels")
-    storage.create_novel_dir(novel_id)
 
-    meta = {
-        "novel_id": novel_id,
-        "title": request.title,
-        "genre": request.genre,
-        "theme": [],
-        "target_chapters": request.target_chapters,
-        "status": "planning",
-        "created_at": datetime.utcnow().isoformat(),
-        "updated_at": datetime.utcnow().isoformat(),
-        "current_phase": "world_building",
-        "completed_chapters": 0,
-        "word_count": 0
-    }
+    novel = Novel(
+        novel_id=novel_id,
+        title=request.title,
+        genre=request.genre,
+        theme=[],
+        target_chapters=request.target_chapters,
+        status="planning",
+        current_phase="world_building",
+        completed_chapters=0,
+        word_count=0
+    )
 
-    storage.save_json(novel_id, "meta.json", meta)
+    await repo.create(novel)
 
     return {"success": True, "data": NovelResponse(
         novel_id=novel_id,
@@ -61,9 +72,22 @@ async def create_novel(request: CreateNovelRequest):
 
 
 @router.get("", response_model=dict)
-async def list_novels():
-    """获取小说列表"""
-    from ..infrastructure.storage import FileStorage
+async def list_novels(repo: NovelRepository = Depends(get_novel_repo)) -> dict:
+    """获取小说列表（MySQL 版）"""
+    novels = await repo.list()
+
+    result = []
+    for novel in novels:
+        result.append(NovelResponse(
+            novel_id=novel.novel_id,
+            title=novel.title,
+            genre=novel.genre,
+            status=novel.status,
+            completed_chapters=novel.completed_chapters,
+            word_count=novel.word_count
+        ))
+
+    return {"success": True, "data": result}
 
     storage = FileStorage("data/novels")
     novel_ids = storage.list_novels()
