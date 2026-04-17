@@ -23,7 +23,7 @@ class NovelResponse(BaseModel):
     word_count: int
 
 
-@router.post("/", response_model=dict)
+@router.post("", response_model=dict)
 async def create_novel(request: CreateNovelRequest):
     """创建新小说"""
     from ..infrastructure.storage import FileStorage
@@ -60,7 +60,7 @@ async def create_novel(request: CreateNovelRequest):
     )}
 
 
-@router.get("/", response_model=dict)
+@router.get("", response_model=dict)
 async def list_novels():
     """获取小说列表"""
     from ..infrastructure.storage import FileStorage

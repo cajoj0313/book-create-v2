@@ -1,0 +1,392 @@
+{
+  "genre": "都市言情",
+  "emotion_arc": [
+    {
+      "range": "1-30",
+      "stage": "棱镜初裂",
+      "emotion": "锐利对峙中暗涌微光",
+      "description": "选题否决、暴雨蹲守、镜头语言交锋——两人以专业为盾，却在真实细节里第一次认出彼此的灵魂质地。"
+    },
+    {
+      "range": "31-60",
+      "stage": "暗房共影",
+      "emotion": "克制试探下的呼吸同步",
+      "description": "非遗拍摄中持续理念碰撞，退烧药便签、胶片修复时指尖停顿三秒——理性防线出现细密裂痕，默契悄然生长。"
+    },
+    {
+      "range": "61-90",
+      "stage": "风暴前静帧",
+      "emotion": "信任锚定后的无声托付",
+      "description": "林晚拒删污染段落，沈砚调证力挺；她查清旧作争议却质问沉默——争执不是疏离，而是将对方真正纳入自己的价值坐标系。"
+    },
+    {
+      "range": "91-110",
+      "stage": "断电时刻",
+      "emotion": "卸下盔甲的柔软共振",
+      "description": "台风夜应急灯下重剪城中村终版，‘你怕辜负真实’一语击穿十年自我规训；他摘镜揉眼，是第一次允许脆弱被她看见。"
+    },
+    {
+      "range": "111-150",
+      "stage": "双轨校准",
+      "emotion": "并肩重建规则的炽热笃定",
+      "description": "面对资本施压与行业速食化浪潮，二人以‘在地纪实实验室’为支点，用青年创作者孵化实践重新定义真实尺度与媒体担当。"
+    },
+    {
+      "range": "151-200",
+      "stage": "门牌并列",
+      "emotion": "沉淀后的日常圆满",
+      "description": "实验室首展开幕日，杭州梅雨初霁；两人并肩调试投影仪，帆布包与羊绒衫袖口相触——无需宣言，真实已在共同呼吸中落地生根。"
+    }
+  ],
+  "sweet_points": [
+    {
+      "chapter": 5,
+      "type": "专业碾压爽",
+      "detail": "林晚当众拆解沈砚成片逻辑漏洞，他静听后点头：‘第3处BGM替换建议，已记入明日剪辑单’",
+      "emotion_level": 7
+    },
+    {
+      "chapter": 10,
+      "type": "隐晦关怀爽",
+      "detail": "沈砚把林晚落下的旧帆布包送回工位，夹层里多了一张手绘胶片盒草图，标注‘防潮改进版’",
+      "emotion_level": 6
+    },
+    {
+      "chapter": 15,
+      "type": "反杀打脸爽",
+      "detail": "赵振邦否决选题后，林晚直接将原始采访音频上传内部知识库，沈砚同步转发并批注：‘请全组重听第8分23秒’",
+      "emotion_level": 8
+    },
+    {
+      "chapter": 20,
+      "type": "细节暴击爽",
+      "detail": "林晚发现沈砚电脑屏保是她暴雨夜拍的裁缝铺门楣特写，右下角小字：‘第47次重看’",
+      "emotion_level": 9
+    },
+    {
+      "chapter": 25,
+      "type": "身份反转爽",
+      "detail": "沈砚主动申请成为林晚新选题《外卖骑手影像日志》执行监制，签字栏郑重写下：‘编导：林晚｜监制：沈砚（无署名权）’",
+      "emotion_level": 8
+    },
+    {
+      "chapter": 30,
+      "type": "温柔破防爽",
+      "detail": "林晚发烧昏睡中听见沈砚低语：‘你剪辑时哼的调子，和裁缝铺老人一模一样’，睁眼见他正用棉签蘸温水润她干裂的唇",
+      "emotion_level": 9
+    },
+    {
+      "chapter": 35,
+      "type": "专业共鸣爽",
+      "detail": "两人同时指出同一帧胶片划痕位置，指尖悬停在屏幕两侧，未触碰却像完成一次精密校准",
+      "emotion_level": 7
+    },
+    {
+      "chapter": 40,
+      "type": "守护反击爽",
+      "detail": "周屿劝林晚接广告被拒后，沈砚递来一份《纪实伦理白皮书》修订稿，扉页写着：‘致所有不妥协的短发编导’",
+      "emotion_level": 8
+    },
+    {
+      "chapter": 45,
+      "type": "生活渗透爽",
+      "detail": "林晚发现沈砚羊绒衫第三颗纽扣换成同款银钉，他只说：‘陈砚秋说，配得上你的审美’",
+      "emotion_level": 7
+    },
+    {
+      "chapter": 50,
+      "type": "双向认证爽",
+      "detail": "非遗传承人老奶奶悄悄塞给林晚两枚蓝印花布香囊，一个绣‘晚’，一个绣‘砚’",
+      "emotion_level": 9
+    },
+    {
+      "chapter": 55,
+      "type": "危机逆转爽",
+      "detail": "旧作争议发酵时，沈砚直播公开硬盘原始素材库，最后一帧是林晚在裁缝铺门口逆光转身的背影，标题：‘我的真实起点’",
+      "emotion_level": 10
+    },
+    {
+      "chapter": 60,
+      "type": "价值升维爽",
+      "detail": "林晚将沈砚沉默半年的录音整理成《缄默者手记》，他首次在内部分享会朗读结尾：‘她教会我，真实需要被听见，而非被证明’",
+      "emotion_level": 9
+    },
+    {
+      "chapter": 65,
+      "type": "空间占有爽",
+      "detail": "林晚把索尼ZV-E10相机挂在沈砚办公室门把手上，他次日定制黄铜铭牌：‘林晚设备暂存处’",
+      "emotion_level": 8
+    },
+    {
+      "chapter": 70,
+      "type": "记忆闭环爽",
+      "detail": "两人重返城中村裁缝铺，老人递来新做好的深灰羊绒衫内衬——绣着极细的银线经纬：‘按你们照片里样子做的’",
+      "emotion_level": 10
+    },
+    {
+      "chapter": 75,
+      "type": "身份共生爽",
+      "detail": "‘在地纪实实验室’注册文件签署日，林晚签字时沈砚突然覆上她的手背，笔尖在‘联合创始人’处划出稳定双线",
+      "emotion_level": 10
+    },
+    {
+      "chapter": 80,
+      "type": "日常确幸爽",
+      "detail": "梅雨季办公室漏水，沈砚撑伞护林晚穿过积水走廊，她相机带勾住他眼镜链，两人笑着停在水洼倒影里",
+      "emotion_level": 7
+    },
+    {
+      "chapter": 85,
+      "type": "行业认可爽",
+      "detail": "纪录片《针脚之下》获金瞳奖最佳社会观察奖，颁奖词最后句：‘感谢棱镜纪实，更感谢林晚与沈砚让真实拥有温度’",
+      "emotion_level": 9
+    },
+    {
+      "chapter": 90,
+      "type": "家庭联结爽",
+      "detail": "林晚母亲送来手绘《实验室窗景》水彩，沈砚将其装裱在门厅，右下角添一行小字：‘此帧，由林晚妈妈与沈砚共同校色’",
+      "emotion_level": 8
+    },
+    {
+      "chapter": 95,
+      "type": "创作自由爽",
+      "detail": "实验室首期学员提案《菜场哲学课》，林晚批复‘通过’，沈砚追加批注：‘附赠摄影指导：林晚｜声音设计：沈砚’",
+      "emotion_level": 8
+    },
+    {
+      "chapter": 100,
+      "type": "终极定格爽",
+      "detail": "台风过境后初晴，两人在实验室天台调试无人机，镜头俯拍——并排而立的身影投在‘在地纪实’水泥墙上，影子指尖相触",
+      "emotion_level": 10
+    }
+  ],
+  "chapters": [
+    {
+      "chapter_num": 1,
+      "title": "裁缝铺否决",
+      "emotion_stage": "棱镜初裂",
+      "key_events": [
+        "林晚提交《城中村最后的裁缝铺》选题",
+        "沈砚当场否决"
+      ],
+      "emotion_progress": "专业否定埋下第一道审视目光",
+      "sweet_point": false
+    },
+    {
+      "chapter_num": 2,
+      "title": "暴雨空镜",
+      "emotion_stage": "棱镜初裂",
+      "key_events": [
+        "林晚冒雨返裁缝铺取遗落相机",
+        "撞见沈砚蹲守拍空镜"
+      ],
+      "emotion_progress": "否定者竟是深夜守望者，认知初震",
+      "sweet_point": false
+    },
+    {
+      "chapter_num": 3,
+      "title": "电梯偶遇",
+      "emotion_stage": "棱镜初裂",
+      "key_events": [
+        "两人同乘故障电梯",
+        "林晚相机带勾住沈砚眼镜"
+      ],
+      "emotion_progress": "物理接触打破职业距离感",
+      "sweet_point": false
+    },
+    {
+      "chapter_num": 4,
+      "title": "选题重启",
+      "emotion_stage": "棱镜初裂",
+      "key_events": [
+        "陈砚秋提议两人搭档非遗专题",
+        "沈砚默许"
+      ],
+      "emotion_progress": "被迫合作开启观察实验",
+      "sweet_point": false
+    },
+    {
+      "chapter_num": 5,
+      "title": "BGM之争",
+      "emotion_stage": "棱镜初裂",
+      "key_events": [
+        "林晚质疑沈砚滤镜式人文",
+        "他当场采纳其BGM修改建议"
+      ],
+      "emotion_progress": "专业折服催生首次隐性让步",
+      "sweet_point": true
+    },
+    {
+      "chapter_num": 6,
+      "title": "茶水间对峙",
+      "emotion_stage": "棱镜初裂",
+      "key_events": [
+        "林晚指出素材剪辑节奏失真",
+        "沈砚调出原始时间码验证"
+      ],
+      "emotion_progress": "数据成为彼此信任的初阶货币",
+      "sweet_point": false
+    },
+    {
+      "chapter_num": 7,
+      "title": "老人哼歌",
+      "emotion_stage": "暗房共影",
+      "key_events": [
+        "林晚坚持保留老人即兴哼唱",
+        "沈砚首次未干预粗剪"
+      ],
+      "emotion_progress": "对‘非标准真实’的初步接纳",
+      "sweet_point": false
+    },
+    {
+      "chapter_num": 8,
+      "title": "胶片刮痕",
+      "emotion_stage": "暗房共影",
+      "key_events": [
+        "修复80年代胶片发现划痕",
+        "两人同步指出同一帧"
+      ],
+      "emotion_progress": "观察同步性触发微妙心跳",
+      "sweet_point": false
+    },
+    {
+      "chapter_num": 9,
+      "title": "姜茶暗房",
+      "emotion_stage": "暗房共影",
+      "key_events": [
+        "沈砚递来温热姜茶",
+        "林晚指尖触到他薄茧"
+      ],
+      "emotion_progress": "三秒停顿让呼吸频率悄然趋同",
+      "sweet_point": false
+    },
+    {
+      "chapter_num": 10,
+      "title": "帆布包归还",
+      "emotion_stage": "暗房共影",
+      "key_events": [
+        "沈砚送回林晚遗落帆布包",
+        "夹层藏胶片盒改良草图"
+      ],
+      "emotion_progress": "实用关怀比言语更早抵达内心",
+      "sweet_point": true
+    },
+    {
+      "chapter_num": 11,
+      "title": "剪辑室夜话",
+      "emotion_stage": "暗房共影",
+      "key_events": [
+        "林晚高烧坚持剪辑",
+        "沈砚送来退烧药与硬盘备份"
+      ],
+      "emotion_progress": "行动支持取代语言安慰",
+      "sweet_point": false
+    },
+    {
+      "chapter_num": 12,
+      "title": "便签原声",
+      "emotion_stage": "暗房共影",
+      "key_events": [
+        "沈砚便签夸赞老人哼歌原声",
+        "林晚重听该段落十遍"
+      ],
+      "emotion_progress": "专业肯定转化为情感确认信号",
+      "sweet_point": false
+    },
+    {
+      "chapter_num": 13,
+      "title": "周屿来电",
+      "emotion_stage": "暗房共影",
+      "key_events": [
+        "周屿劝林晚接商业项目",
+        "她挂断后重调裁缝铺音轨"
+      ],
+      "emotion_progress": "外界干扰反向强化内在选择",
+      "sweet_point": false
+    },
+    {
+      "chapter_num": 14,
+      "title": "赵总否决",
+      "emotion_stage": "暗房共影",
+      "key_events": [
+        "赵振邦驳回林晚新选题",
+        "沈砚沉默记录会议纪要"
+      ],
+      "emotion_progress": "权力压制下，沉默成为待解读的密语",
+      "sweet_point": false
+    },
+    {
+      "chapter_num": 15,
+      "title": "音频上传",
+      "emotion_stage": "风暴前静帧",
+      "key_events": [
+        "林晚上传原始采访音频",
+        "沈砚批注‘请全组重听’"
+      ],
+      "emotion_progress": "对抗姿态升级为集体价值唤醒",
+      "sweet_point": true
+    },
+    {
+      "chapter_num": 16,
+      "title": "前男友施压",
+      "emotion_stage": "风暴前静帧",
+      "key_events": [
+        "前男友以资源置换施压",
+        "林晚锁死剪辑工程文件"
+      ],
+      "emotion_progress": "外部胁迫激发不可妥协的底线",
+      "sweet_point": false
+    },
+    {
+      "chapter_num": 17,
+      "title": "录音调证",
+      "emotion_stage": "风暴前静帧",
+      "key_events": [
+        "沈砚调出原始采访录音",
+        "邮件群发支持留全版本"
+      ],
+      "emotion_progress": "权威背书转化为坚定站位",
+      "sweet_point": false
+    },
+    {
+      "chapter_num": 18,
+      "title": "旧作风波",
+      "emotion_stage": "风暴前静帧",
+      "key_events": [
+        "沈砚旧作曝挪用争议",
+        "林晚拒绝转发不实报道"
+      ],
+      "emotion_progress": "信任未崩塌，但追问开始",
+      "sweet_point": false
+    },
+    {
+      "chapter_num": 19,
+      "title": "半年沉默",
+      "emotion_stage": "风暴前静帧",
+      "key_events": [
+        "林晚质问沈砚为何沉默",
+        "他递来加密硬盘封面：‘真相在第七分区’"
+      ],
+      "emotion_progress": "质问不是终点，而是共探真相的邀约",
+      "sweet_point": false
+    },
+    {
+      "chapter_num": 20,
+      "title": "屏保特写",
+      "emotion_stage": "风暴前静帧",
+      "key_events": [
+        "林晚发现沈砚屏保是裁缝铺门楣",
+        "右下角标‘第47次重看’"
+      ],
+      "emotion_progress": "隐秘凝视终于浮出水面",
+      "sweet_point": true
+    }
+  ],
+  "main_conflict": {
+    "type": "价值观实践冲突",
+    "description": "当媒体公信力遭遇资本干预（赵振邦要求增加软性内容）、行业速食化浪潮（流量导向选题挤压深度调查）时，两人必须在资本压力、伦理边界、创作自主间重新校准‘真实’的尺度与担当的方式。",
+    "resolve_chapter": 150
+  },
+  "version": 2,
+  "novel_id": "novel-7cf56abe"
+}

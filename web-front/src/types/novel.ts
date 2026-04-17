@@ -56,6 +56,9 @@ export interface WorldSetting {
     personality: string[]
     wealth?: string
     occupation?: string
+    // 短篇小说新增字段
+    inner_wound?: string  // 内心创伤
+    growth_arc?: string   // 成长弧光
   }
   female_lead?: {
     name: string
@@ -65,6 +68,9 @@ export interface WorldSetting {
     personality: string[]
     background?: string
     occupation?: string
+    // 短篇小说新增字段
+    inner_wound?: string  // 内心创伤
+    growth_arc?: string   // 成长弧光
   }
   emotion_arc?: {
     stages: string[]
@@ -79,7 +85,13 @@ export interface WorldSetting {
     name: string
     identity: string
     relation_to_lead: string
+    function?: string  // 短篇小说新增：功能定义
   }>
+  // 短篇小说新增：主题
+  theme?: {
+    main: string
+    description: string
+  }
   // 旧字段兼容（可选）
   power_system?: {
     name: string

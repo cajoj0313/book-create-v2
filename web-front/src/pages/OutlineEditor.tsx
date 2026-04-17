@@ -34,7 +34,7 @@ export default function OutlineEditor() {
   const navigate = useNavigate()
 
   // 用户配置
-  const [targetChapters, setTargetChapters] = useState(200)
+  const [targetChapters, setTargetChapters] = useState(12)  // 短篇小说默认 12 章
   const [storyPreference, setStoryPreference] = useState('经典成长线')
   const [pacingPreference, setPacingPreference] = useState('适中节奏')
 
@@ -401,16 +401,17 @@ export default function OutlineEditor() {
 
             <div className="grid grid-cols-3 gap-6">
               <div>
-                <label className="block text-title-sm text-ink-600 mb-2">目标章节数</label>
-                <input
-                  type="number"
+                <label className="block text-title-sm text-ink-600 mb-2">目标章节数（短篇小说）</label>
+                <select
                   value={targetChapters}
                   onChange={(e) => setTargetChapters(Number(e.target.value))}
                   className="input-ink"
-                  min={50}
-                  max={500}
                   disabled={generateStatus === 'streaming'}
-                />
+                >
+                  <option value={10}>10 章（精简版）</option>
+                  <option value={12}>12 章（标准版）</option>
+                  <option value={15}>15 章（详细版）</option>
+                </select>
               </div>
 
               <div>
@@ -467,7 +468,7 @@ export default function OutlineEditor() {
                   <span className="font-title-sm">未检测到世界观，建议先创建世界观</span>
                 </div>
                 <button
-                  onClick={() => navigate(`/novels/${novelId}/world-builder`)}
+                  onClick={() => navigate(`/novels/${novelId}/world-setting`)}
                   className="mt-3 btn-outline-vermilion"
                 >
                   前往创建世界观

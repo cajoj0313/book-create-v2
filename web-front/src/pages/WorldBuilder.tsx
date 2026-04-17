@@ -684,6 +684,20 @@ function WorldSettingViewer({
                 <div className="font-prose text-ink-700">{setting.male_lead.occupation}</div>
               </div>
             )}
+
+            {setting.male_lead.inner_wound && (
+              <div>
+                <label className="block text-title-sm text-ink-600 mb-2">内心创伤</label>
+                <div className="font-prose text-ink-700">{setting.male_lead.inner_wound}</div>
+              </div>
+            )}
+
+            {setting.male_lead.growth_arc && (
+              <div>
+                <label className="block text-title-sm text-ink-600 mb-2">成长弧光</label>
+                <div className="font-prose text-ink-700">{setting.male_lead.growth_arc}</div>
+              </div>
+            )}
           </div>
         )}
       </section>
@@ -749,6 +763,20 @@ function WorldSettingViewer({
                 <div className="font-prose text-ink-700">{setting.female_lead.occupation}</div>
               </div>
             )}
+
+            {setting.female_lead.inner_wound && (
+              <div>
+                <label className="block text-title-sm text-ink-600 mb-2">内心创伤</label>
+                <div className="font-prose text-ink-700">{setting.female_lead.inner_wound}</div>
+              </div>
+            )}
+
+            {setting.female_lead.growth_arc && (
+              <div>
+                <label className="block text-title-sm text-ink-600 mb-2">成长弧光</label>
+                <div className="font-prose text-ink-700">{setting.female_lead.growth_arc}</div>
+              </div>
+            )}
           </div>
         )}
       </section>
@@ -811,8 +839,27 @@ function WorldSettingViewer({
                 </div>
                 <div className="text-title-xs text-ink-500">{char.identity}</div>
                 <div className="font-prose text-sm text-ink-600 mt-2">{char.relation_to_lead}</div>
+                {char.function && (
+                  <div className="font-prose text-sm text-indigo-600 mt-2">功能：{char.function}</div>
+                )}
               </div>
             ))}
+          </div>
+        </section>
+      )}
+
+      {/* 主题 */}
+      {setting.theme && (
+        <section className="paper p-8">
+          <h2 className="font-title-lg text-ink-800 mb-6 flex items-center gap-3">
+            <div className="w-2 h-8 bg-gold-600 rounded-full" />
+            <span>故事主题</span>
+            <span className="badge-gold">核心主题</span>
+          </h2>
+
+          <div className="bg-gold-50 border border-gold-200 rounded-paper-md p-6">
+            <div className="font-title-lg text-gold-800 mb-3">{setting.theme.main}</div>
+            <div className="font-prose text-ink-700">{setting.theme.description}</div>
           </div>
         </section>
       )}

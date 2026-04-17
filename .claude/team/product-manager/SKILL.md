@@ -50,7 +50,7 @@ license: Proprietary
 - [ ] **MVP 范围**: Must/Nice/Out 明确区分
 - [ ] **需求池更新**: `docs/products/backlog.md` 已更新
 - [ ] **进度更新**: `docs/planning/progress.md` 已更新
-- [ ] **需求池更新**: `docs/products/backlog.md` 已更新
+- [ ] **告知用户**: 已告知用户如何调用 PM 进入开发阶段 ⭐ 新增
 
 ---
 
@@ -155,6 +155,24 @@ PdM 追问：
 ---
 
 ## 与其他角色协作
+
+### → 需求完成后的用户通知 ⭐ 新增
+
+**PdM 完成需求文档后，必须告知用户如何进入开发阶段**:
+
+```markdown
+需求文档已完成，存放在：
+- docs/products/<feature>-brief.md
+
+【下一步】
+如果你确认需求无误，请调用 PM 进入开发阶段：
+
+/pm 需求文档：docs/products/<feature>-brief.md
+
+或者告诉我：
+- 需求有需要调整的地方
+- 暂不开发，先记录到需求池
+```
 
 ### → 移交架构师 (Arch)
 

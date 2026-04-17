@@ -1,0 +1,75 @@
+{
+  "genre": "都市言情",
+  "background": {
+    "city": "杭州",
+    "workplace": "设计公司",
+    "workplace_name": "云砚创意设计事务所"
+  },
+  "male_lead": {
+    "name": "沈砚舟",
+    "identity": "创业精英",
+    "age": 32,
+    "appearance": "轮廓分明，常穿剪裁利落的深色衬衫，左耳一枚哑光银钉",
+    "personality": [
+      "沉稳果决",
+      "敏锐洞察",
+      "外冷内热",
+      "极重承诺"
+    ],
+    "wealth": "创立三年即估值超5亿的设计科技公司创始人，持股70%",
+    "occupation": "云砚创意设计事务所创始人兼首席产品架构师"
+  },
+  "female_lead": {
+    "name": "林晚",
+    "identity": "职场新人",
+    "age": 24,
+    "appearance": "齐肩黑发，戴细框眼镜，常背帆布手作包，指尖有淡淡水彩渍",
+    "personality": [
+      "踏实专注",
+      "逻辑清晰",
+      "温和坚定",
+      "拒绝标签化成长"
+    ],
+    "background": "普通教师家庭，靠全额奖学金完成海外交互设计硕士",
+    "occupation": "云砚创意设计事务所UX设计师（应届入职）"
+  },
+  "emotion_arc": {
+    "stages": [
+      "初遇",
+      "误会",
+      "暧昧",
+      "表白",
+      "甜蜜",
+      "波折",
+      "和解",
+      "结局"
+    ],
+    "type": "职场型"
+  },
+  "main_conflict": {
+    "type": "职场竞争",
+    "description": "林晚主导的无障碍适老化APP方案被高管剽窃并推向市场，沈砚舟初期质疑其执行能力，两人陷入信任危机"
+  },
+  "supporting_chars": [
+    {
+      "role": "上司",
+      "name": "周屿",
+      "identity": "事务所COO，沈砚舟大学室友",
+      "relation_to_lead": "男主兄弟兼合伙人，暗中推动女主项目落地"
+    },
+    {
+      "role": "闺蜜",
+      "name": "许棠",
+      "identity": "UI动效设计师，林晚合租室友",
+      "relation_to_lead": "女主闺蜜，多次在关键节点提供技术支援与情感锚点"
+    },
+    {
+      "role": "情敌",
+      "name": "苏蔓",
+      "identity": "前品牌总监，空降高管",
+      "relation_to_lead": "曾试图拉拢男主合作，因剽窃女主方案与男女主形成三方张力"
+    }
+  ],
+  "novel_id": "novel-772016d1",
+  "version": 1
+}

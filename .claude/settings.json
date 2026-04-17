@@ -55,6 +55,11 @@
         "name": "team-diagnostic-analyst",
         "description": "诊断分析师 - 负责问题根因分析、共性问题排查、技术债识别",
         "path": "./.claude/team/diagnostic-analyst/SKILL.md"
+      },
+      {
+        "name": "team-senior-analyst",
+        "description": "资深分析师 - PM业务顾问，负责需求澄清、优先级评估、MVP范围建议",
+        "path": "./.claude/team/senior-analyst/SKILL.md"
       }
     ]
   },
@@ -100,6 +105,13 @@
       "model": "sonnet",
       "tools": ["all"],
       "skill": "team-diagnostic-analyst"
+    },
+    "senior-analyst": {
+      "name": "资深分析师",
+      "description": "PM业务顾问，需求澄清、优先级评估、MVP范围建议",
+      "model": "sonnet",
+      "tools": ["all"],
+      "skill": "team-senior-analyst"
     }
   },
   "mcpServers": {

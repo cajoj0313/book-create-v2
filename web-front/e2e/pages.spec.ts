@@ -51,33 +51,33 @@ test.describe('页面元素验证', () => {
     await page.goto('/');
     await page.waitForLoadState('networkidle');
 
-    // 查找创建小说的入口
-    const createBtns = page.locator('button:has-text("创建")');
-    const count = await createBtns.count();
-    expect(count).toBeGreaterThan(0);
+    // 查找标题输入框
+    const titleInput = page.getByTestId('title-input');
+    await expect(titleInput).toBeVisible();
 
-    await createBtns.first().click();
-    await page.waitForLoadState('networkidle');
+    // 输入标题（必须先输入才能启用创建按钮）
+    const uniqueTitle = `E2E测试小说_${Date.now()}`;
+    await titleInput.fill(uniqueTitle);
+    const inputValue = await titleInput.inputValue();
+    expect(inputValue).toBe(uniqueTitle);
+
+    // 查找创建按钮（现在应该已启用）
+    const createBtn = page.getByTestId('create-button');
+    await expect(createBtn).toBeEnabled();
+
+    // 点击创建
+    await createBtn.click();
+
+    // 等待跳转到世界观页面
+    await expect(page).toHaveURL(/\/novels\/.*\/world-setting/, { timeout: 10000 });
+
+    // 截图用于调试
     await page.screenshot({ path: 'test-results/create_novel.png', fullPage: true });
-
-    // 验证有输入框
-    const titleInput = page.locator('input[type="text"], input:not([type])');
-    await expect(titleInput.first()).toBeVisible();
-
-    // 验证可以输入
-    await titleInput.first().fill('测试小说');
-    const inputValue = await titleInput.first().inputValue();
-    expect(inputValue).toBe('测试小说');
-
-    // 验证有提交按钮
-    const submitBtns = page.locator('button:has-text("确定"), button:has-text("提交"), button:has-text("创建")');
-    const submitCount = await submitBtns.count();
-    expect(submitCount).toBeGreaterThan(0);
   });
 
   test('WorldBuilder 页面验证', async ({ page }) => {
-    // 访问 WorldBuilder 页面
-    await page.goto('/novels/test-novel/world-builder');
+    // 访问 WorldBuilder 页面（路由是 world-setting）
+    await page.goto('/novels/test-novel/world-setting');
     await page.waitForLoadState('networkidle');
     await page.screenshot({ path: 'test-results/world_builder.png', fullPage: true });
 

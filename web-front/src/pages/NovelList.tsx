@@ -107,11 +107,13 @@ export default function NovelList() {
               placeholder="输入小说标题，如：霸道总裁的职场恋情..."
               className="input-ink flex-1"
               disabled={creating}
+              data-testid="title-input"
             />
             <button
               onClick={handleCreate}
               disabled={creating || !newTitle.trim()}
               className="btn-vermilion min-w-[100px]"
+              data-testid="create-button"
             >
               {creating ? (
                 <span className="flex items-center gap-2">
@@ -149,6 +151,7 @@ export default function NovelList() {
                 key={novel.novel_id}
                 onClick={() => navigate(`/novels/${novel.novel_id}`)}
                 className="paper-hover p-8 cursor-pointer group relative"
+                data-testid="novel-card"
               >
                 {/* 删除按钮 */}
                 <button
@@ -224,7 +227,7 @@ export default function NovelList() {
 
       {/* 删除确认弹窗 - 墨韵书香风格 */}
       {showDeleteConfirm && deletingNovel && (
-        <div className="dialog-overlay">
+        <div className="dialog-overlay" data-testid="dialog-overlay">
           <div className="dialog-paper">
             <div className="flex items-center gap-4 mb-6">
               <div className="w-12 h-12 bg-vermilion-100 rounded-full flex items-center justify-center">

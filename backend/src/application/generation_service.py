@@ -1,6 +1,6 @@
 """AI 生成服务"""
 import os
-from typing import Dict, Any, Optional, AsyncGenerator
+from typing import Dict, Any, Optional, AsyncGenerator, List
 import json
 
 from ..infrastructure.ai_provider import QwenProvider, AIProviderFactory
@@ -12,7 +12,7 @@ class GenerationService:
 
     def __init__(self, storage: FileStorage):
         self.storage = storage
-        # 从环境变量获取API密钥
+        # 从环境变量获取 API 密钥
         api_key = os.getenv("DASHSCOPE_API_KEY", "")
         if not api_key:
             raise ValueError("DASHSCOPE_API_KEY environment variable is required")
@@ -29,30 +29,30 @@ class GenerationService:
         """生成世界观设定
 
         Args:
-            novel_id: 小说ID
+            novel_id: 小说 ID
             user_description: 用户简短描述
 
         Returns:
             Dict: 世界观设定数据
         """
-        # 构建Prompt
+        # 构建 Prompt
         prompt = self._build_world_setting_prompt(user_description)
 
-        # 调用AI生成
+        # 调用 AI 生成
         result = await self.ai_provider.generate(prompt)
 
-        # 解析JSON结果
+        # 解析 JSON 结果
         world_setting = self._parse_json_result(result)
 
         if world_setting:
-            # 添加novel_id和version
+            # 添加 novel_id 和 version
             world_setting["novel_id"] = novel_id
             world_setting["version"] = 1
 
             # 保存到文件
             self.storage.save_json(novel_id, "world_setting.json", world_setting)
 
-            # 更新meta状态
+            # 更新 meta 状态
             meta = self.storage.load_json(novel_id, "meta.json")
             if meta:
                 meta["current_phase"] = "outline_generation"
@@ -73,7 +73,7 @@ class GenerationService:
         """流式生成世界观设定
 
         Args:
-            novel_id: 小说ID
+            novel_id: 小说 ID
             user_description: 用户简短描述（随机生成时可忽略）
             random_generate: 是否随机生成
             genre: 小说类型（随机生成时使用，MVP 固定为"都市职场"）
@@ -92,7 +92,7 @@ class GenerationService:
             yield chunk
 
     def _build_world_setting_prompt(self, user_description: str) -> str:
-        """构建都市言情小说世界观生成 Prompt
+        """构建都市言情小说世界观生成 Prompt（短篇小说 MVP 版）
 
         Args:
             user_description: 用户简短描述
@@ -101,7 +101,7 @@ class GenerationService:
             str: 完整 Prompt
         """
         prompt = f"""
-# 任务：生成都市言情小说世界观设定
+# 任务：生成都市言情小说世界观设定（短篇小说 MVP）
 
 ## 用户输入
 {user_description}
@@ -113,68 +113,81 @@ class GenerationService:
 请生成完整的都市言情小说世界观设定，输出为 JSON 格式，包含以下字段：
 
 ### genre（小说类型）
-- 固定值: "都市言情"
+- 固定值："都市言情"
 
 ### background（背景设定）
 - city: 城市名称（如上海、北京、深圳、杭州）
 - workplace: 工作场所类型（如大型企业、创业公司、律师事务所、医院、设计公司）
 - workplace_name: 具体公司/机构名称（虚构名称）
 
-### male_lead（男主设定）⭐ 自由创意生成
+### male_lead（男主设定）⭐ 短篇小说深度版
 - name: 姓名（现代风格，如林晨、陆远、张皓）
 - identity: 自由定义的身份类型（可以是任何职业/身份，不限预设类型）
-- age: 年龄（28-35岁）
-- appearance: 外貌描述（不超过30字，如"冷峻英俊，眉眼深邃"）
-- personality: 性格特点数组（3-5个，如["强势", "护短", "深情", "傲娇"]）
+- age: 年龄（28-35 岁）
+- appearance: 外貌描述（不超过 30 字，如"冷峻英俊，眉眼深邃"）
+- personality: 性格特点数组（3-5 个，如 ["强势", "护短", "深情", "傲娇"]）
 - wealth: 财富背景（自由定义）
 - occupation: 具体职业
+- inner_wound: 内心创伤（如"前女友背叛，不再相信爱情"）⭐ 新增
+- growth_arc: 成长弧光（如"从封闭内心到学会信任"）⭐ 新增
 
-### female_lead（女主设定）⭐ 自由创意生成
+### female_lead（女主设定）⭐ 短篇小说深度版
 - name: 姓名（现代风格，如苏晴、林婉、陈瑶）
 - identity: 自由定义的身份类型（可以是任何职业/身份，不限预设类型）
-- age: 年龄（22-26岁）
-- appearance: 外貌描述（不超过30字，如"清秀甜美，气质温婉"）
-- personality: 性格特点数组（3-5个，如["善良", "坚韧", "独立", "有些迷糊"]）
+- age: 年龄（22-26 岁）
+- appearance: 外貌描述（不超过 30 字，如"清秀甜美，气质温婉"）
+- personality: 性格特点数组（3-5 个，如 ["善良", "坚韧", "独立", "有些迷糊"]）
 - background: 家庭背景（自由定义）
 - occupation: 具体职业
+- inner_wound: 内心创伤（如"大学时被男友劈腿，自卑敏感"）⭐ 新增
+- growth_arc: 成长弧光（如"从自卑到自信"）⭐ 新增
 
-### emotion_arc（感情线弧度）⭐ 自由创意设计
-- stages: 感情阶段数组，请自由创意设计感情发展的完整路径（至少包含8个阶段）
-- 建议：感情发展应有因果关系，从初遇到结局形成完整弧度
+### emotion_arc（感情线弧度）⭐ 短篇小说精简版
+- stages: 感情阶段数组，包含 5-6 个阶段（从初遇到结局）
+- 建议阶段：初遇→暧昧→升温→甜蜜→波折→结局
+- 每个阶段必须有因果关系，不能跳跃
 
 ### main_conflict（主线冲突）⭐ 自由创意设计
 - type: 自由定义的冲突类型（不限预设类型）
-- description: 冲突描述（不超过50字）
+- description: 冲突描述（不超过 50 字）
 
 ### supporting_chars（配角列表）
-至少包含 2 个配角，每个包含：
+至少包含 2-4 个配角，每个包含：
 - role: 角色类型（如"情敌"、"闺蜜"、"兄弟"、"上司"、"前女友"）
 - name: 姓名
-- identity: 身份描述（不超过20字）
+- identity: 身份描述（不超过 20 字）
 - relation_to_lead: 与男主/女主的关系
+- function: 功能定义（如"情感导师"、"制造感情危机"）⭐ 新增
+
+### theme（主题）⭐ 新增
+- main: 核心主题（如"爱与治愈"）
+- description: 主题阐述（如"两个受过伤的人，通过爱彼此治愈，重新相信爱情"）
 
 ## 约束条件（必须遵守）
-1. 男主必须有能力、有魅力、有感情弧度变化
-2. 女主必须有独立性格、不是单纯依附男主
-3. 感情线必须有完整的"误会→暧昧→甜蜜→波折→和解"弧度
+1. 男主必须有能力、有魅力、有感情弧度变化，有内心创伤和成长弧光
+2. 女主必须有独立性格，不是单纯依附男主，有内心创伤和成长弧光
+3. 感情线必须有完整的 5-6 个阶段，从初遇到结局形成完整弧度
 4. 冲突必须能通过感情发展解决，不能是无解矛盾
 5. 职场背景要真实可信，符合现代都市生活
-6. 配角要服务于感情线发展
+6. 配角要服务于感情线发展，有明确功能定义
+7. 主题必须贯穿整个故事
 
 ## 输出格式
 输出严格遵循 JSON 结构，不要添加任何额外文字说明。
-只输出JSON对象，不要包含markdown代码块标记。
+只输出 JSON 对象，不要包含 markdown 代码块标记。
 
 ## 写作风格指南（强制遵守）
 
 ### 人物设定风格
-1. 男主姓名：现代感，2-3字，有气质
-2. 女主姓名：现代感，2-3字，有柔美感
-3. 外貌描述：简洁具体（≤30字），有画面感
+1. 男主姓名：现代感，2-3 字，有气质
+2. 女主姓名：现代感，2-3 字，有柔美感
+3. 外貌描述：简洁具体（≤30 字），有画面感
 4. 性格描述：用具体词汇而非抽象概念（如"护短"而非"有责任感"）
+5. 内心创伤：具体明确，能解释人物行为动机
+6. 成长弧光：从 X 到 Y 的变化路径清晰
 
 ### 情感弧度要求
-1. 每个阶段要明确，不能跳过关键阶段
+1. 5-6 个阶段，不能跳过关键阶段
 2. 阶段要有因果关系（如"误会"导致"暧昧"的试探）
 3. 波折要有明确原因（情敌/误会/家庭）
 4. 结局要甜蜜圆满
@@ -183,38 +196,47 @@ class GenerationService:
 
 ### ✅ 好示例：男主设定
 - name: "陆远"
-- appearance: "冷峻英俊，眉眼深邃"（20字，简洁具体）
+- appearance: "冷峻英俊，眉眼深邃"（20 字，简洁具体）
 - personality: ["强势", "护短", "深情", "傲娇"]（具体词汇）
+- inner_wound: "前女友背叛，不再相信爱情"（具体明确）
+- growth_arc: "从封闭内心到学会信任"（清晰路径）
 
 【分析】
 - 外貌：20 字，简洁有画面感 ✅
 - 性格：用"护短"而非"有责任感"，具体 ✅
+- 内心创伤：具体明确，能解释行为 ✅
+- 成长弧光：从 X 到 Y 路径清晰 ✅
 
 ### ❌ 坏示例：男主设定
 - name: "陆远轩辰浩宇"
 - appearance: "身材高大威猛，面容英俊潇洒，眼神深邃迷人，气质冷峻非凡，皮肤白皙如玉，五官精致完美"
 - personality: ["有责任感", "有担当", "有能力", "有魅力", "有魄力"]
+- inner_wound: "受过伤"（太模糊）
+- growth_arc: "变得更好"（太抽象）
 
 【分析】
 - 姓名：过长，不符合现代感 ❌
 - 外貌：超过 30 字，信息堆砌 ❌
 - 性格：抽象概念，不具体 ❌
+- 内心创伤：太模糊，无法解释行为 ❌
+- 成长弧光：太抽象，没有路径 ❌
 
 ## 输出前自检（强制执行）
 
-1. 【男主设定】姓名是否现代感？外貌是否简洁具体（≤30字）？
-2. 【女主设定】性格是否有独立性？不是单纯依附男主？
-3. 【感情弧度】是否包含全部8个阶段？顺序是否正确？
+1. 【男主设定】姓名是否现代感？外貌是否简洁具体（≤30 字）？内心创伤是否具体？成长弧光是否清晰？
+2. 【女主设定】性格是否独立？内心创伤是否具体？成长弧光是否清晰？
+3. 【感情弧度】是否包含 5-6 个阶段？顺序是否正确？有因果关系？
 4. 【冲突设计】冲突是否可通过感情发展解决？
-5. 【配角功能】配角是否服务于感情线发展？
+5. 【配角功能】配角是否服务于感情线发展？有功能定义？
 6. 【职场背景】是否符合现代都市生活逻辑？
+7. 【主题】是否有核心主题？是否贯穿故事？
 
 请确保以上检查全部通过后再输出。
 """
         return prompt
 
     def _build_random_world_setting_prompt(self, genre: str = "都市言情", male_lead_type: str = "random", female_lead_type: str = "random") -> str:
-        """构建随机生成都市言情小说世界观 Prompt
+        """构建随机生成都市言情小说世界观 Prompt（短篇小说 MVP 版）
 
         Args:
             genre: 小说类型，固定为"都市言情"
@@ -239,7 +261,7 @@ class GenerationService:
 ⚠️ 【强制要求】女主类型已指定为 "{female_lead_type}"，必须使用此类型！"""
 
         prompt = f"""
-# 任务：随机生成都市言情小说世界观设定
+# 任务：随机生成都市言情小说世界观设定（短篇小说 MVP）
 
 ## 小说类型
 {genre}
@@ -251,7 +273,7 @@ class GenerationService:
 请自由创意生成一个完整的都市言情小说世界观设定。
 
 ### genre（小说类型）
-- 固定值: "都市言情"
+- 固定值："都市言情"
 
 ### background（背景设定）⭐ 自由创意生成
 请自由创意生成背景设定：
@@ -259,81 +281,93 @@ class GenerationService:
 - workplace: 自由定义职场环境类型（可以是任何行业/机构类型）
 - workplace_name: 虚构公司/机构名称
 
-### male_lead（男主设定）⭐ 自由创意生成
+### male_lead（男主设定）⭐ 短篇小说深度版
 请自由创意生成男主设定：
-- name: 现代风格姓名（2-3字）
+- name: 现代风格姓名（2-3 字）
 - identity: 自由定义的身份类型（可以是任何职业/身份，不限预设类型）
-- age: 28-35岁
-- appearance: 外貌描述（≤30字，简洁具体）
-- personality: 性格特点数组（3-5个，用具体词汇而非抽象概念）
+- age: 28-35 岁
+- appearance: 外貌描述（≤30 字，简洁具体）
+- personality: 性格特点数组（3-5 个，用具体词汇而非抽象概念）
 - wealth: 财富背景（自由定义）
 - occupation: 具体职业
+- inner_wound: 内心创伤（具体明确，能解释人物行为动机）⭐ 新增
+- growth_arc: 成长弧光（从 X 到 Y 的变化路径清晰）⭐ 新增
 
-### female_lead（女主设定）⭐ 自由创意生成
+### female_lead（女主设定）⭐ 短篇小说深度版
 请自由创意生成女主设定：
-- name: 现代风格姓名（2-3字）
+- name: 现代风格姓名（2-3 字）
 - identity: 自由定义的身份类型（可以是任何职业/身份，不限预设类型）
-- age: 22-26岁
-- appearance: 外貌描述（≤30字，简洁具体）
-- personality: 性格特点数组（3-5个，用具体词汇而非抽象概念）
+- age: 22-26 岁
+- appearance: 外貌描述（≤30 字，简洁具体）
+- personality: 性格特点数组（3-5 个，用具体词汇而非抽象概念）
 - background: 家庭背景（自由定义）
 - occupation: 具体职业
+- inner_wound: 内心创伤（具体明确，能解释人物行为动机）⭐ 新增
+- growth_arc: 成长弧光（从 X 到 Y 的变化路径清晰）⭐ 新增
 
-### emotion_arc（感情线弧度）⭐ 自由创意生成
+### emotion_arc（感情线弧度）⭐ 短篇小说精简版
 请自由创意设计感情线：
-- stages: 感情阶段数组，请自由设计感情发展的完整路径（至少包含8个阶段）
-- type: 自由定义的感情线类型（不限预设类型）
+- stages: 感情阶段数组，包含 5-6 个阶段（从初遇到结局）
+- 建议阶段：初遇→暧昧→升温→甜蜜→波折→结局
 
 ### main_conflict（主线冲突）⭐ 自由创意生成
 请自由创意设计主线冲突：
 - type: 自由定义的冲突类型（不限预设类型）
-- description: 冲突描述（≤50字）
+- description: 冲突描述（≤50 字）
 
 ### supporting_chars（配角列表）⭐ 自由创意生成
-自由创意生成 2-3 个配角：
+自由创意生成 2-4 个配角：
 - role: 自由定义的角色类型
 - name: 姓名
-- identity: 身份描述（≤20字）
+- identity: 身份描述（≤20 字）
 - relation_to_lead: 与男主/女主关系
+- function: 功能定义（如"情感导师"、"制造感情危机"）⭐ 新增
+
+### theme（主题）⭐ 新增
+- main: 核心主题（如"爱与治愈"）
+- description: 主题阐述（如"两个受过伤的人，通过爱彼此治愈"）
 
 ## 约束条件（必须遵守）
-1. 男主必须有魅力、有能力、有感情变化
-2. 女主必须有独立性格，不是依附男主
-3. 感情线必须完整（包含从初遇到结局的完整路径）
+1. 男主必须有魅力、有能力、有感情变化，有内心创伤和成长弧光
+2. 女主必须有独立性格，不是依附男主，有内心创伤和成长弧光
+3. 感情线必须完整（5-6 个阶段，从初遇到结局）
 4. 冲突必须可通过感情发展解决
 5. 职场背景真实可信
+6. 配角服务于感情线，有功能定义
+7. 主题贯穿故事
 
 ## 输出格式
 输出严格遵循 JSON 结构，不要添加任何额外文字说明。
-只输出JSON对象，不要包含markdown代码块标记。
+只输出 JSON 对象，不要包含 markdown 代码块标记。
 
 ## 输出前自检（强制执行）
 
-1. 【男主设定】姓名是否现代？外貌是否简洁（≤30字）？
-2. 【女主设定】性格是否独立？
-3. 【感情弧度】是否包含完整的感情发展路径？
+1. 【男主设定】姓名是否现代？外貌是否简洁（≤30 字）？内心创伤是否具体？成长弧光是否清晰？
+2. 【女主设定】性格是否独立？内心创伤是否具体？成长弧光是否清晰？
+3. 【感情弧度】是否包含完整的 5-6 个阶段？有因果关系？
 4. 【冲突设计】冲突是否可解决？
-5. 【配角功能】配角是否服务于感情线？
+5. 【配角功能】配角是否服务于感情线？有功能定义？
 6. 【职场背景】是否符合都市生活？
+7. 【主题】是否有核心主题？
 
 请确保以上检查全部通过后再输出。
 """
         return prompt
 
     def _parse_json_result(self, result: str) -> Optional[Dict[str, Any]]:
-        """解析AI返回的JSON结果
+        """解析 AI 返回的 JSON 结果
 
         Args:
-            result: AI返回的字符串
+            result: AI 返回的字符串
 
         Returns:
-            Dict: 解析后的JSON数据，解析失败返回None
+            Dict: 解析后的 JSON 数据，解析失败返回 None
         """
         try:
             # 尝试直接解析
             return json.loads(result)
         except json.JSONDecodeError:
-            # 尝试提取JSON块
+            # 尝试提取 JSON 块
             if "```json" in result:
                 start = result.find("```json") + 7
                 end = result.find("```", start)
@@ -373,7 +407,7 @@ class GenerationService:
         """生成小说大纲
 
         Args:
-            novel_id: 小说ID
+            novel_id: 小说 ID
             target_chapters: 目标章节数
             story_preference: 故事走向偏好
             pacing_preference: 节奏偏好
@@ -389,7 +423,7 @@ class GenerationService:
         # 加载人物库（可选）
         characters = self.storage.load_json(novel_id, "characters.json")
 
-        # 构建Prompt
+        # 构建 Prompt
         prompt = self._build_outline_prompt(
             world_setting,
             characters,
@@ -398,21 +432,21 @@ class GenerationService:
             pacing_preference
         )
 
-        # 调用AI生成
+        # 调用 AI 生成
         result = await self.ai_provider.generate(prompt)
 
-        # 解析JSON结果
+        # 解析 JSON 结果
         outline = self._parse_json_result(result)
 
         if outline:
-            # 添加novel_id和version
+            # 添加 novel_id 和 version
             outline["novel_id"] = novel_id
             outline["version"] = 1
 
             # 保存到文件
             self.storage.save_json(novel_id, "outline.json", outline)
 
-            # 更新meta状态（都市言情简化版，移除伏笔状态初始化）
+            # 更新 meta 状态（都市言情简化版，移除伏笔状态初始化）
             meta = self.storage.load_json(novel_id, "meta.json")
             if meta:
                 meta["current_phase"] = "chapter_writing"
@@ -431,7 +465,7 @@ class GenerationService:
         """流式生成小说大纲
 
         Args:
-            novel_id: 小说ID
+            novel_id: 小说 ID
             target_chapters: 目标章节数
             story_preference: 故事走向偏好
             pacing_preference: 节奏偏好
@@ -484,11 +518,11 @@ class GenerationService:
             characters_str = json.dumps(characters, ensure_ascii=False, indent=2)
 
         # 计算每个感情阶段的章节数
-        # 标准都市言情：50章 = 8阶段，每阶段约6章
-        stage_chapters = target_chapters // 8
+        # 短篇小说：10-15 章 = 6 阶段，每阶段约 2-3 章
+        stage_chapters = max(2, target_chapters // 6)
 
         prompt = f"""
-# 任务：生成都市言情小说大纲（感情节奏表）
+# 任务：生成都市言情小说大纲（短篇小说 MVP 版）
 
 ## 输入上下文
 
@@ -499,18 +533,18 @@ class GenerationService:
 {characters_str if characters_str else "（暂无人物设定，请从世界观设定中获取男主/女主信息）"}
 
 ### 用户期望
-- 目标章节数: {target_chapters}
-- 故事走向偏好: {story_preference}
-- 节奏偏好: {pacing_preference}
+- 目标章节数：{target_chapters}（短篇小说 10-15 章）
+- 故事走向偏好：{story_preference}
+- 节奏偏好：{pacing_preference}
 
 ## 输出要求
 请生成完整的感情节奏表大纲，输出为 JSON 格式，包含以下字段：
 
 ### genre（小说类型）
-- 固定值: "都市言情"
+- 固定值："都市言情"
 
-### emotion_arc（感情节奏表）⭐ 自由创意设计
-感情节奏表，将目标章节数按 6 个感情阶段划分（参考框架）：
+### emotion_arc（感情节奏表）⭐ 短篇小说 6 阶段
+感情节奏表，将目标章节数按 6 个感情阶段划分：
 
 | 阶段 | 章节范围参考 | 感情阶段参考 | 说明 |
 |------|----------|----------|----------|
@@ -527,24 +561,24 @@ class GenerationService:
 - range: 章节范围（如"1-6"）
 - stage: 自由定义的感情阶段名称
 - emotion: 自由定义的情绪状态描述
-- description: 自由创意撰写该阶段的感情发展概述（≤100字）
+- description: 自由创意撰写该阶段的感情发展概述（≤100 字）
 
 ### sweet_points（爽点计划）⭐ 自由创意设计
-请自由创意设计关键爽点，建议每 5 章安排 1 个爽点：
+请自由创意设计关键爽点，建议每 3-5 章安排 1 个爽点：
 
 每个爽点包含：
 - chapter: 章节号
 - type: 自由定义的爽点类型
-- detail: 自由创意撰写详细描述（≤50字）
+- detail: 自由创意撰写详细描述（≤50 字）
 - emotion_level: 感情强度等级（1-10）
 
-### chapters（章节规划）
-为前 20 章生成详细规划，每章包含：
+### chapters（章节规划）⭐ 短篇小说详细版
+为所有章节生成详细规划（短篇小说 10-15 章，全部详细规划），每章包含：
 - chapter_num: 章节号
-- title: 章节标题（≤15字，有画面感）
+- title: 章节标题（≤15 字，有画面感）
 - emotion_stage: 本章感情阶段（对应 emotion_arc）
-- key_events: 核心事件列表（每章 1-2 个，≤20字）
-- emotion_progress: 感情进展描述（≤30字）
+- key_events: 核心事件列表（每章 2-3 个，50-80 字/事件，有因果链）⭐ 具体化
+- emotion_progress: 感情进展描述（≤30 字）
 - sweet_point: 是否为爽点章节（true/false）
 
 ### main_conflict（主线冲突详情）
@@ -553,18 +587,20 @@ class GenerationService:
 - description: 冲突描述
 - resolve_chapter: 冲突解决章节（在 stage_5 或 stage_6）
 
-## 约束条件（红线规则，必须遵守）
-1. 感情节奏必须包含完整的感情发展路径（至少 6 个阶段）
-2. 爽点密度：建议每 5 竂至少 1 个爽点
+## 约束条件（红线规则，必须遵守）⭐ 短篇小说版
+1. 感情节奏必须包含完整的 6 个阶段
+2. 爽点密度：每 3-5 章至少 1 个爽点
 3. 章节标题必须有画面感（如"雨夜相遇"而非"第一章"）
 4. 感情进展必须有因果关系，不能跳跃式进展
 5. 波折必须有明确原因
 6. 结局必须圆满
 7. 每章感情阶段必须明确标注
+8. **核心事件必须具体化**：每个事件 50-80 字，有因果链，不能写"发生误会"这种空洞描述
+9. **事件之间必须有因果链**：用"因为 A 发生，所以 B 发生"的逻辑连接
 
 ## 输出格式
 输出严格遵循 JSON 结构，不要添加任何额外文字说明。
-只输出JSON对象，不要包含markdown代码块标记。
+只输出 JSON 对象，不要包含 markdown 代码块标记。
 
 ## 章节标题示例（仅供参考）
 - 初遇阶段：雨夜相遇、电梯惊魂、咖啡厅误会
@@ -577,9 +613,9 @@ class GenerationService:
 ## 章节标题示例对比（强制参考）⭐
 
 ### ✅ 好示例：章节标题
-- 第1章："雨夜相遇"（4字，有画面感）
-- 第5章："深夜加班"（4字，有场景）
-- 第15章："月光告白"（4字，有氛围）
+- 第 1 章："雨夜相遇"（4 字，有画面感）
+- 第 5 章："深夜加班"（4 字，有场景）
+- 第 15 章："月光告白"（4 字，有氛围）
 
 【分析】
 - 每个标题 ≤15 字 ✅
@@ -587,24 +623,57 @@ class GenerationService:
 - 感情阶段可见 ✅
 
 ### ❌ 坏示例：章节标题
-- 第1章："第一章：男主女主第一次见面产生误会"
-- 第5章："第五章：两人因为工作原因加班到深夜"
-- 第15章："第十五章：男主在月光下向女主表白"
+- 第 1 章："第一章：男主女主第一次见面产生误会"
+- 第 5 章："第五章：两人因为工作原因加班到深夜"
+- 第 15 章："第十五章：男主在月光下向女主表白"
 
 【分析】
-- 标题过长（>15字） ❌
+- 标题过长（>15 字） ❌
 - 无画面感，只是事件描述 ❌
 - 格式重复 ❌
 
+## 核心事件示例对比（强制参考）⭐⭐⭐ 最重要
+
+### ✅ 好示例：核心事件（50-80 字，有因果链）
+```json
+"key_events": [
+  "早高峰地铁拥挤，苏晴被人流推到陆远怀里，陆远下意识护住她，两人对视瞬间心跳加速（初遇）",
+  "到公司后发现两人竟是上下级关系，苏晴尴尬回避，陆远却主动打招呼叫她来办公室（因果：因为相遇，所以发现关系）"
+]
+```
+
+【分析】
+- 每个事件 50-80 字 ✅
+- 有具体场景（地铁、公司） ✅
+- 有因果链（因为地铁相遇，所以发现是上下级） ✅
+- 有感情描写（心跳加速、尴尬回避） ✅
+
+### ❌ 坏示例：核心事件（空洞无物）
+```json
+"key_events": [
+  "男女主相遇",
+  "发生误会",
+  "感情升温"
+]
+```
+
+【分析】
+- 事件太简短，没有具体场景 ❌
+- 没有因果链 ❌
+- 没有感情描写 ❌
+- 无法指导 AI 生成章节内容 ❌
+
 ## 输出前自检（强制执行）
 
-1. 【感情节奏】是否包含完整的感情发展路径？每个阶段章节数是否合理？
-2. 【爽点密度】是否每 5 竂至少 1 个爽点？
-3. 【章节标题】是否全部有画面感（≤15字）？
+1. 【感情节奏】是否包含完整的 6 个阶段？每个阶段章节数是否合理？
+2. 【爽点密度】是否每 3-5 章至少 1 个爽点？
+3. 【章节标题】是否全部有画面感（≤15 字）？
 4. 【感情进展】是否有因果关系？不能跳跃式进展
 5. 【波折原因】是否有明确的波折触发原因？
 6. 【结局设置】是否为圆满结局？
 7. 【感情标注】每章是否标注了感情阶段？
+8. 【核心事件】是否全部具体化（50-80 字，有因果链）？
+9. 【因果链】事件之间是否有"因为 A 所以 B"的逻辑？
 
 请确保以上检查全部通过后再输出。
 """
@@ -621,7 +690,7 @@ class GenerationService:
         """生成章节内容
 
         Args:
-            novel_id: 小说ID
+            novel_id: 小说 ID
             chapter_num: 章节号
             user_special_request: 用户特别要求（可选）
 
@@ -631,13 +700,13 @@ class GenerationService:
         # 加载所有上下文
         context = self._load_chapter_context(novel_id, chapter_num)
 
-        # 构建Prompt
+        # 构建 Prompt
         prompt = self._build_chapter_prompt(context, chapter_num, user_special_request)
 
-        # 调用AI生成
+        # 调用 AI 生成
         result = await self.ai_provider.generate(prompt)
 
-        # 解析JSON结果
+        # 解析 JSON 结果
         chapter = self._parse_json_result(result)
 
         if chapter:
@@ -662,7 +731,7 @@ class GenerationService:
                 chapter
             )
 
-            # 更新meta（都市言情简化版，移除状态追踪）
+            # 更新 meta（都市言情简化版，移除状态追踪）
             self._update_meta_after_chapter(novel_id, chapter_num, chapter.get("word_count", 0))
 
         return chapter
@@ -677,7 +746,7 @@ class GenerationService:
         """流式生成章节内容
 
         Args:
-            novel_id: 小说ID
+            novel_id: 小说 ID
             chapter_num: 章节号
             user_special_request: 用户特别要求（可选）
             outline_context: 大纲上下文（前端传递，可选）
@@ -688,7 +757,7 @@ class GenerationService:
         # 加载所有上下文
         context = self._load_chapter_context(novel_id, chapter_num)
 
-        # 构建Prompt（传递 outline_context）
+        # 构建 Prompt（传递 outline_context）
         prompt = self._build_chapter_prompt(
             context,
             chapter_num,
@@ -703,7 +772,7 @@ class GenerationService:
         """加载章节生成所需的上下文（都市言情简化版）
 
         Args:
-            novel_id: 小说ID
+            novel_id: 小说 ID
             chapter_num: 章节号
 
         Returns:
@@ -792,7 +861,7 @@ class GenerationService:
 ### 章节标题
 {outline_context.get('title', '未设定')}
 
-### 核心事件（必须覆盖60%以上）
+### 核心事件（必须覆盖 60% 以上）
 {events_formatted}
 ### 感情阶段
 {outline_context.get('emotion_stage', '未设定')}
@@ -806,7 +875,7 @@ class GenerationService:
         previous_chapter_str = ""
         prev_chapter = context.get("previous_chapter")
         if prev_chapter:
-            # 只取摘要和最后500字作为参考
+            # 只取摘要和最后 500 字作为参考
             prev_summary = prev_chapter.get("summary", {})
             prev_content_preview = prev_chapter.get("content", "")[-500:] if prev_chapter.get("content") else ""
             previous_chapter_str = json.dumps({
@@ -826,8 +895,8 @@ class GenerationService:
 
 爽点场景要求：
 1. 必须有强烈的情感冲击（心动/心动/甜蜜/心动/心动）
-2. 必须有具体的互动描写（对话+动作+神态）
-3. 爽点场景篇幅占比不低于30%
+2. 必须有具体的互动描写（对话 + 动作 + 神态）
+3. 爽点场景篇幅占比不低于 30%
 
 爽点类型参考：
 - 偶遇救场：男主替女主解围，女主心动
@@ -882,15 +951,15 @@ class GenerationService:
 {f"5. **爽点场景**：本章是爽点章节，必须有明确的爽点场景（篇幅≥30%）" if is_sweet_point else ""}
 
 ### summary（章节摘要）
-- key_events: 本章核心事件列表（1-2个）
+- key_events: 本章核心事件列表（1-2 个）
 - emotion_stage: 本章感情阶段
-- emotion_progress: 感情进展描述（≤30字）
+- emotion_progress: 感情进展描述（≤30 字）
 - sweet_point: 是否为爽点章节
 - emotional_tone: 本章情感基调
 
 ### chapter_info（章节信息）
 - chapter_num: 章节号
-- title: 章节标题（≤15字，有画面感）
+- title: 章节标题（≤15 字，有画面感）
 - emotion_stage: 感情阶段
 - word_count: 字数（自动计算）
 
@@ -904,7 +973,7 @@ class GenerationService:
 
 ## 写作风格指南（都市言情专属）
 
-### 对话+动作描写（强制遵守）
+### 对话 + 动作描写（强制遵守）
 每段对话必须配有动作或神态描写：
 
 示例格式：
@@ -950,29 +1019,29 @@ class GenerationService:
 【分析】
 - 信息密度：每句 1-2 信息点 ✅
 - 句子长度：15-25 字 ✅
-- 对话+动作：每句对话配动作描写 ✅
+- 对话 + 动作：每句对话配动作描写 ✅
 - 情感描写：用"心跳加快"表现心动，不直接说 ✅
 
 ### ❌ 坏示例：段落描写
 
-她整理完文件后心跳加速地走到他面前，将文件夹递给他后手指碰到他的手背感到冰凉的触感，办公室只剩下他们两个人空调嗡嗡声格外清晰，她抬头看他心跳莫名加快了他问文件整理好了吗目光在她脸上停留了一秒她嗯都在桌上把文件夹递过去。
+她整理完文件后心跳加速地走到他面前，将文件夹递给他后手指碰到他的手背感到冰凉的触感，办公室只剩下他们两个人空调的嗡嗡声在安静中格外清晰，她抬头看他心跳莫名加快了他问文件整理好了吗目光在她脸上停留了一秒她嗯都在桌上把文件夹递过去。
 
 【分析】
 - 信息密度：一句话 6 个信息点 ❌
 - 句子长度：超过 80 字 ❌
-- 对话+动作：对话无动作描写 ❌
+- 对话 + 动作：对话无动作描写 ❌
 - 情感描写：直接说"心跳加速"，缺乏文学性 ❌
 
 ## 输出格式
 输出严格遵循 JSON 结构，不要添加任何额外文字说明。
-只输出JSON对象，不要包含markdown代码块标记。
+只输出 JSON 对象，不要包含 markdown 代码块标记。
 
 ## 输出前自检（强制执行）
 
 1. 【感情阶段】是否明确标注了感情阶段？
 2. 【感情进展】是否有感情变化描写？
 3. 【互动场景】是否有男主女主的对话/互动？
-4. 【对话+动作】每段对话是否配有动作描写？
+4. 【对话 + 动作】每段对话是否配有动作描写？
 5. 【感情描写】是否用动作表现而非直接描述？
 6. 【爽点场景】（如为爽点章节）是否有明确的爽点场景？
 7. 【称呼一致】男主女主称呼是否固定？
@@ -991,7 +1060,7 @@ class GenerationService:
         """更新元信息
 
         Args:
-            novel_id: 小说ID
+            novel_id: 小说 ID
             chapter_num: 章节号
             word_count: 本章字数
         """
@@ -1016,6 +1085,280 @@ class GenerationService:
         # 移除空白字符计算
         return len(content.replace("\n", "").replace(" ", "").replace("\t", ""))
 
+    # ==================== 故事梗概生成 ====================
+
+    async def generate_story_synopsis(
+        self,
+        novel_id: str
+    ) -> Dict[str, Any]:
+        """生成故事梗概（短篇小说 MVP 版）
+
+        Args:
+            novel_id: 小说 ID
+
+        Returns:
+            Dict: 故事梗概数据
+        """
+        # 加载世界观和大纲作为上下文
+        world_setting = self.storage.load_json(novel_id, "world_setting.json")
+        if not world_setting:
+            raise ValueError("World setting not found. Please generate world setting first.")
+
+        outline = self.storage.load_json(novel_id, "outline.json")
+        if not outline:
+            raise ValueError("Outline not found. Please generate outline first.")
+
+        # 构建 Prompt
+        prompt = self._build_story_synopsis_prompt(world_setting, outline)
+
+        # 调用 AI 生成
+        result = await self.ai_provider.generate(prompt)
+
+        # 解析 JSON 结果
+        synopsis = self._parse_json_result(result)
+
+        if synopsis:
+            # 添加 novel_id
+            synopsis["novel_id"] = novel_id
+
+            # 保存到文件
+            self.storage.save_json(novel_id, "story_synopsis.json", synopsis)
+
+            # 更新 meta 状态
+            meta = self.storage.load_json(novel_id, "meta.json")
+            if meta:
+                meta["current_phase"] = "chapter_splitting"
+                meta["updated_at"] = self._get_current_time()
+                self.storage.save_json(novel_id, "meta.json", meta)
+
+        return synopsis
+
+    async def stream_generate_story_synopsis(
+        self,
+        novel_id: str
+    ) -> AsyncGenerator[str, None]:
+        """流式生成故事梗概
+
+        Args:
+            novel_id: 小说 ID
+
+        Yields:
+            str: 生成的内容片段
+        """
+        # 加载世界观和大纲作为上下文
+        world_setting = self.storage.load_json(novel_id, "world_setting.json")
+        if not world_setting:
+            raise ValueError("World setting not found. Please generate world setting first.")
+
+        outline = self.storage.load_json(novel_id, "outline.json")
+        if not outline:
+            raise ValueError("Outline not found. Please generate outline first.")
+
+        prompt = self._build_story_synopsis_prompt(world_setting, outline)
+
+        async for chunk in self.ai_provider.stream_generate(prompt):
+            yield chunk
+
+    def _build_story_synopsis_prompt(
+        self,
+        world_setting: Dict[str, Any],
+        outline: Dict[str, Any]
+    ) -> str:
+        """构建故事梗概生成 Prompt
+
+        Args:
+            world_setting: 世界观设定
+            outline: 大纲
+
+        Returns:
+            str: 完整 Prompt
+        """
+        world_setting_str = json.dumps(world_setting, ensure_ascii=False, indent=2)
+        outline_str = json.dumps(outline, ensure_ascii=False, indent=2)
+
+        # 从世界观获取人物信息
+        male_lead = world_setting.get("male_lead", {})
+        female_lead = world_setting.get("female_lead", {})
+        theme = world_setting.get("theme", {})
+
+        prompt = f"""
+# 任务：生成短篇小说完整故事梗概（3000-5000 字）
+
+## 输入上下文
+
+### 世界观设定
+{world_setting_str}
+
+### 大纲
+{outline_str}
+
+## 输出要求
+请生成完整的故事梗概，输出为 JSON 格式，包含以下字段：
+
+### story_content（故事梗概正文）⭐ 核心
+- 完整的故事梗概，3000-5000 字
+- 涵盖所有章节的关键事件
+- 体现因果链：因为 A 发生，所以 B 发生
+- 体现人物成长：男主从 inner_wound 到 growth_arc 的转变
+- 体现感情发展：从初遇到结局的 5-6 个阶段
+- 体现主题：{theme.get('main', '爱与治愈')}
+
+### key_plot_points（关键情节节点）
+5-6 个关键节点，每个包含：
+- point: 节点编号（1-6）
+- chapter_range: 对应章节范围（如"第 1-3 章"）
+- event: 节点事件描述（100-150 字）
+- emotion_stage: 对应的感情阶段
+
+### character_arc（人物成长弧光）
+- male_lead_arc: 男主从 X 到 Y 的转变路径
+- female_lead_arc: 女主从 X 到 Y 的转变路径
+
+## 写作要求（强制遵守）
+
+1. **因果链清晰**：每个事件必须有因有果，不能凭空发生
+   - ✅ 好：因为苏晴迟到冲进电梯，所以与陆远被困，两人因此相遇
+   - ❌ 坏：苏晴和陆远相遇了（没有原因）
+
+2. **人物有深度**：体现 inner_wound 和 growth_arc
+   - 陆远因前女友背叛不再相信爱情 → 学会信任和爱
+   - 苏晴因被劈腿自卑敏感 → 建立自信
+
+3. **感情有渐进**：5-6 个阶段，不能跳跃
+   - 初遇→暧昧→升温→甜蜜→波折→结局
+
+4. **主题贯穿**：{theme.get('description', '爱与治愈')}
+
+## 输出格式
+输出严格遵循 JSON 结构，不要添加任何额外文字说明。
+只输出 JSON 对象，不要包含 markdown 代码块标记。
+
+## 示例结构（仅供参考）
+
+```json
+{{
+  "story_content": "陆远是天际科技的新任 CEO，因前女友的背叛，他不再相信爱情...（3000-5000 字完整故事）",
+  "key_plot_points": [
+    {{
+      "point": 1,
+      "chapter_range": "第 1-2 章",
+      "event": "初遇：苏晴迟到冲进电梯，与陆远被困 30 分钟，从尴尬到交谈，得知是新 CEO 后震惊",
+      "emotion_stage": "初遇"
+    }},
+    {{
+      "point": 2,
+      "chapter_range": "第 3-5 章",
+      "event": "暧昧：苏晴被分到陆远项目组，两人频繁接触，苏晴看到陆远工作能力，改观；陆远被苏晴坚韧吸引",
+      "emotion_stage": "暧昧"
+    }}
+  ],
+  "character_arc": {{
+    "male_lead_arc": "陆远从封闭内心（因前女友背叛）到学会信任（苏晴的真诚打动他）",
+    "female_lead_arc": "苏晴从自卑敏感（因大学被劈腿）到自信独立（在工作和爱情中成长）"
+  }}
+}}
+```
+
+## 输出前自检（强制执行）
+
+1. 【字数】故事梗概是否 3000-5000 字？
+2. 【因果链】事件之间是否有因果关系？
+3. 【人物成长】是否体现 inner_wound 到 growth_arc 的转变？
+4. 【感情渐进】是否包含 5-6 个阶段，不跳跃？
+5. 【主题】是否贯穿{theme.get('main', '爱与治愈')}主题？
+6. 【节点】是否有 5-6 个关键情节节点？
+
+请确保以上检查全部通过后再输出。
+"""
+        return prompt
+
+    # ==================== 章节批量拆分 ====================
+
+    async def split_story_to_chapters(
+        self,
+        novel_id: str,
+        start_chapter: int = 1,
+        batch_size: int = 5
+    ) -> List[Dict[str, Any]]:
+        """批量拆分故事梗概为章节
+
+        Args:
+            novel_id: 小说 ID
+            start_chapter: 起始章节号
+            batch_size: 批量生成章节数（3/5/10）
+
+        Returns:
+            List[Dict]: 章节列表
+        """
+        # 加载所有上下文
+        world_setting = self.storage.load_json(novel_id, "world_setting.json")
+        outline = self.storage.load_json(novel_id, "outline.json")
+        synopsis = self.storage.load_json(novel_id, "story_synopsis.json")
+
+        if not world_setting:
+            raise ValueError("World setting not found")
+        if not outline:
+            raise ValueError("Outline not found")
+        if not synopsis:
+            raise ValueError("Story synopsis not found")
+
+        chapters = []
+        end_chapter = min(start_chapter + batch_size - 1, len(outline.get("chapters", [])))
+
+        for chapter_num in range(start_chapter, end_chapter + 1):
+            chapter = await self.generate_chapter(novel_id, chapter_num)
+            if chapter:
+                chapters.append(chapter)
+
+        return chapters
+
+    async def stream_generate_batch_chapters(
+        self,
+        novel_id: str,
+        start_chapter: int = 1,
+        batch_size: int = 5
+    ) -> AsyncGenerator[str, None]:
+        """流式批量生成章节
+
+        Args:
+            novel_id: 小说 ID
+            start_chapter: 起始章节号
+            batch_size: 批量生成章节数
+
+        Yields:
+            str: 生成的内容片段（JSON 字符串，包含 chapter_num 和 content）
+        """
+        # 加载所有上下文
+        world_setting = self.storage.load_json(novel_id, "world_setting.json")
+        outline = self.storage.load_json(novel_id, "outline.json")
+        synopsis = self.storage.load_json(novel_id, "story_synopsis.json")
+
+        if not world_setting:
+            raise ValueError("World setting not found")
+        if not outline:
+            raise ValueError("Outline not found")
+        if not synopsis:
+            raise ValueError("Story synopsis not found")
+
+        end_chapter = min(start_chapter + batch_size - 1, len(outline.get("chapters", [])))
+
+        for chapter_num in range(start_chapter, end_chapter + 1):
+            # 发送章节开始标记
+            yield f"event: chapter_start\ndata: {{\"chapter\": {chapter_num}}}\n\n"
+
+            # 流式生成章节
+            full_content = ""
+            async for chunk in self.stream_generate_chapter(novel_id, chapter_num):
+                full_content += chunk
+                # 转发内容片段
+                yield f"event: chunk\ndata: {{\"chapter\": {chapter_num}, \"content\": {json.dumps(chunk)}}}\n\n"
+
+            # 发送章节完成标记
+            yield f"event: chapter_complete\ndata: {{\"chapter\": {chapter_num}, \"status\": \"saved\"}}\n\n"
+
+        # 发送批量完成标记
+        yield f"event: batch_complete\ndata: {{\"status\": \"completed\", \"chapters\": {list(range(start_chapter, end_chapter + 1))}}}\n\n"
+
     def get_chapter_context_for_validation(
         self,
         novel_id: str,
@@ -1024,7 +1367,7 @@ class GenerationService:
         """获取章节校验所需的上下文（供校验服务使用）
 
         Args:
-            novel_id: 小说ID
+            novel_id: 小说 ID
             chapter_num: 章节号
 
         Returns:

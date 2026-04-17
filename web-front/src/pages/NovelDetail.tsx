@@ -10,6 +10,7 @@ import { useEffect, useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { novelApi, addCharacter, updateCharacter, deleteCharacter } from '@services/api'
 import type { Novel, Character } from '@/types/novel'
+import FlowProgress from '@components/FlowProgress'
 
 // 关系类型颜色映射
 const RELATION_COLORS: Record<string, string> = {
@@ -119,8 +120,19 @@ export default function NovelDetail() {
   const relationshipEdges = novel.characters?.relationship_graph?.edges || []
   // 都市言情简化版：移除 foreshadowingPlan
 
+  // 获取当前阶段和章节进度
+  const currentPhase = meta.current_phase || 'world_building'
+  const completedChapters = meta.completed_chapters || 0
+  const targetChapters = meta.target_chapters || 12
+
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* 4 阶段进度条（短篇小说 MVP） */}
+      <FlowProgress
+        currentPhase={currentPhase}
+        completedChapters={completedChapters}
+        targetChapters={targetChapters}
+      />
       {/* 头部 */}
       <header className="bg-white border-b sticky top-0 z-10">
         <div className="max-w-6xl mx-auto px-4 py-4">
@@ -238,45 +250,6 @@ function OverviewTab({
 
   return (
     <div className="space-y-6">
-      {/* 创作进度 */}
-      <div className="bg-white rounded-lg shadow-sm p-6">
-        <h2 className="font-semibold mb-4">创作进度</h2>
-
-        <div className="grid grid-cols-4 gap-4">
-          {/* 世界观 */}
-          <ProgressCard
-            title="世界观"
-            status={novel.world_setting ? 'completed' : 'pending'}
-            onClick={() => onNavigate(`/novels/${novelId}/world-setting`)}
-          />
-
-          {/* 人物库 */}
-          <ProgressCard
-            title="人物库"
-            status={novel.characters ? 'completed' : 'pending'}
-            subtitle={novel.characters ? `${(novel.characters.characters ?? []).length}人` : undefined}
-            onClick={() => onNavigate(`/novels/${novelId}/world-setting`)}
-          />
-
-          {/* 大纲 */}
-          <ProgressCard
-            title="大纲"
-            status={novel.outline ? 'completed' : 'pending'}
-            subtitle={novel.outline ? `${(novel.outline.volumes ?? []).length}卷` : undefined}
-            onClick={() => onNavigate(`/novels/${novelId}/outline`)}
-          />
-
-          {/* 章节 */}
-          <ProgressCard
-            title="章节"
-            status={(meta.completed_chapters ?? 0) > 0 ? 'in_progress' : 'pending'}
-            subtitle={`${meta.completed_chapters ?? 0}/${meta.target_chapters ?? 0}`}
-            progress={(meta.completed_chapters ?? 0) / (meta.target_chapters ?? 1)}
-            onClick={() => onNavigate(`/novels/${novelId}/chapters`)}
-          />
-        </div>
-      </div>
-
       {/* 基本信息 */}
       <div className="bg-white rounded-lg shadow-sm p-6">
         <h2 className="font-semibold mb-4">基本信息</h2>
@@ -340,50 +313,6 @@ function OverviewTab({
         />
       </div>
     </div>
-  )
-}
-
-// 进度卡片
-function ProgressCard({
-  title,
-  status,
-  subtitle,
-  progress,
-  onClick,
-}: {
-  title: string
-  status: 'completed' | 'in_progress' | 'pending'
-  subtitle?: string
-  progress?: number
-  onClick: () => void
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className="text-center p-4 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors"
-    >
-      <div className="text-sm text-gray-500">{title}</div>
-
-      {status === 'completed' && (
-        <div className="text-lg font-semibold text-green-600">✓ 完成</div>
-      )}
-      {status === 'in_progress' && (
-        <div>
-          <div className="text-lg font-semibold text-blue-600">{subtitle}</div>
-          {progress && (
-            <div className="mt-2 h-1 bg-gray-200 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-blue-500 rounded-full"
-                style={{ width: `${progress * 100}%` }}
-              />
-            </div>
-          )}
-        </div>
-      )}
-      {status === 'pending' && (
-        <div className="text-lg font-semibold text-gray-400">待完成</div>
-      )}
-    </button>
   )
 }
 

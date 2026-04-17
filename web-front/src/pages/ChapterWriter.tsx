@@ -52,6 +52,11 @@ export default function ChapterWriter() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [deleting, setDeleting] = useState(false)
 
+  // 批量生成状态
+  const [showBatchGenerateModal, setShowBatchGenerateModal] = useState(false)
+  const [batchSize, setBatchSize] = useState(5)  // 3/5/10 章可选
+  const [batchGenerating, setBatchGenerating] = useState(false)
+
   // 提示消息
   const [toast, setToast] = useState<{ type: 'success' | 'error' | 'warning'; message: string } | null>(null)
 
@@ -340,6 +345,65 @@ export default function ChapterWriter() {
     setShowDeleteConfirm(false)
   }
 
+  // 开始批量生成
+  const handleBatchGenerate = useCallback(() => {
+    if (!novelId) return
+
+    setBatchGenerating(true)
+    setGenerateStatus('connecting')
+
+    const client = new SSEClient()
+    sseClientRef.current = client
+
+    client.connect(
+      `/api/generation/split-chapters/stream`,
+      {
+        method: 'POST',
+        body: JSON.stringify({
+          novel_id: novelId,
+          start_chapter: currentChapterNum,
+          batch_size: batchSize,
+        }),
+      },
+      {
+        onEvent: (event) => {
+          if (event.event === 'start') {
+            setGenerateStatus('streaming')
+          } else if (event.event === 'chapter_start') {
+            const data = JSON.parse(event.data)
+            setToast({ type: 'success', message: `开始生成第 ${data.chapter} 章` })
+          } else if (event.event === 'chunk') {
+            const data = JSON.parse(event.data)
+            setGeneratedContent(prev => prev + data.content)
+          } else if (event.event === 'chapter_complete') {
+            const data = JSON.parse(event.data)
+            setToast({ type: 'success', message: `第 ${data.chapter} 章已保存` })
+            // 自动跳转到下一章
+            if (data.chapter < currentChapterNum + batchSize - 1) {
+              navigate(`/novels/${novelId}/chapters/${data.chapter + 1}`)
+            }
+          } else if (event.event === 'batch_complete') {
+            setBatchGenerating(false)
+            setGenerateStatus('completed')
+            setToast({ type: 'success', message: '批量生成完成' })
+          } else if (event.event === 'error') {
+            setBatchGenerating(false)
+            setGenerateStatus('error')
+            setGenerateError(event.data)
+          }
+        },
+        onError: (err) => {
+          setBatchGenerating(false)
+          setGenerateStatus('error')
+          setGenerateError(err.message)
+        },
+        onComplete: () => {
+          setBatchGenerating(false)
+        },
+      }
+    )
+  }, [novelId, currentChapterNum, batchSize, navigate])
+
   // 显示内容
   const displayContent = generateStatus === 'streaming' || generateStatus === 'completed'
     ? generatedContent
@@ -411,18 +475,33 @@ export default function ChapterWriter() {
                   停止生成
                 </button>
               ) : (
-                <button
-                  onClick={handleGenerate}
-                  disabled={generateStatus === 'connecting'}
-                  className="btn-vermilion"
-                >
-                  {generateStatus === 'connecting' ? (
-                    <span className="flex items-center gap-2">
-                      <div className="loading-spinner w-4 h-4" />
-                      连接中...
-                    </span>
-                  ) : 'AI 续写'}
-                </button>
+                <>
+                  <button
+                    onClick={handleGenerate}
+                    disabled={generateStatus === 'connecting'}
+                    className="btn-vermilion"
+                  >
+                    {generateStatus === 'connecting' ? (
+                      <span className="flex items-center gap-2">
+                        <div className="loading-spinner w-4 h-4" />
+                        连接中...
+                      </span>
+                    ) : 'AI 续写'}
+                  </button>
+
+                  <button
+                    onClick={() => setShowBatchGenerateModal(true)}
+                    disabled={batchGenerating || generateStatus === 'connecting'}
+                    className="btn-indigo"
+                  >
+                    {batchGenerating ? (
+                      <span className="flex items-center gap-2">
+                        <div className="loading-spinner w-4 h-4" />
+                        批量生成中...
+                      </span>
+                    ) : '批量生成'}
+                  </button>
+                </>
               )}
 
               <button
@@ -818,6 +897,95 @@ export default function ChapterWriter() {
                 className="btn-vermilion flex-1"
               >
                 {deleting ? '删除中...' : '确认删除'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 批量生成弹窗 */}
+      {showBatchGenerateModal && (
+        <div className="dialog-overlay">
+          <div className="dialog-paper">
+            <h2 className="text-title-xl text-ink-800 mb-4 flex items-center gap-3">
+              <div className="seal-lg">批</div>
+              批量生成章节
+            </h2>
+
+            <div className="mb-6">
+              <p className="text-ink-600 mb-4 font-prose">
+                基于故事梗概和大纲，批量生成多个章节。
+                生成的章节会自动保存并跳转到下一章。
+              </p>
+
+              <div>
+                <label className="block text-title-sm text-ink-600 mb-2">生成章节数</label>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setBatchSize(3)}
+                    className={`flex-1 py-3 rounded-paper-md border-2 transition-all ${
+                      batchSize === 3
+                        ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
+                        : 'border-ink-200 hover:border-ink-300'
+                    }`}
+                  >
+                    <div className="font-title-sm">3 章</div>
+                    <div className="text-title-xs text-ink-500">快速生成</div>
+                  </button>
+                  <button
+                    onClick={() => setBatchSize(5)}
+                    className={`flex-1 py-3 rounded-paper-md border-2 transition-all ${
+                      batchSize === 5
+                        ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
+                        : 'border-ink-200 hover:border-ink-300'
+                    }`}
+                  >
+                    <div className="font-title-sm">5 章</div>
+                    <div className="text-title-xs text-ink-500">标准模式</div>
+                  </button>
+                  <button
+                    onClick={() => setBatchSize(10)}
+                    className={`flex-1 py-3 rounded-paper-md border-2 transition-all ${
+                      batchSize === 10
+                        ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
+                        : 'border-ink-200 hover:border-ink-300'
+                    }`}
+                  >
+                    <div className="font-title-sm">10 章</div>
+                    <div className="text-title-xs text-ink-500">完整生成</div>
+                  </button>
+                </div>
+              </div>
+
+              <div className="mt-4 paper-flat p-3">
+                <div className="flex items-center gap-2 text-ink-600">
+                  <span className="text-indigo-500">◆</span>
+                  <span className="text-title-sm">
+                    从第 {currentChapterNum} 章开始，生成到第 {currentChapterNum + batchSize - 1} 章
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-4">
+              <button
+                onClick={() => setShowBatchGenerateModal(false)}
+                disabled={batchGenerating}
+                className="btn-outline-ink flex-1"
+              >
+                取消
+              </button>
+              <button
+                onClick={handleBatchGenerate}
+                disabled={batchGenerating}
+                className="btn-vermilion flex-1"
+              >
+                {batchGenerating ? (
+                  <span className="flex items-center gap-2">
+                    <div className="loading-spinner w-4 h-4" />
+                    生成中...
+                  </span>
+                ) : '开始批量生成'}
               </button>
             </div>
           </div>

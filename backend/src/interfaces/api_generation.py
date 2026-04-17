@@ -32,9 +32,9 @@ class WorldSettingResponse(BaseModel):
 
 
 class GenerateOutlineRequest(BaseModel):
-    """生成大纲请求"""
+    """生成大纲请求（短篇小说 MVP 版）"""
     novel_id: str
-    target_chapters: int = 50
+    target_chapters: int = 12  # 短篇小说默认 12 章（10-15 章可选）
     story_preference: str = "平衡发展"
     pacing_preference: str = "中等节奏"
 
@@ -277,6 +277,274 @@ async def stream_generate_outline(request: GenerateOutlineRequest):
 
         except ValueError as e:
             yield f"event: error\ndata: {{\"error\": \"{str(e)}\"}}\n\n"
+        except Exception as e:
+            yield f"event: error\ndata: {{\"error\": \"{str(e)}\"}}\n\n"
+
+    return StreamingResponse(
+        generate_stream(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+        }
+    )
+
+
+# ==================== 章节续写 API ====================
+
+# ==================== 故事梗概生成 API（短篇小说 MVP） ====================
+
+class GenerateStorySynopsisRequest(BaseModel):
+    """生成故事梗概请求"""
+    novel_id: str
+
+
+class StorySynopsisResponse(BaseModel):
+    """故事梗概响应"""
+    novel_id: str
+    story_content: str
+    key_plot_points: list
+    character_arc: dict
+
+
+@router.post("/synopsis", response_model=dict)
+async def generate_story_synopsis(request: GenerateStorySynopsisRequest):
+    """生成故事梗概（短篇小说 MVP 版）
+
+    Args:
+        request: 包含 novel_id
+
+    Returns:
+        生成的故事梗概数据
+    """
+    storage = FileStorage("data/novels")
+
+    # 检查小说是否存在
+    meta = storage.load_json(request.novel_id, "meta.json")
+    if not meta:
+        raise HTTPException(status_code=404, detail="Novel not found")
+
+    # 检查世界观是否存在
+    world_setting = storage.load_json(request.novel_id, "world_setting.json")
+    if not world_setting:
+        raise HTTPException(
+            status_code=400,
+            detail="World setting not found. Please generate world setting first."
+        )
+
+    # 检查大纲是否存在
+    outline = storage.load_json(request.novel_id, "outline.json")
+    if not outline:
+        raise HTTPException(
+            status_code=400,
+            detail="Outline not found. Please generate outline first."
+        )
+
+    try:
+        service = GenerationService(storage)
+        synopsis = await service.generate_story_synopsis(request.novel_id)
+
+        if not synopsis:
+            raise HTTPException(
+                status_code=500,
+                detail="Failed to parse AI response as JSON"
+            )
+
+        return synopsis
+
+    except ValueError as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/synopsis/stream")
+async def stream_generate_story_synopsis(request: GenerateStorySynopsisRequest):
+    """流式生成故事梗概（SSE）
+
+    Args:
+        request: 包含 novel_id
+
+    Returns:
+        SSE 流式响应
+    """
+    storage = FileStorage("data/novels")
+
+    # 检查小说是否存在
+    meta = storage.load_json(request.novel_id, "meta.json")
+    if not meta:
+        raise HTTPException(status_code=404, detail="Novel not found")
+
+    # 检查世界观是否存在
+    world_setting = storage.load_json(request.novel_id, "world_setting.json")
+    if not world_setting:
+        raise HTTPException(
+            status_code=400,
+            detail="World setting not found. Please generate world setting first."
+        )
+
+    # 检查大纲是否存在
+    outline = storage.load_json(request.novel_id, "outline.json")
+    if not outline:
+        raise HTTPException(
+            status_code=400,
+            detail="Outline not found. Please generate outline first."
+        )
+
+    async def generate_stream():
+        """生成 SSE 流"""
+        try:
+            service = GenerationService(storage)
+
+            # 先发送开始标记
+            yield "event: start\ndata: {\"status\": \"generating\"}\n\n"
+
+            # 流式生成内容
+            full_content = ""
+            async for chunk in service.stream_generate_story_synopsis(request.novel_id):
+                full_content += chunk
+                # 发送内容片段
+                yield f"event: chunk\ndata: {json_escape(chunk)}\n\n"
+
+            # 解析并保存结果
+            synopsis = service._parse_json_result(full_content)
+            if synopsis:
+                synopsis["novel_id"] = request.novel_id
+                storage.save_json(request.novel_id, "story_synopsis.json", synopsis)
+
+                # 更新 meta 状态
+                meta["current_phase"] = "chapter_splitting"
+                meta["updated_at"] = service._get_current_time()
+                storage.save_json(request.novel_id, "meta.json", meta)
+
+                # 发送完成标记
+                yield "event: complete\ndata: {\"status\": \"saved\"}\n\n"
+            else:
+                # 发送解析错误
+                yield "event: error\ndata: {\"error\": \"Failed to parse JSON\"}\n\n"
+
+        except Exception as e:
+            yield f"event: error\ndata: {{\"error\": \"{str(e)}\"}}\n\n"
+
+    return StreamingResponse(
+        generate_stream(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+        }
+    )
+
+
+# ==================== 章节批量拆分 API（短篇小说 MVP） ====================
+
+class SplitChaptersRequest(BaseModel):
+    """批量拆分章节请求"""
+    novel_id: str
+    start_chapter: int = 1
+    batch_size: int = 5  # 3/5/10 章可选
+
+
+class SplitChaptersResponse(BaseModel):
+    """批量拆分章节响应"""
+    novel_id: str
+    chapters: list
+
+
+@router.post("/split-chapters", response_model=dict)
+async def split_chapters(request: SplitChaptersRequest):
+    """批量拆分故事梗概为章节
+
+    Args:
+        request: 包含 novel_id、起始章节号、批量大小
+
+    Returns:
+        生成的章节列表
+    """
+    storage = FileStorage("data/novels")
+
+    # 检查小说是否存在
+    meta = storage.load_json(request.novel_id, "meta.json")
+    if not meta:
+        raise HTTPException(status_code=404, detail="Novel not found")
+
+    # 检查大纲是否存在
+    outline = storage.load_json(request.novel_id, "outline.json")
+    if not outline:
+        raise HTTPException(
+            status_code=400,
+            detail="Outline not found. Please generate outline first."
+        )
+
+    # 检查故事梗概是否存在
+    synopsis = storage.load_json(request.novel_id, "story_synopsis.json")
+    if not synopsis:
+        raise HTTPException(
+            status_code=400,
+            detail="Story synopsis not found. Please generate story synopsis first."
+        )
+
+    try:
+        service = GenerationService(storage)
+        chapters = await service.split_story_to_chapters(
+            request.novel_id,
+            request.start_chapter,
+            request.batch_size
+        )
+
+        return {"novel_id": request.novel_id, "chapters": chapters}
+
+    except ValueError as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/split-chapters/stream")
+async def stream_split_chapters(request: SplitChaptersRequest):
+    """流式批量拆分章节（SSE）
+
+    Args:
+        request: 包含 novel_id、起始章节号、批量大小
+
+    Returns:
+        SSE 流式响应
+    """
+    storage = FileStorage("data/novels")
+
+    # 检查小说是否存在
+    meta = storage.load_json(request.novel_id, "meta.json")
+    if not meta:
+        raise HTTPException(status_code=404, detail="Novel not found")
+
+    # 检查大纲是否存在
+    outline = storage.load_json(request.novel_id, "outline.json")
+    if not outline:
+        raise HTTPException(
+            status_code=400,
+            detail="Outline not found. Please generate outline first."
+        )
+
+    # 检查故事梗概是否存在
+    synopsis = storage.load_json(request.novel_id, "story_synopsis.json")
+    if not synopsis:
+        raise HTTPException(
+            status_code=400,
+            detail="Story synopsis not found. Please generate story synopsis first."
+        )
+
+    async def generate_stream():
+        """生成 SSE 流"""
+        try:
+            service = GenerationService(storage)
+
+            # 先发送开始标记
+            yield "event: start\ndata: {\"status\": \"generating\", \"batch_size\": " + str(request.batch_size) + "}\n\n"
+
+            # 流式批量生成
+            async for chunk in service.stream_generate_batch_chapters(
+                request.novel_id,
+                request.start_chapter,
+                request.batch_size
+            ):
+                yield chunk
+
         except Exception as e:
             yield f"event: error\ndata: {{\"error\": \"{str(e)}\"}}\n\n"
 

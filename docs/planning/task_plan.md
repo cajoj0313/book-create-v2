@@ -2,7 +2,139 @@
 
 > **创建日期**: 2026-04-15
 > **项目**: 灵笔 - 都市言情小说生成器
-> **当前阶段**: 运维优化阶段
+> **当前阶段**: 内容质量提升阶段
+
+---
+
+## 当前任务：FEAT-16 移除预配置数据实现纯 AI 生成 ✅
+
+### 任务来源
+
+PRD 文档：`docs/products/pure-ai-random-generation-brief.md`
+需求编号：FEAT-16
+优先级：P0（RICE Score = 250）
+
+### 任务分解（并行执行）
+
+| 任务ID | 任务名称 | 负责角色 | 工时 | 状态 | 依赖 |
+|--------|----------|----------|------|------|------|
+| T-1 | `_build_random_world_setting_prompt()` 移除预配置列表 | backend-dev | 2h | **completed** ✅ | 无 |
+| T-2 | `_build_world_setting_prompt()` 移除预配置列表 | backend-dev | 1h | **completed** ✅ | 无 |
+| T-3 | `_build_outline_prompt()` 优化感情节奏描述 | backend-dev | 1h | **completed** ✅ | 无 |
+| T-4 | pytest 测试验证 | qa-tester | 0.5h | **completed** ✅ | T-1, T-2, T-3 |
+| T-5 | 前端移除类型选择下拉框 | frontend-dev | 1h | **completed** ✅ | 无 |
+| T-6 | npm type-check 验证 | frontend-dev | 0.5h | **completed** ✅ | T-5 |
+
+### 并行批次
+
+| 批次 | 任务 | 耗时 | 说明 |
+|------|------|------|------|
+| **批次1** | T-1 + T-2 + T-3 + T-5 | max(2h, 1h, 1h, 1h) = 2h | 后端 Prompt + 前端 UI 并行 |
+| **批次2** | T-4 + T-6 | max(0.5h, 0.5h) = 0.5h | 测试验证 |
+
+**总耗时**：2h + 0.5h = **2.5h**（串行需 6h，节省 58%）
+
+### 验收标准
+
+- [x] `_build_random_world_setting_prompt()` 移除所有类型选择列表
+- [x] `_build_world_setting_prompt()` 移除所有类型选择列表
+- [x] 所有"选择其一"指令改为"自由创意生成"
+- [x] 保留 JSON 输出格式定义
+- [x] 保留写作风格指南和示例对比
+- [x] pytest 测试通过（61 passed）
+- [x] 前端移除类型选择下拉框
+- [x] npm type-check 通过
+- [x] 产品验收通过（无需人工验证）
+
+### 任务完成状态
+
+**批次1 + 批次2 全部完成** ✅
+
+### 移除的预配置数据
+
+| 位置 | 移除内容 | 改造方式 |
+|------|----------|----------|
+| `_build_random_world_setting_prompt()` | 男主类型（4种）、女主类型（3种）、感情线类型（4种）、城市（5个）、工作场所（5种） | 改为"自由创意生成"指令 |
+| `_build_world_setting_prompt()` | 男主identity类型、女主identity类型、冲突类型 | 改为"自由定义"指令 |
+| `_build_outline_prompt()` | 固定感情阶段描述、爽点类型、冲突原因 | 保留框架，改为自由创意设计 |
+
+---
+
+## 历史任务：FEAT-14 强化示例驱动 Prompt ✅
+
+### 任务来源
+
+PRD 文档：`docs/products/example-driven-prompt-brief.md`
+需求编号：FEAT-14
+优先级：P0（RICE Score = 100）
+
+### 任务分解（并行执行）
+
+| 任务ID | 任务名称 | 负责角色 | 工时 | 状态 | 依赖 |
+|--------|----------|----------|------|------|------|
+| T-1 | 世界观 Prompt 添加示例对比 | backend-dev | 1h | **pending** | 无 |
+| T-2 | 大纲 Prompt 添加示例对比 | backend-dev | 1h | **pending** | 无 |
+| T-3 | 章节 Prompt 添加示例对比（重点） | backend-dev | 2h | **pending** | 无 |
+| T-4 | pytest 测试验证 | qa-tester | 0.5h | **pending** | T-1, T-2, T-3 |
+| T-5 | 生成测试样本并人工评估 | qa-tester | 2h | **pending** | T-4 |
+
+### 并行批次
+
+| 批次 | 任务 | 耗时 | 说明 |
+|------|------|------|------|
+| **批次1** | T-1 + T-2 + T-3 | max(1h, 1h, 2h) = 2h | 三个 Prompt 可并行修改 |
+| **批次2** | T-4 | 0.5h | 测试验证 |
+| **批次3** | T-5 | 2h | 人工评估 |
+
+**总耗时**：2h + 0.5h + 2h = **4.5h**（串行需 6.5h，节省 31%）
+
+### 验收标准（PRD）
+
+- [ ] 世界观 Prompt 添加人物设定示例对比
+- [ ] 大纲 Prompt 添加章节标题示例对比
+- [ ] 章节 Prompt 添加段落描写示例对比（重点）
+- [ ] pytest 测试通过（92 passed）
+- [ ] 生成测试内容，人工验证质量提升
+
+### 执行计划
+
+1. **批次1**：并行启动 backend-dev 完成 T-1、T-2、T-3
+2. **批次2**：T-4 测试验证（全部通过后）
+3. **批次3**：T-5 生成测试样本，用户确认效果
+
+---
+
+### 任务来源
+
+测试文件 `generation.spec.ts` 失败：
+- 测试期望：创建成功后 URL 不再是根路径
+- 实际结果：创建后 URL 仍是 `http://localhost:3000/`
+- 根因分析：测试文件没有 mock API，依赖真实后端
+
+### 任务计划
+
+| 步骤 | 任务内容 | 状态 | 依赖 |
+|------|----------|------|------|
+| 1 | 分析问题根因：generation.spec.ts 缺少 mock API | **complete** | 无 |
+| 2 | 为 generation.spec.ts 添加 mockApiRoutes 函数 | **complete** | 步骤 1 |
+| 3 | 修复测试断言方式（使用 toHaveURL 替代 not.toBe） | **complete** | 步骤 2 |
+| 4 | 修复世界观 mock 返回空状态 | **complete** | 步骤 3 |
+| 5 | 验证测试通过（npm run test:e2e） | **complete** | 步骤 4 |
+| 6 | 更新 progress.md | **complete** | 步骤 5 |
+
+### 任务完成状态
+
+**全部完成** ✅
+
+### 问题分析
+
+**根因**: `generation.spec.ts` 没有 mock API 路由
+- 对比 `interaction.spec.ts`：有完整的 `mockApiRoutes(page)` 函数
+- `interaction.spec.ts` 测试通过，`generation.spec.ts` 测试失败
+
+**解决方案**: 为 `generation.spec.ts` 添加 mock API 配置
+- Mock `POST /api/novels/` 返回 `{ success: true, data: newNovel }`
+- Mock 其他必要 API（世界观、章节等）
 
 ---
 
@@ -34,6 +166,8 @@
 | M10 | 世界观随机生成 | 2026-04-13 | FEAT-11 AI随机生成按钮 |
 | M11 | 章节写作补全 | 2026-04-13 | FEAT-13 大纲上下文注入 |
 | M12 | E2E测试Mock移除 | 2026-04-14 | 真实DashScope API测试 |
+| M13 | 示例驱动Prompt | 2026-04-16 | FEAT-14 好示例vs坏示例对比 |
+| M14 | 纯AI随机生成 | 2026-04-16 | FEAT-16 移除预配置数据 |
 
 ---
 

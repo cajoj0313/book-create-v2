@@ -1,0 +1,392 @@
+{
+  "genre": "都市言情",
+  "emotion_arc": [
+    {
+      "range": "1-30",
+      "stage": "合规锋刃",
+      "emotion": "理性对峙中暗涌微光",
+      "description": "林晚以合规铁律突袭审查，沈砚以技术逻辑强势回应；三处漏洞、七十二小时闭环测试，在数据与伦理的刀锋上初识彼此分量。"
+    },
+    {
+      "range": "31-60",
+      "stage": "恒温时刻",
+      "emotion": "克制下的温度悄然攀升",
+      "description": "她高烧校验报告，他送来的不是药而是恒温箱手冲咖啡；浙南义诊中草药香混着AI终端蓝光，指尖擦过屏幕，心跳比超声波更早抵达。"
+    },
+    {
+      "range": "61-90",
+      "stage": "心电同频",
+      "emotion": "信念共振催生隐秘依恋",
+      "description": "共赴周明远老宅调试算法模型，她念俳句他记韵脚；陈屿递来一线医护血泪反馈，两人在凌晨茶水间沉默对坐，呼吸渐趋一致。"
+    },
+    {
+      "range": "91-110",
+      "stage": "台风契约",
+      "emotion": "危局中交付全部信任",
+      "description": "数据中心告急夜，断电瞬间他握住她冻红的手说‘这次我听你的’；她撕掉求婚戒指盒，熔铸成两枚心电图纹袖扣——爱是共同签署的不可撤销协议。"
+    },
+    {
+      "range": "111-150",
+      "stage": "白皮书风暴",
+      "emotion": "并肩迎战资本与惯性之墙",
+      "description": "前投资人施压跳过二期临床，媒体围攻‘AI冷血论’；她携患儿家属证词直闯董事会，他当场下线商用版本，启动全链路人工复核机制。"
+    },
+    {
+      "range": "151-200",
+      "stage": "青瓷共生",
+      "emotion": "专业与情感彻底互构圆满",
+      "description": "《AI医疗人类监督白皮书》全球发布；三年后云枢健康首建‘医者-AI双签制’，她站在新手术室落地屏前调整参数，他从背后为她别上那枚青瓷书签。"
+    }
+  ],
+  "sweet_points": [
+    {
+      "chapter": 5,
+      "type": "专业碾压爽",
+      "detail": "林晚当众指出沈砚系统未标注训练数据地域偏差，全场寂静三秒后掌声雷动",
+      "emotion_level": 7
+    },
+    {
+      "chapter": 10,
+      "type": "细节暴击爽",
+      "detail": "沈砚记住她提过怕冷，实验室空调恒定24℃，桌上多出一枚温感变色杯垫",
+      "emotion_level": 8
+    },
+    {
+      "chapter": 15,
+      "type": "反杀打脸爽",
+      "detail": "投资人嘲讽‘合规是创新枷锁’，林晚甩出苏晓阳提供的三起误判真实病历，对方哑口离席",
+      "emotion_level": 9
+    },
+    {
+      "chapter": 20,
+      "type": "隐忍破防爽",
+      "detail": "沈砚彻夜重写风险模块，晨光中发现她蜷在沙发睡着，眼镜滑落鼻尖，他轻轻托回——镜头特写他指尖悬停0.5秒未触皮肤",
+      "emotion_level": 8
+    },
+    {
+      "chapter": 25,
+      "type": "意象封神爽",
+      "detail": "两人在龙井茶园调试便携终端，她采新芽入盏，他调参成功时茶汤正浮起第一缕青烟，镜头叠化心电图波纹与山雾同频",
+      "emotion_level": 9
+    },
+    {
+      "chapter": 30,
+      "type": "身份反转爽",
+      "detail": "林晚被临时任命为临床验证总协调人，沈砚亲手递上带云枢LOGO的银质合规印章——他首次让渡技术决策权",
+      "emotion_level": 8
+    },
+    {
+      "chapter": 35,
+      "type": "幽默破冰爽",
+      "detail": "沈砚用算法生成俳句：‘CT影里霜，结节如雪藏，忽见你眼亮’，林晚笑呛咖啡，他默默抽走她手中纸巾盒——盒底印着刚写的第二句",
+      "emotion_level": 7
+    },
+    {
+      "chapter": 40,
+      "type": "守护高光爽",
+      "detail": "林晚被伦理委员会质疑‘过度倾向技术方’，沈砚调出72小时实验室录像——她连续三轮否决自己起草的宽松条款",
+      "emotion_level": 9
+    },
+    {
+      "chapter": 45,
+      "type": "技能联动爽",
+      "detail": "山区暴雨断网，她凭儿科经验手绘肺部解剖图辅助诊断，他实时将手绘转译为AI可识别标注，终端跳出‘匹配度99.8%’",
+      "emotion_level": 8
+    },
+    {
+      "chapter": 50,
+      "type": "信物伏笔回收爽",
+      "detail": "林晚别在衣领的青瓷书签裂开细纹，沈砚取出同窑残片，激光刻上‘Pulse Sync 001’——当晚服务器心跳监测曲线首次完全重合",
+      "emotion_level": 9
+    },
+    {
+      "chapter": 55,
+      "type": "代际认证爽",
+      "detail": "周明远主任用三十年阅片经验盲测AI结果，拍桌大笑：‘这孩子比我准！但——得加她签字才敢动刀！’",
+      "emotion_level": 8
+    },
+    {
+      "chapter": 60,
+      "type": "规则重构爽",
+      "detail": "林晚推动设立‘算法伦理一票否决权’，沈砚同步开源核心评估框架，代码注释首行写着‘By Lin Wan& Shen Yan’",
+      "emotion_level": 9
+    },
+    {
+      "chapter": 65,
+      "type": "危机共担爽",
+      "detail": "台风夜基站损毁，她冒雨抢修信号塔，他远程重构边缘计算节点，两人语音里同时响起心电监护仪规律滴答声",
+      "emotion_level": 9
+    },
+    {
+      "chapter": 70,
+      "type": "职业高光爽",
+      "detail": "林晚在卫健委听证会用俳句解析算法偏见：‘偏见如雾，非无源，乃训数之尘’，全场静默后爆发掌声",
+      "emotion_level": 8
+    },
+    {
+      "chapter": 75,
+      "type": "双向驯化爽",
+      "detail": "沈砚学会用青瓷杯喝手冲，林晚开始用Python写简易校验脚本；两人共享文档命名‘晚砚共识_v1.3’",
+      "emotion_level": 7
+    },
+    {
+      "chapter": 80,
+      "type": "家庭破壁爽",
+      "detail": "林晚父母参观云枢实验室，沈砚演示‘儿科误判拦截模块’，父亲摸着屏幕喃喃：‘这孩子，守住了我们没守住的门’",
+      "emotion_level": 9
+    },
+    {
+      "chapter": 85,
+      "type": "技术浪漫爽",
+      "detail": "沈砚将林晚所有俳句输入模型生成可视化诗集，最后一页是动态心电图，随她呼吸起伏描摹成‘晚’字篆形",
+      "emotion_level": 10
+    },
+    {
+      "chapter": 90,
+      "type": "制度落地爽",
+      "detail": "首台‘双签制’AI终端在浙大儿院启用，林晚按下确认键，沈砚同步在后台关闭自动升级——从此每次迭代需两人指纹叠加",
+      "emotion_level": 9
+    },
+    {
+      "chapter": 95,
+      "type": "细节闭环爽",
+      "detail": "林晚发现沈砚羊绒衫左袖口内侧绣着极小青瓷纹，凑近才看清是‘晚’字变形；他耳尖微红：‘上周刚学会刺绣’",
+      "emotion_level": 8
+    },
+    {
+      "chapter": 100,
+      "type": "里程碑宣言爽",
+      "detail": "白皮书发布会倒计时，沈砚在全员邮件末尾添加：‘本文件唯一生效条件：林晚·晚字签名’，她笑着签下，墨迹未干即同步全球",
+      "emotion_level": 9
+    }
+  ],
+  "chapters": [
+    {
+      "chapter_num": 1,
+      "title": "暴雨突袭",
+      "emotion_stage": "合规锋刃",
+      "key_events": [
+        "林晚持合规令闯入云枢实验室",
+        "沈砚抬眸摘下眼镜露出眉尾浅疤"
+      ],
+      "emotion_progress": "敌意初显，专业气场激烈碰撞",
+      "sweet_point": false
+    },
+    {
+      "chapter_num": 2,
+      "title": "三处漏洞",
+      "emotion_stage": "合规锋刃",
+      "key_events": [
+        "林晚逐条指出数据脱敏缺陷",
+        "沈砚沉默记录至第三页末"
+      ],
+      "emotion_progress": "技术权威首次被精准拆解",
+      "sweet_point": false
+    },
+    {
+      "chapter_num": 3,
+      "title": "灰衫未皱",
+      "emotion_stage": "合规锋刃",
+      "key_events": [
+        "沈砚递上热茶却避开她手指",
+        "窗外雷光映亮他羊绒衫褶皱"
+      ],
+      "emotion_progress": "克制礼仪下暗流初动",
+      "sweet_point": false
+    },
+    {
+      "chapter_num": 4,
+      "title": "72小时灯",
+      "emotion_stage": "合规锋刃",
+      "key_events": [
+        "两人驻守实验室争辩数据边界",
+        "咖啡机第17次提示缺豆"
+      ],
+      "emotion_progress": "疲惫中滋生奇异默契",
+      "sweet_point": false
+    },
+    {
+      "chapter_num": 5,
+      "title": "数据之刃",
+      "emotion_stage": "合规锋刃",
+      "key_events": [
+        "林晚指出地域偏差致漏诊风险",
+        "全场寂静后自发鼓掌"
+      ],
+      "emotion_progress": "专业尊严赢得技术团队敬意",
+      "sweet_point": true
+    },
+    {
+      "chapter_num": 6,
+      "title": "恒温箱",
+      "emotion_stage": "恒温时刻",
+      "key_events": [
+        "林晚高烧仍核验报告",
+        "沈砚推来恒温箱装手冲咖啡"
+      ],
+      "emotion_progress": "无声关怀击穿职业壁垒",
+      "sweet_point": false
+    },
+    {
+      "chapter_num": 7,
+      "title": "银边微斜",
+      "emotion_stage": "恒温时刻",
+      "key_events": [
+        "她眼镜滑落鼻尖",
+        "他指尖悬停半秒未触"
+      ],
+      "emotion_progress": "距离消融于0.5秒的克制",
+      "sweet_point": false
+    },
+    {
+      "chapter_num": 8,
+      "title": "龙井调试",
+      "emotion_stage": "恒温时刻",
+      "key_events": [
+        "浙南茶园调试便携终端",
+        "新芽入盏与AI校准同步完成"
+      ],
+      "emotion_progress": "自然与科技在指尖达成和解",
+      "sweet_point": false
+    },
+    {
+      "chapter_num": 9,
+      "title": "草药笔记",
+      "emotion_stage": "恒温时刻",
+      "key_events": [
+        "林晚教辨识鱼腥草",
+        "沈砚用算法标记药性数据"
+      ],
+      "emotion_progress": "知识共享催生隐秘亲昵",
+      "sweet_point": false
+    },
+    {
+      "chapter_num": 10,
+      "title": "24℃刻度",
+      "emotion_stage": "恒温时刻",
+      "key_events": [
+        "实验室空调恒定24℃",
+        "温感杯垫浮现她名字缩写"
+      ],
+      "emotion_progress": "细节控的温柔有了具象温度",
+      "sweet_point": true
+    },
+    {
+      "chapter_num": 11,
+      "title": "山雾未散",
+      "emotion_stage": "恒温时刻",
+      "key_events": [
+        "义诊遇暴雨",
+        "两人共撑一把伞调试设备"
+      ],
+      "emotion_progress": "风雨中身体自然靠近",
+      "sweet_point": false
+    },
+    {
+      "chapter_num": 12,
+      "title": "超声低鸣",
+      "emotion_stage": "恒温时刻",
+      "key_events": [
+        "她手扶探头定位",
+        "他指尖轻点她腕骨校准角度"
+      ],
+      "emotion_progress": "肢体接触成为技术协作惯性",
+      "sweet_point": false
+    },
+    {
+      "chapter_num": 13,
+      "title": "俳句未发",
+      "emotion_stage": "心电同频",
+      "key_events": [
+        "林晚写完俳句又删",
+        "沈砚电脑屏保换成水墨竹影"
+      ],
+      "emotion_progress": "诗意在未送达处悄然生长",
+      "sweet_point": false
+    },
+    {
+      "chapter_num": 14,
+      "title": "老宅茶烟",
+      "emotion_stage": "心电同频",
+      "key_events": [
+        "周明远演示胶片阅片",
+        "两人同步指出同一处微小结节"
+      ],
+      "emotion_progress": "三代医者与AI在光影中握手",
+      "sweet_point": false
+    },
+    {
+      "chapter_num": 15,
+      "title": "青烟同频",
+      "emotion_stage": "心电同频",
+      "key_events": [
+        "龙井新芽入盏",
+        "终端心电图与山雾同步起伏"
+      ],
+      "emotion_progress": "自然韵律与生命信号达成共振",
+      "sweet_point": true
+    },
+    {
+      "chapter_num": 16,
+      "title": "双签印章",
+      "emotion_stage": "心电同频",
+      "key_events": [
+        "林晚获任临床协调人",
+        "沈砚递上银质合规印章"
+      ],
+      "emotion_progress": "权力让渡标志信任质变",
+      "sweet_point": false
+    },
+    {
+      "chapter_num": 17,
+      "title": "代码注释",
+      "emotion_stage": "心电同频",
+      "key_events": [
+        "沈砚开源框架",
+        "首行注释署两人姓名"
+      ],
+      "emotion_progress": "技术成果成为情感契约载体",
+      "sweet_point": false
+    },
+    {
+      "chapter_num": 18,
+      "title": "残片新生",
+      "emotion_stage": "心电同频",
+      "key_events": [
+        "青瓷书签裂纹",
+        "沈砚激光刻‘Pulse Sync’"
+      ],
+      "emotion_progress": "破损之物升华为共生信物",
+      "sweet_point": false
+    },
+    {
+      "chapter_num": 19,
+      "title": "滴答同频",
+      "emotion_stage": "台风契约",
+      "key_events": [
+        "台风夜抢修信号塔",
+        "语音里响起同步心电音"
+      ],
+      "emotion_progress": "危机中生命节律自然同步",
+      "sweet_point": false
+    },
+    {
+      "chapter_num": 20,
+      "title": "断电刹那",
+      "emotion_stage": "台风契约",
+      "key_events": [
+        "数据中心告急",
+        "他握住她冻红的手说‘这次我听你的’"
+      ],
+      "emotion_progress": "绝对信任在黑暗中完成交付",
+      "sweet_point": true
+    }
+  ],
+  "main_conflict": {
+    "type": "价值观与执行节奏的深层张力",
+    "description": "沈砚追求技术突破速度，林晚坚守临床安全底线；冲突核心是‘患者能否成为算法进化的代价’",
+    "resolve_chapter": 150
+  },
+  "version": 2,
+  "novel_id": "novel-3be649d8"
+}

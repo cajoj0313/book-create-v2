@@ -1,0 +1,332 @@
+{
+  "genre": "都市言情",
+  "emotion_arc": [
+    {
+      "range": "1-25",
+      "stage": "锋刃初遇",
+      "emotion": "尖锐对峙中暗藏电流",
+      "description": "霓虹街28号抢座引爆冲突，咖啡泼洒成导火索；对赌协议强制绑定，高跟鞋与财报成为日常刑具，彼此在刺探中确认对方不可轻易定义。"
+    },
+    {
+      "range": "26-50",
+      "stage": "暗格微光",
+      "emotion": "克制下的试探与心照不宣",
+      "description": "燕麦奶递出是破冰，老照片浮现是伏笔；档案室共查线索时呼吸交叠，暴雨中西装裹肩的三秒静默，让‘任务关系’悄然失重。"
+    },
+    {
+      "range": "51-75",
+      "stage": "齿轮咬合",
+      "emotion": "信任开始共振，秘密同步解封",
+      "description": "林佑羽交付铜质怀表，沈若冰首次主动邀约无糖美式；两人并肩梳理28号十年产权链，在数据迷宫里互为坐标，默契渐成本能。"
+    },
+    {
+      "range": "76-100",
+      "stage": "双轨同频",
+      "emotion": "并肩而立，温柔自有锋芒",
+      "description": "她策展《未拆封的十年》，他发起匿名众筹反收购；明德茶水间流传‘苏星辰改了沈董的PPT配色’，无人敢笑——因那版方案最终拿下圣安东尼续约。"
+    },
+    {
+      "range": "101-150",
+      "stage": "锈蚀回响",
+      "emotion": "旧伤撕裂，真相灼烫如刃",
+      "description": "陈薇伪造泄密证据致苏星辰停职调查，沈若冰当众调取全楼监控撕毁HR函；更致命的是——哥哥失踪案卷宗浮现沈家旧印，信任濒临熔断。"
+    },
+    {
+      "range": "151-200",
+      "stage": "霓虹复明",
+      "emotion": "和解不是退让，是共同重建光源",
+      "description": "沈若冰公开家族资本干预旧城改造黑幕，自请剥离明德董事席位；苏星辰将怀表齿轮嵌入28号吧台中央，穹顶投影‘星辰’二字亮起时，两人指尖相触，光晕流转如初遇那盏坏掉的灯。"
+    }
+  ],
+  "sweet_points": [
+    {
+      "chapter": 5,
+      "type": "职场打脸",
+      "detail": "苏星辰当场指出沈若冰财报中三处逻辑漏洞，全场寂静后他合上文件：‘实习生，你来主讲。’",
+      "emotion_level": 7
+    },
+    {
+      "chapter": 10,
+      "type": "隐秘温柔",
+      "detail": "她加班睡着，醒来发现颈后垫着他的羊绒围巾，桌面多了一盒无糖燕麦奶，杯底压着便签：‘糖分超标，罚抄三页会计准则。’",
+      "emotion_level": 8
+    },
+    {
+      "chapter": 15,
+      "type": "身份反转",
+      "detail": "陈薇当众质疑苏星辰学历造假，沈若冰推过平板——艺术史硕士答辩录像正播放至她驳斥导师‘记忆不该被资本定价’的片段。",
+      "emotion_level": 9
+    },
+    {
+      "chapter": 20,
+      "type": "细节暴击",
+      "detail": "她无意瞥见他手机屏保：28号旧门牌特写，右下角小字‘.03.12 拍于拆迁前夜’——正是哥哥失踪次日。",
+      "emotion_level": 10
+    },
+    {
+      "chapter": 25,
+      "type": "契约逆转",
+      "detail": "对赌协议到期日，沈若冰将签字笔推至她面前：‘现在，换你决定——我是否合格转正？’",
+      "emotion_level": 9
+    },
+    {
+      "chapter": 30,
+      "type": "守护曝光",
+      "detail": "她策展布展至凌晨，抬头见沈若冰站在梯子顶端替她拧紧穹顶射灯——银灰西装沾满灰尘，却把最亮一束光精准打在她手绘的28号手稿上。",
+      "emotion_level": 8
+    },
+    {
+      "chapter": 35,
+      "type": "旧物解密",
+      "detail": "怀表齿轮内侧刻着‘S&H2014’，她猛然想起哥哥曾提过‘沈家小少爷总蹲在28号修收音机’，而当年修理工登记簿上签名：沈若冰。",
+      "emotion_level": 10
+    },
+    {
+      "chapter": 40,
+      "type": "反向告白",
+      "detail": "暴雨夜被困档案室，他忽然说：‘你左耳三颗钻，像我小时候摔碎的星图仪——修不好，但每颗都记得位置。’",
+      "emotion_level": 9
+    },
+    {
+      "chapter": 45,
+      "type": "权威认证",
+      "detail": "城市记忆保护协会突然发函，称苏星辰提交的28号口述史获‘年度最具伦理价值档案’，落款签名旁盖着沈若冰私章。",
+      "emotion_level": 8
+    },
+    {
+      "chapter": 50,
+      "type": "双向奔赴",
+      "detail": "她冒雨冲进明德大堂，把湿透的策展方案拍在他桌上：‘我要你以个人名义捐资修复28号楼梯扶手——用你左手第三根手指的指纹解锁。’",
+      "emotion_level": 9
+    }
+  ],
+  "chapters": [
+    {
+      "chapter_num": 1,
+      "title": "霓虹抢座",
+      "emotion_stage": "锋刃初遇",
+      "key_events": [
+        "霓虹街28号咖啡馆抢最后一座",
+        "苏星辰咖啡泼向沈若冰西装"
+      ],
+      "emotion_progress": "泼洒瞬间目光相撞，讥讽脱口而出",
+      "sweet_point": false
+    },
+    {
+      "chapter_num": 2,
+      "title": "银灰嘲讽",
+      "emotion_stage": "锋刃初遇",
+      "key_events": [
+        "沈若冰擦拭西装冷笑",
+        "称其行为艺术需另付场地费"
+      ],
+      "emotion_progress": "她攥紧画稿，指甲掐进掌心",
+      "sweet_point": false
+    },
+    {
+      "chapter_num": 3,
+      "title": "签约事故",
+      "emotion_stage": "锋刃初遇",
+      "key_events": [
+        "28号商户签约仪式突发断电",
+        "苏星辰误触投影仪致沈若冰演讲幻灯全黑"
+      ],
+      "emotion_progress": "他盯着她发颤的手指，声音低得只有她听见：‘赔得起吗？’",
+      "sweet_point": false
+    },
+    {
+      "chapter_num": 4,
+      "title": "对赌条款",
+      "emotion_stage": "锋刃初遇",
+      "key_events": [
+        "沈若冰甩出三页协议",
+        "实习期三个月，穿7cm高跟抄财报"
+      ],
+      "emotion_progress": "她签下名字时，他指尖划过纸面留下浅痕",
+      "sweet_point": false
+    },
+    {
+      "chapter_num": 5,
+      "title": "财报挑刺",
+      "emotion_stage": "锋刃初遇",
+      "key_events": [
+        "苏星辰指出财报逻辑漏洞",
+        "沈若冰当场让她主讲"
+      ],
+      "emotion_progress": "他颔首时喉结微动，她心跳漏半拍",
+      "sweet_point": true
+    },
+    {
+      "chapter_num": 6,
+      "title": "高跟刑期",
+      "emotion_stage": "锋刃初遇",
+      "key_events": [
+        "苏星辰崴脚强撑抄录",
+        "沈若冰助理送来定制鞋垫"
+      ],
+      "emotion_progress": "鞋垫盒底印着极小的28号门牌",
+      "sweet_point": false
+    },
+    {
+      "chapter_num": 7,
+      "title": "颜料渍痕",
+      "emotion_stage": "锋刃初遇",
+      "key_events": [
+        "她指尖颜料蹭上他财报",
+        "他凝视那抹钴蓝三秒未擦"
+      ],
+      "emotion_progress": "他抽走文件时，袖口掠过她手背",
+      "sweet_point": false
+    },
+    {
+      "chapter_num": 8,
+      "title": "电梯偶遇",
+      "emotion_stage": "锋刃初遇",
+      "key_events": [
+        "早高峰电梯故障",
+        "两人独处狭小空间"
+      ],
+      "emotion_progress": "她闻到雪松香，他目光扫过她耳钉",
+      "sweet_point": false
+    },
+    {
+      "chapter_num": 9,
+      "title": "晨光交接",
+      "emotion_stage": "锋刃初遇",
+      "key_events": [
+        "她提前一小时到岗整理资料",
+        "他放下温热燕麦奶转身离开"
+      ],
+      "emotion_progress": "杯壁水汽模糊了她视线",
+      "sweet_point": false
+    },
+    {
+      "chapter_num": 10,
+      "title": "围巾余温",
+      "emotion_stage": "暗格微光",
+      "key_events": [
+        "她加班睡着",
+        "醒来颈后垫着羊绒围巾"
+      ],
+      "emotion_progress": "便签字迹锋利，温度却熨帖",
+      "sweet_point": true
+    },
+    {
+      "chapter_num": 11,
+      "title": "暗格微光",
+      "emotion_stage": "暗格微光",
+      "key_events": [
+        "她偷瞥他办公桌暗格",
+        "泛黄28号老照片一角露出来"
+      ],
+      "emotion_progress": "照片边缘有褪色铅笔字：‘别拆’",
+      "sweet_point": false
+    },
+    {
+      "chapter_num": 12,
+      "title": "旧档疑云",
+      "emotion_stage": "暗格微光",
+      "key_events": [
+        "林佑羽递来28号建筑图纸",
+        "标注‘沈氏曾参与1998年翻修’"
+      ],
+      "emotion_progress": "她指尖停在‘沈’字上，久久未移",
+      "sweet_point": false
+    },
+    {
+      "chapter_num": 13,
+      "title": "雨夜共伞",
+      "emotion_stage": "暗格微光",
+      "key_events": [
+        "暴雨突至",
+        "他撑伞送她至地铁口"
+      ],
+      "emotion_progress": "伞倾向她一侧，他肩头迅速洇开深色",
+      "sweet_point": false
+    },
+    {
+      "chapter_num": 14,
+      "title": "咖啡冷暖",
+      "emotion_stage": "暗格微光",
+      "key_events": [
+        "她递还围巾",
+        "他推来无糖美式：‘试毒。’"
+      ],
+      "emotion_progress": "杯沿留着他唇印，她喝了一口",
+      "sweet_point": false
+    },
+    {
+      "chapter_num": 15,
+      "title": "答辩录像",
+      "emotion_stage": "暗格微光",
+      "key_events": [
+        "陈薇质疑学历",
+        "沈若冰播放硕士答辩录像"
+      ],
+      "emotion_progress": "镜头里她直视导师：‘记忆不该被资本定价’",
+      "sweet_point": true
+    },
+    {
+      "chapter_num": 16,
+      "title": "齿轮初现",
+      "emotion_stage": "齿轮咬合",
+      "key_events": [
+        "林佑羽交出铜质怀表",
+        "表盖内刻‘S&H 2014’"
+      ],
+      "emotion_progress": "她猛地抬头，他正凝视表盘倒影",
+      "sweet_point": false
+    },
+    {
+      "chapter_num": 17,
+      "title": "深夜校对",
+      "emotion_stage": "齿轮咬合",
+      "key_events": [
+        "两人核对28号产权链",
+        "她发现沈家信托基金曾注资"
+      ],
+      "emotion_progress": "他忽然问：‘你信巧合吗？’",
+      "sweet_point": false
+    },
+    {
+      "chapter_num": 18,
+      "title": "旧印浮现",
+      "emotion_stage": "齿轮咬合",
+      "key_events": [
+        "翻查2014年规划局存档",
+        "沈氏印章旁有哥哥签名"
+      ],
+      "emotion_progress": "她指尖发凉，他按住她手背",
+      "sweet_point": false
+    },
+    {
+      "chapter_num": 19,
+      "title": "美式邀约",
+      "emotion_stage": "齿轮咬合",
+      "key_events": [
+        "他首次主动邀约",
+        "只说‘无糖，七分苦’"
+      ],
+      "emotion_progress": "她点头时，窗外霓虹恰好闪了一下",
+      "sweet_point": false
+    },
+    {
+      "chapter_num": 20,
+      "title": "屏保星图",
+      "emotion_stage": "齿轮咬合",
+      "key_events": [
+        "她瞥见他手机屏保",
+        "28号门牌与日期刺入眼底"
+      ],
+      "emotion_progress": "2014.03.12——哥哥失踪次日",
+      "sweet_point": true
+    }
+  ],
+  "main_conflict": {
+    "type": "记忆权与资本逻辑的对抗",
+    "description": "跨国资本欲抹除霓虹街28号历史印记，而守护它的钥匙藏在两人互不信任的过往里——哥哥失踪案、沈家旧印、28号十年产权链断裂点，皆指向同一场被掩盖的城市记忆清洗。",
+    "resolve_chapter": 187
+  },
+  "version": 4,
+  "novel_id": "novel-19d8f636"
+}

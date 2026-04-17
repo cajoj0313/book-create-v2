@@ -4,6 +4,7 @@ import NovelList from '@pages/NovelList'
 import NovelDetail from '@pages/NovelDetail'
 import WorldBuilder from '@pages/WorldBuilder'
 import OutlineEditor from '@pages/OutlineEditor'
+import StorySynopsisViewer from '@pages/StorySynopsisViewer'
 import ChapterWriter from '@pages/ChapterWriter'
 import ValidationReport from '@pages/ValidationReport'
 
@@ -25,6 +26,9 @@ function App() {
 
             {/* 大纲编辑 */}
             <Route path="/novels/:novelId/outline" element={<OutlineEditor />} />
+
+            {/* 故事梗概 */}
+            <Route path="/novels/:novelId/synopsis" element={<StorySynopsisViewer />} />
 
             {/* 章节写作 */}
             <Route path="/novels/:novelId/chapters" element={<ChapterWriter />} />
